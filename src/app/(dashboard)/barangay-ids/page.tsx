@@ -321,7 +321,7 @@ export default function BarangayIDsPage() {
               <DialogTitle>ID Preview — {previewID.idNumber}</DialogTitle>
             </DialogHeader>
             <div className="flex justify-center overflow-auto p-4">
-              <div className="origin-center scale-[2]">
+              <div className="origin-center scale-[1.5]">
                 <IDCardPDF data={previewID} captureId={`id-preview-${previewID.id}`} />
               </div>
             </div>

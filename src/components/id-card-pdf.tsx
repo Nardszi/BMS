@@ -26,42 +26,59 @@ interface IDCardPDFProps {
   data: IDCardData;
   showPrintLayout?: boolean;
   captureId?: string;
+  forExport?: boolean;
 }
 
-export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPDFProps) {
+// CR80 standard: 85.60mm x 53.98mm = 1013px x 638px at 300 DPI
+const CR80_WIDTH_PX = 1013;
+const CR80_HEIGHT_PX = 638;
+const PHOTO_SIZE_PX = 288; // ~24.5mm height for photo area on card
+
+export function IDCardPDF({ data, showPrintLayout = false, captureId, forExport }: IDCardPDFProps) {
   const r = data.resident;
   const fullName = `${r.lastName}, ${r.firstName}${r.middleName ? ` ${r.middleName}` : ""}`;
   const birthDate = formatDate(r.birthDate);
   const expiry = formatDate(data.expiryDate);
   const issued = formatDate(data.issueDate);
 
+  const cardStyle: React.CSSProperties = forExport
+    ? { width: CR80_WIDTH_PX, height: CR80_HEIGHT_PX }
+    : { width: "3.375in", height: "2.125in" };
+
+  const fontSize = forExport ? { header: 22, subheader: 14, name: 24, body: 16, small: 13, tiny: 11 }
+    : { header: "7px", subheader: "5px", name: "8px", body: "6px", small: "5px", tiny: "5px" };
+
+  const photoStyle: React.CSSProperties = forExport
+    ? { width: 300, height: 300 }
+    : { width: "1in", height: "1in" };
+
   const cardFront = (
     <div
       id={captureId ? `${captureId}-front` : undefined}
-      className="relative overflow-hidden rounded-lg border-2 border-blue-900 bg-white shadow-lg"
-      style={{ width: "3.375in", height: "2.125in" }}
+      className="relative overflow-hidden border-2 border-blue-900 bg-white shadow-lg"
+      style={{ ...cardStyle, borderRadius: forExport ? 12 : undefined }}
     >
       {/* Top Header */}
-      <div className="flex items-center justify-center gap-2 bg-blue-900 px-2 py-1">
-        <img src="/barangay-seal.png" alt="" className="h-6 w-6 object-contain" />
+      <div className="flex items-center justify-center gap-2 bg-blue-900 px-2 py-1" style={forExport ? { padding: "10px 16px" } : {}}>
+        <img src="/barangay-seal.png" alt="" className="h-6 w-6 object-contain" style={forExport ? { width: 48, height: 48 } : undefined} />
         <div className="text-center">
-          <p className="text-[7px] font-bold leading-tight text-white">BARANGAY IX - DAAN BANWA</p>
-          <p className="text-[5px] text-blue-200">City of Victorias, Negros Occidental</p>
+          <p style={{ fontSize: fontSize.header, fontWeight: 700, color: "white", lineHeight: 1.2 }}>BARANGAY IX - DAAN BANWA</p>
+          <p style={{ fontSize: fontSize.subheader, color: "#93c5fd" }}>City of Victorias, Negros Occidental</p>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex gap-2 px-2 pt-1.5 pb-1">
+      <div className="flex gap-2" style={forExport ? { padding: "16px 20px 8px", gap: 16 } : { padding: "4px 8px 2px" }}>
         {/* Photo */}
         <div className="flex-shrink-0">
           {data.photoUrl ? (
             <img
               src={data.photoUrl}
               alt="Photo"
-              className="h-[1.05in] w-[0.85in] rounded border border-gray-300 object-cover"
+              style={{ ...photoStyle, objectFit: "cover", border: "1px solid #d1d5db", borderRadius: 4 }}
             />
           ) : (
-            <div className="flex h-[1.05in] w-[0.85in] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 text-[10px] text-gray-400">
+            <div style={{ ...photoStyle, display: "flex", alignItems: "center", justifyContent: "center", border: "2px dashed #d1d5db", borderRadius: 4, backgroundColor: "#f9fafb", fontSize: forExport ? 20 : 10, color: "#9ca3af" }}>
               No Photo
             </div>
           )}
@@ -69,26 +86,26 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
 
         {/* Details */}
         <div className="flex-1 min-w-0">
-          <p className="text-[8px] font-bold text-gray-900 truncate">{fullName}</p>
-          <div className="mt-0.5 space-y-[1px] text-[6px] text-gray-600">
-            <p><span className="font-semibold">DOB:</span> {birthDate}</p>
-            <p><span className="font-semibold">Gender:</span> {r.gender}</p>
-            <p><span className="font-semibold">Civil Status:</span> {r.civilStatus}</p>
-            <p className="truncate"><span className="font-semibold">Address:</span> {data.address}</p>
-            {data.contactNumber && <p><span className="font-semibold">Contact:</span> {data.contactNumber}</p>}
+          <p style={{ fontSize: fontSize.name, fontWeight: 700, color: "#111827", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fullName}</p>
+          <div style={{ marginTop: forExport ? 6 : 2, display: "flex", flexDirection: "column", gap: forExport ? 3 : 1 }}>
+            <p style={{ fontSize: fontSize.body, color: "#4b5563" }}><span style={{ fontWeight: 600 }}>DOB:</span> {birthDate}</p>
+            <p style={{ fontSize: fontSize.body, color: "#4b5563" }}><span style={{ fontWeight: 600 }}>Gender:</span> {r.gender}</p>
+            <p style={{ fontSize: fontSize.body, color: "#4b5563" }}><span style={{ fontWeight: 600 }}>Civil Status:</span> {r.civilStatus}</p>
+            <p style={{ fontSize: fontSize.body, color: "#4b5563", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}><span style={{ fontWeight: 600 }}>Address:</span> {data.address}</p>
+            {data.contactNumber && <p style={{ fontSize: fontSize.body, color: "#4b5563" }}><span style={{ fontWeight: 600 }}>Contact:</span> {data.contactNumber}</p>}
           </div>
-          <div className="mt-1 rounded bg-blue-50 px-1 py-0.5">
-            <p className="text-[7px] font-bold text-blue-900">{data.idNumber}</p>
+          <div style={{ marginTop: forExport ? 8 : 3, backgroundColor: "#eff6ff", padding: forExport ? "4px 8px" : "2px 4px", borderRadius: 4 }}>
+            <p style={{ fontSize: fontSize.small, fontWeight: 700, color: "#1e3a5f" }}>{data.idNumber}</p>
           </div>
         </div>
       </div>
 
       {/* Bottom */}
-      <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t border-blue-100 bg-blue-50 px-2 py-0.5">
-        <p className="text-[5px] text-gray-500">Valid: {issued} - {expiry}</p>
+      <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t border-blue-100 bg-blue-50" style={forExport ? { padding: "6px 16px" } : { padding: "2px 8px" }}>
+        <p style={{ fontSize: fontSize.small, color: "#6b7280" }}>Valid: {issued} - {expiry}</p>
         <div className="text-right">
-          <p className="text-[5px] text-gray-500">Issued By:</p>
-          <p className="text-[6px] font-semibold text-gray-700">Barangay IX</p>
+          <p style={{ fontSize: fontSize.tiny, color: "#6b7280" }}>Issued By:</p>
+          <p style={{ fontSize: fontSize.small, fontWeight: 600, color: "#374151" }}>Barangay IX</p>
         </div>
       </div>
     </div>
@@ -97,52 +114,52 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
   const cardBack = (
     <div
       id={captureId ? `${captureId}-back` : undefined}
-      className="relative overflow-hidden rounded-lg border-2 border-blue-900 bg-white shadow-lg"
-      style={{ width: "3.375in", height: "2.125in" }}
+      className="relative overflow-hidden border-2 border-blue-900 bg-white shadow-lg"
+      style={{ ...cardStyle, borderRadius: forExport ? 12 : undefined }}
     >
       {/* Header */}
-      <div className="bg-blue-900 px-2 py-1">
-        <p className="text-center text-[7px] font-bold text-white">BARANGAY IDENTIFICATION CARD</p>
+      <div className="bg-blue-900" style={forExport ? { padding: "10px 16px" } : { padding: "4px 8px" }}>
+        <p className="text-center" style={{ fontSize: fontSize.header, fontWeight: 700, color: "white" }}>BARANGAY IDENTIFICATION CARD</p>
       </div>
 
       {/* Back Content */}
-      <div className="px-2 pt-1.5 pb-1">
-        <p className="text-[7px] font-bold text-gray-700 mb-1">EMERGENCY CONTACT</p>
-        <div className="rounded bg-gray-50 p-1.5 text-[6px] text-gray-600 space-y-0.5">
+      <div style={forExport ? { padding: "16px 20px 8px" } : { padding: "6px 8px 2px" }}>
+        <p style={{ fontSize: fontSize.small, fontWeight: 700, color: "#374151", marginBottom: forExport ? 6 : 2 }}>EMERGENCY CONTACT</p>
+        <div style={{ backgroundColor: "#f9fafb", padding: forExport ? 10 : 4, borderRadius: 4, fontSize: fontSize.body, color: "#4b5563" }}>
           <p>In case of emergency, please contact:</p>
-          <p className="font-semibold">{r.lastName} - {r.contactNumber || "N/A"}</p>
+          <p style={{ fontWeight: 600 }}>{r.lastName} - {r.contactNumber || "N/A"}</p>
         </div>
 
-        <div className="mt-2 flex items-end justify-between">
+        <div className="flex items-end justify-between" style={{ marginTop: forExport ? 20 : 6 }}>
           <div className="text-center">
-            <div className="mb-0.5 h-[0.4in] w-[0.4in] rounded border border-gray-300 bg-gray-50 flex items-center justify-center">
-              <img src="/barangay-seal.png" alt="" className="h-6 w-6 object-contain opacity-30" />
+            <div style={forExport ? { width: 80, height: 80, border: "1px solid #d1d5db", borderRadius: 4, backgroundColor: "#f9fafb", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 4 } : { width: "0.4in", height: "0.4in", border: "1px solid #d1d5db", borderRadius: 4, backgroundColor: "#f9fafb", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 2 }}>
+              <img src="/barangay-seal.png" alt="" className="h-6 w-6 object-contain opacity-30" style={forExport ? { width: 48, height: 48, opacity: 0.3 } : undefined} />
             </div>
-            <p className="text-[5px] text-gray-500">Barangay Seal</p>
+            <p style={{ fontSize: fontSize.tiny, color: "#6b7280" }}>Barangay Seal</p>
           </div>
 
           <div className="text-center">
-            <div className="mb-0.5 h-[0.4in] w-[1.2in] border-b border-gray-400" />
-            <p className="text-[6px] font-semibold text-gray-700">HON. JUAN DELA CRUZ</p>
-            <p className="text-[5px] text-gray-500">Barangay Captain</p>
+            <div style={forExport ? { width: 200, height: 60, borderBottom: "1px solid #9ca3af", marginBottom: 4 } : { width: "1.2in", height: "0.4in", borderBottom: "1px solid #9ca3af", marginBottom: 2 }} />
+            <p style={{ fontSize: fontSize.small, fontWeight: 600, color: "#374151" }}>HON. JUAN DELA CRUZ</p>
+            <p style={{ fontSize: fontSize.tiny, color: "#6b7280" }}>Barangay Captain</p>
           </div>
 
           <div className="text-center">
-            <div className="mb-0.5 h-[0.4in] w-[0.4in] rounded border border-gray-300 bg-gray-50 flex items-center justify-center">
-              <div className="grid grid-cols-5 gap-[1px]">
+            <div style={forExport ? { width: 80, height: 80, border: "1px solid #d1d5db", borderRadius: 4, backgroundColor: "#f9fafb", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 4 } : { width: "0.4in", height: "0.4in", border: "1px solid #d1d5db", borderRadius: 4, backgroundColor: "#f9fafb", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 2 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 1 }}>
                 {Array.from({ length: 25 }).map((_, i) => (
-                  <div key={i} className={`h-[3px] w-[3px] ${Math.random() > 0.5 ? "bg-black" : "bg-transparent"}`} />
+                  <div key={i} style={{ width: forExport ? 10 : 3, height: forExport ? 10 : 3, backgroundColor: Math.random() > 0.5 ? "#000" : "transparent" }} />
                 ))}
               </div>
             </div>
-            <p className="text-[5px] text-gray-500">Scan to Verify</p>
+            <p style={{ fontSize: fontSize.tiny, color: "#6b7280" }}>Scan to Verify</p>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="absolute bottom-0 left-0 right-0 border-t border-blue-100 bg-blue-50 px-2 py-0.5">
-        <p className="text-center text-[5px] text-gray-500">
+      <div className="absolute bottom-0 left-0 right-0 border-t border-blue-100 bg-blue-50" style={forExport ? { padding: "6px 16px" } : { padding: "2px 8px" }}>
+        <p className="text-center" style={{ fontSize: fontSize.tiny, color: "#6b7280" }}>
           This card is property of Barangay IX - Daan Banwa. Found card please return to the Barangay Hall.
         </p>
       </div>
@@ -162,6 +179,15 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
             {cardBack}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (forExport) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        {cardFront}
+        {cardBack}
       </div>
     );
   }
