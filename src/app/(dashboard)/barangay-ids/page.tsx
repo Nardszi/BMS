@@ -15,8 +15,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
 import { IDCardPDF } from "@/components/id-card-pdf";
-import { downloadAsJPEG } from "@/lib/export-jpeg";
-import { Plus, CreditCard, Printer, Search, Trash2, Eye, Ban, Download } from "lucide-react";
+import { downloadAsPDF } from "@/lib/export-pdf";
+import { Plus, CreditCard, Printer, Search, Trash2, Eye, Ban, FileDown } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 const idSchema = z.object({
@@ -69,6 +69,7 @@ export default function BarangayIDsPage() {
   const [open, setOpen] = useState(false);
   const [previewID, setPreviewID] = useState<BarangayIDData | null>(null);
   const [printID, setPrintID] = useState<BarangayIDData | null>(null);
+  const [downloadID, setDownloadID] = useState<BarangayIDData | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const role = (session?.user as any)?.role;
@@ -288,8 +289,8 @@ export default function BarangayIDsPage() {
                       <Button variant="ghost" size="sm" onClick={() => setPreviewID(id)}>
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => downloadAsJPEG(`id-preview-${id.id}`, `BarangayID-${id.idNumber}`)} title="Save as JPEG">
-                        <Download className="h-4 w-4" />
+                      <Button variant="ghost" size="sm" onClick={() => { setDownloadID(id); setTimeout(() => downloadAsPDF(`dl-${id.id}`, id.resident.lastName), 100); }} title="Save as PDF">
+                        <FileDown className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => setPrintID(id)}>
                         <Printer className="h-4 w-4" />
@@ -325,11 +326,8 @@ export default function BarangayIDsPage() {
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setPreviewID(null)}>Close</Button>
-              <Button variant="outline" onClick={() => downloadAsJPEG(`id-preview-${previewID.id}-front`, `BarangayID-${previewID.idNumber}-Front`)}>
-                <Download className="mr-2 h-4 w-4" /> Save Front as JPEG
-              </Button>
-              <Button variant="outline" onClick={() => downloadAsJPEG(`id-preview-${previewID.id}-back`, `BarangayID-${previewID.idNumber}-Back`)}>
-                <Download className="mr-2 h-4 w-4" /> Save Back as JPEG
+              <Button className="bg-blue-900 hover:bg-blue-800" onClick={() => downloadAsPDF(`id-preview-${previewID.id}`, previewID.resident.lastName)}>
+                <FileDown className="mr-2 h-4 w-4" /> Save as PDF
               </Button>
             </div>
           </DialogContent>
@@ -354,6 +352,13 @@ export default function BarangayIDsPage() {
             </div>
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Hidden capture element for table PDF download */}
+      {downloadID && (
+        <div style={{ position: "fixed", left: "-9999px", top: 0, zIndex: -1, pointerEvents: "none" }}>
+          <IDCardPDF data={downloadID} captureId={`dl-${downloadID.id}`} />
+        </div>
       )}
     </div>
   );
