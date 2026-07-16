@@ -545,6 +545,12 @@ export default function ResidentsPage() {
                   <p className="text-xs font-medium text-gray-500">Status</p>
                   <Badge className={statusColors[detailResident.status]}>{detailResident.status}</Badge>
                 </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500">Registered Voter</p>
+                  <Badge className={detailResident.isRegisteredVoter ? "bg-emerald-100 text-emerald-800" : "bg-gray-100 text-gray-600"}>
+                    {detailResident.isRegisteredVoter ? "Yes" : "No"}
+                  </Badge>
+                </div>
               </div>
 
               {canApprove && detailResident.status === "PENDING" && (

@@ -26,6 +26,7 @@ const registerSchema = z.object({
   occupation: z.string().optional(),
   emergencyContact: z.string().optional(),
   emergencyPhone: z.string().optional(),
+  isRegisteredVoter: z.boolean().optional(),
 });
 
 type RegisterForm = z.infer<typeof registerSchema>;
@@ -391,6 +392,20 @@ export default function RegisterPage() {
                       placeholder="e.g., Teacher, Engineer, Student"
                       className="h-12 rounded-xl border-amber-400/20 bg-white/10 text-sm text-white placeholder:text-white/40 focus:border-amber-400 focus:bg-white/15 focus:ring-2 focus:ring-amber-400/20 sm:text-base"
                     />
+                  </div>
+
+                  {/* Registered Voter Checkbox */}
+                  <div className="flex items-center gap-3 rounded-xl border border-amber-400/20 bg-white/5 p-4">
+                    <input
+                      type="checkbox"
+                      id="voter"
+                      {...register("isRegisteredVoter")}
+                      className="h-5 w-5 rounded border-amber-400/30 bg-white/10 text-amber-500 focus:ring-2 focus:ring-amber-400/20"
+                    />
+                    <div>
+                      <Label htmlFor="voter" className="text-sm font-medium text-white cursor-pointer">Registered Voter</Label>
+                      <p className="text-xs text-amber-100/50">Check if you are a registered voter in this barangay</p>
+                    </div>
                   </div>
 
                   <div className="space-y-4">
