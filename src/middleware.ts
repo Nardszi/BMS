@@ -14,11 +14,13 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = request.nextUrl;
 
-  // Allow login page, static assets, API auth routes, and verify page
+  // Allow login page, static assets, API auth routes, verify page, and public register
   if (
     pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/verify") ||
+    pathname.startsWith("/api/register") ||
     pathname.startsWith("/verify") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
