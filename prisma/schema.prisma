@@ -54,6 +54,12 @@ enum PermitStatus {
   REVOKED
 }
 
+enum ResidentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum IDStatus {
   ACTIVE
   EXPIRED
@@ -103,8 +109,9 @@ model Resident {
   photoUrl          String?
   emergencyContact  String?
   emergencyPhone    String?
-  isRegisteredVoter Boolean  @default(false)
-  createdAt         DateTime @default(now())
+  isRegisteredVoter Boolean          @default(false)
+  status            ResidentStatus   @default(APPROVED)
+  createdAt         DateTime         @default(now())
   updatedAt         DateTime @updatedAt
 
   household          Household            @relation(fields: [householdId], references: [id], onDelete: Cascade)

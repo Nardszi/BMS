@@ -12,6 +12,7 @@ export async function GET(request: Request) {
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "10");
   const purok = searchParams.get("purok") || "";
+  const status = searchParams.get("status") || "";
 
   const where: any = {};
   if (search) {
@@ -24,6 +25,9 @@ export async function GET(request: Request) {
   }
   if (purok) {
     where.household = { purok };
+  }
+  if (status) {
+    where.status = status;
   }
 
   const [residents, total] = await Promise.all([

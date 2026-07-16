@@ -52,3 +52,21 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   await prisma.resident.delete({ where: { id: params.id } });
   return NextResponse.json({ message: "Deleted" });
 }
+
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const role = (session.user as any).role;
+  if (!["ADMIN", "SECRETARY", "KAGAWAD"].includes(role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const body = await request.json();
+  const resident = await prisma.resident.update({
+    where: { id: params.id },
+    data: { status: body.status },
+  });
+
+  return NextResponse.json(resident);
+}
