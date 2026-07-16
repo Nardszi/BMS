@@ -28,6 +28,8 @@ export async function GET(request: Request) {
   }
   if (status) {
     where.status = status;
+  } else {
+    where.status = { not: null };
   }
 
   const [residents, total] = await Promise.all([

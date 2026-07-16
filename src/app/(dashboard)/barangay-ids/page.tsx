@@ -15,7 +15,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
 import { IDCardPDF } from "@/components/id-card-pdf";
-import { Plus, CreditCard, Printer, Search, Trash2, Eye, Ban } from "lucide-react";
+import { downloadAsWord } from "@/lib/export-word";
+import { Plus, CreditCard, Printer, Search, Trash2, Eye, Ban, Download } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 const idSchema = z.object({
@@ -287,6 +288,9 @@ export default function BarangayIDsPage() {
                       <Button variant="ghost" size="sm" onClick={() => setPreviewID(id)}>
                         <Eye className="h-4 w-4" />
                       </Button>
+                      <Button variant="ghost" size="sm" onClick={() => downloadAsWord(id)} title="Save as Word">
+                        <Download className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="sm" onClick={() => setPrintID(id)}>
                         <Printer className="h-4 w-4" />
                       </Button>
@@ -319,6 +323,12 @@ export default function BarangayIDsPage() {
             <div className="flex justify-center">
               <IDCardPDF data={previewID} />
             </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setPreviewID(null)}>Close</Button>
+              <Button variant="outline" onClick={() => downloadAsWord(previewID)}>
+                <Download className="mr-2 h-4 w-4" /> Save as Word
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       )}
@@ -335,6 +345,9 @@ export default function BarangayIDsPage() {
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setPrintID(null)}>Close</Button>
+              <Button variant="outline" onClick={() => downloadAsWord(printID)}>
+                <Download className="mr-2 h-4 w-4" /> Save as Word
+              </Button>
               <Button className="bg-blue-900 hover:bg-blue-800" onClick={() => window.print()}>
                 <Printer className="mr-2 h-4 w-4" /> Print
               </Button>
