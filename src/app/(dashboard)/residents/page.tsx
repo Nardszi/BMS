@@ -67,6 +67,9 @@ export default function ResidentsPage() {
   const [detailResident, setDetailResident] = useState<Resident | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [approvedCount, setApprovedCount] = useState(0);
+  const [rejectedCount, setRejectedCount] = useState(0);
 
   const role = (session?.user as any)?.role;
   const canEdit = ["ADMIN", "SECRETARY", "STAFF"].includes(role);
@@ -86,6 +89,9 @@ export default function ResidentsPage() {
     const data = await res.json();
     setResidents(data.residents || []);
     setTotalPages(data.totalPages || 1);
+    setPendingCount(data.pendingCount || 0);
+    setApprovedCount(data.approvedCount || 0);
+    setRejectedCount(data.rejectedCount || 0);
   };
 
   useEffect(() => { fetchResidents(); }, [page, search, purokFilter, statusFilter, sortBy, sortOrder]);
@@ -216,8 +222,6 @@ export default function ResidentsPage() {
     APPROVED: "bg-emerald-100 text-emerald-700",
     REJECTED: "bg-red-100 text-red-700",
   };
-
-  const pendingCount = residents.filter((r) => r.status === "PENDING").length;
 
   return (
     <div className="space-y-6">
@@ -376,6 +380,11 @@ export default function ResidentsPage() {
           className={statusFilter === "APPROVED" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
         >
           <CheckCircle2 className="mr-2 h-4 w-4" /> Approved
+          {approvedCount > 0 && (
+            <span className="ml-2 rounded-full bg-emerald-200 px-2 py-0.5 text-xs font-bold text-emerald-800">
+              {approvedCount}
+            </span>
+          )}
         </Button>
         <Button
           variant={statusFilter === "REJECTED" ? "default" : "outline"}
@@ -384,6 +393,11 @@ export default function ResidentsPage() {
           className={statusFilter === "REJECTED" ? "bg-red-600 hover:bg-red-700" : ""}
         >
           <XCircle className="mr-2 h-4 w-4" /> Rejected
+          {rejectedCount > 0 && (
+            <span className="ml-2 rounded-full bg-red-200 px-2 py-0.5 text-xs font-bold text-red-800">
+              {rejectedCount}
+            </span>
+          )}
         </Button>
       </div>
 

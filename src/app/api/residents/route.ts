@@ -30,8 +30,6 @@ export async function GET(request: Request) {
   }
   if (status) {
     where.status = status;
-  } else {
-    where.status = { not: null };
   }
 
   const order: any = {};
@@ -47,7 +45,7 @@ export async function GET(request: Request) {
     order[sortBy] = sortOrder;
   }
 
-  const [residents, total] = await Promise.all([
+  const [residents, total, pendingCount, approvedCount, rejectedCount] = await Promise.all([
     prisma.resident.findMany({
       where,
       include: { household: true },
@@ -56,9 +54,12 @@ export async function GET(request: Request) {
       orderBy: order,
     }),
     prisma.resident.count({ where }),
+    prisma.resident.count({ where: { status: "PENDING" } }),
+    prisma.resident.count({ where: { status: "APPROVED" } }),
+    prisma.resident.count({ where: { status: "REJECTED" } }),
   ]);
 
-  return NextResponse.json({ residents, total, page, totalPages: Math.ceil(total / limit) });
+  return NextResponse.json({ residents, total, totalPages: Math.ceil(total / limit), pendingCount, approvedCount, rejectedCount });
 }
 
 export async function POST(request: Request) {
