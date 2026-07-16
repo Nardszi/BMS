@@ -32,7 +32,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-gray-50 text-foreground;
+    @apply bg-gray-50 text-gray-900;
   }
 }
 
@@ -43,4 +43,15 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+}
+
+/* Dialog animation overrides - ensure solid opacity */
+[data-state="open"][data-radix-dialog-overlay],
+[data-radix-dialog-overlay][data-state="open"] {
+  opacity: 1;
+}
+
+[data-state="closed"][data-radix-dialog-overlay],
+[data-radix-dialog-overlay][data-state="closed"] {
+  opacity: 0;
 }
