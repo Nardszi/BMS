@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  SECRETARY
+  TREASURER
+  KAGAWAD
+  STAFF
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum CivilStatus {
+  SINGLE
+  MARRIED
+  WIDOWED
+  SEPARATED
+  DIVORCED
+}
+
+enum CertificateType {
+  CLEARANCE
+  RESIDENCY
+  INDIGENCY
+  BUSINESS_PERMIT
+}
+
+enum CertificateStatus {
+  PENDING
+  APPROVED
+  RELEASED
+  DENIED
+}
+
+enum BlotterStatus {
+  OPEN
+  RESOLVED
+  ESCALATED
+}
+
+enum PermitStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(STAFF)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  official            Official?
+  issuedCertificates  CertificateRequest[] @relation("IssuedBy")
+  handledBlotters     BlotterReport[]      @relation("HandledBy")
+  postedAnnouncements Announcement[]       @relation("PostedBy")
+}
+
+model Household {
+  id              String   @id @default(cuid())
+  householdNumber String   @unique
+  address         String
+  purok           String
+  zone            String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  residents Resident[]
+}
+
+model Resident {
+  id                String   @id @default(cuid())
+  firstName         String
+  lastName          String
+  middleName        String?
+  birthDate         DateTime
+  gender            Gender
+  civilStatus       CivilStatus
+  householdId       String
+  occupation        String?
+  contactNumber     String?
+  isRegisteredVoter Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  household          Household            @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  certificateRequests CertificateRequest[]
+  businessPermits    BusinessPermit[]
+}
+
+model Official {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  position  String
+  termStart DateTime
+  termEnd   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CertificateRequest {
+  id           String            @id @default(cuid())
+  residentId   String
+  type         CertificateType
+  purpose      String
+  status       CertificateStatus @default(PENDING)
+  requestDate  DateTime          @default(now())
+  releaseDate  DateTime?
+  issuedById   String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  resident Resident @relation(fields: [residentId], references: [id], onDelete: Cascade)
+  issuedBy User?    @relation("IssuedBy", fields: [issuedById], references: [id], onDelete: SetNull)
+}
+
+model BlotterReport {
+  id              String        @id @default(cuid())
+  caseNumber      String        @unique
+  complainantName String
+  respondentName  String
+  incidentDate    DateTime
+  incidentType    String
+  narrative       String
+  status          BlotterStatus @default(OPEN)
+  handledById     String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  handledBy User? @relation("HandledBy", fields: [handledById], references: [id], onDelete: SetNull)
+}
+
+model BusinessPermit {
+  id              String       @id @default(cuid())
+  businessName    String
+  ownerResidentId String
+  businessType    String
+  address         String
+  permitNumber    String       @unique
+  issueDate       DateTime
+  expiryDate      DateTime
+  status          PermitStatus @default(ACTIVE)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  owner Resident @relation(fields: [ownerResidentId], references: [id], onDelete: Cascade)
+}
+
+model Announcement {
+  id         String    @id @default(cuid())
+  title      String
+  content    String
+  postedById String
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime?
+
+  postedBy User @relation("PostedBy", fields: [postedById], references: [id], onDelete: Cascade)
+}
