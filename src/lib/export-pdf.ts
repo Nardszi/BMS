@@ -2,8 +2,10 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 // CR80: 85.60mm x 53.98mm
-const CARD_W_MM = 85.6;
-const CARD_H_MM = 53.98;
+const CARD_W = 85.6;
+const CARD_H = 53.98;
+const GAP = 10;
+const PAD = 5;
 
 export async function downloadAsPDF(captureId: string, lastName: string) {
   const frontEl = document.getElementById(`${captureId}-front`);
@@ -18,25 +20,17 @@ export async function downloadAsPDF(captureId: string, lastName: string) {
   const frontImg = frontCanvas.toDataURL("image/jpeg", 0.95);
   const backImg = backCanvas.toDataURL("image/jpeg", 0.95);
 
-  // Landscape PDF, CR80 card size
+  const pageW = CARD_W * 2 + GAP + PAD * 2;
+  const pageH = CARD_H + PAD * 2;
+
   const pdf = new jsPDF({
     orientation: "landscape",
     unit: "mm",
-    format: [CARD_W_MM * 2 + 20, CARD_H_MM + 20],
+    format: [pageW, pageH],
   });
 
-  const x = 10;
-  const y = 10;
-
-  // Front card
-  pdf.setFontSize(8);
-  pdf.setTextColor(128);
-  pdf.text("FRONT", x + CARD_W_MM / 2, y - 2, { align: "center" });
-  pdf.addImage(frontImg, "JPEG", x, y, CARD_W_MM, CARD_H_MM);
-
-  // Back card
-  pdf.text("BACK", x + CARD_W_MM + 10 + CARD_W_MM / 2, y - 2, { align: "center" });
-  pdf.addImage(backImg, "JPEG", x + CARD_W_MM + 10, y, CARD_W_MM, CARD_H_MM);
+  pdf.addImage(frontImg, "JPEG", PAD, PAD, CARD_W, CARD_H);
+  pdf.addImage(backImg, "JPEG", PAD + CARD_W + GAP, PAD, CARD_W, CARD_H);
 
   const safeName = lastName.replace(/[^a-zA-Z]/g, "") || "Resident";
   pdf.save(`BarangayID-${safeName}.pdf`);
