@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/toast";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, UserPlus, ChevronRight, ChevronLeft, User, MapPin, Phone, Briefcase } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronRight, ChevronLeft, User, MapPin, Phone, Briefcase, Loader2 } from "lucide-react";
 
 const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -31,10 +31,10 @@ const registerSchema = z.object({
 type RegisterForm = z.infer<typeof registerSchema>;
 
 const steps = [
-  { id: 1, title: "Personal Info", icon: User, description: "Basic information" },
-  { id: 2, title: "Address", icon: MapPin, description: "Location details" },
-  { id: 3, title: "Contact", icon: Phone, description: "Contact information" },
-  { id: 4, title: "Additional", icon: Briefcase, description: "Optional details" },
+  { id: 1, title: "Personal", icon: User },
+  { id: 2, title: "Address", icon: MapPin },
+  { id: 3, title: "Contact", icon: Phone },
+  { id: 4, title: "Other", icon: Briefcase },
 ];
 
 export default function RegisterPage() {
@@ -47,9 +47,9 @@ export default function RegisterPage() {
     setMounted(true);
   }, []);
 
-  const { register, handleSubmit, setValue, watch, trigger, formState: { errors } } = useForm<RegisterForm>({
+  const { register, handleSubmit, setValue, watch, trigger, formState: { errors, touchedFields } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
-    mode: "onChange",
+    mode: "onTouched",
   });
 
   const formData = watch();
@@ -105,22 +105,22 @@ export default function RegisterPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-emerald-50 p-4">
         <div className={`w-full max-w-md text-center transition-all duration-700 ${mounted ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}>
-          <div className="rounded-2xl border border-gray-100 bg-white p-10 shadow-xl">
-            <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-emerald-100 animate-bounce">
-              <CheckCircle2 className="h-12 w-12 text-emerald-600" />
+          <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-xl sm:p-10">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 sm:h-24 sm:w-24">
+              <CheckCircle2 className="h-10 w-10 text-emerald-600 sm:h-12 sm:w-12" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900">Registration Successful!</h2>
-            <p className="mt-4 text-gray-500">
-              Your information has been submitted to Barangay IX - Daan Banwa. Our staff will review and verify your records. You may visit the barangay hall to complete the process.
+            <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Registration Successful!</h2>
+            <p className="mt-3 text-sm text-gray-500 sm:mt-4 sm:text-base">
+              Your information has been submitted. Our staff will review and verify your records.
             </p>
-            <div className="mt-8 space-y-3">
+            <div className="mt-6 space-y-3 sm:mt-8">
               <Link href="/login">
-                <Button className="w-full h-12 rounded-xl bg-blue-900 text-base font-medium hover:bg-blue-800 transition-all hover:shadow-lg">
+                <Button className="h-12 w-full rounded-xl bg-blue-900 text-sm font-medium hover:bg-blue-800 sm:h-13 sm:text-base">
                   Go to Login
                 </Button>
               </Link>
               <Link href="/register">
-                <Button variant="outline" className="w-full h-12 rounded-xl" onClick={() => { setSuccess(false); setCurrentStep(1); }}>
+                <Button variant="outline" className="h-12 w-full rounded-xl text-sm sm:h-13" onClick={() => { setSuccess(false); setCurrentStep(1); }}>
                   Register Another
                 </Button>
               </Link>
@@ -133,36 +133,36 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50">
-      {/* Header */}
-      <div className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-3">
+      {/* Header - Sticky */}
+      <div className="sticky top-0 z-20 border-b border-gray-100 bg-white/90 backdrop-blur-md">
+        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3 sm:py-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link href="/login" className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
               <ArrowLeft className="h-5 w-5" />
             </Link>
-            <div className="relative h-10 w-10 flex-shrink-0">
+            <div className="relative h-9 w-9 flex-shrink-0 sm:h-10 sm:w-10">
               <Image src="/barangay-seal.png" alt="Barangay Seal" fill className="object-contain" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">Barangay IX - Daan Banwa</h1>
-              <p className="text-xs text-gray-500">Resident Registration</p>
+              <h1 className="text-base font-bold text-gray-900 sm:text-lg">Barangay IX</h1>
+              <p className="text-[10px] text-gray-500 sm:text-xs">Resident Registration</p>
             </div>
           </div>
-          <Link href="/login" className="text-sm text-blue-600 hover:text-blue-800 transition-colors">
+          <Link href="/login" className="text-xs font-medium text-blue-600 hover:text-blue-800 sm:text-sm">
             Sign In
           </Link>
         </div>
       </div>
 
-      <div className="mx-auto max-w-4xl p-4 py-8">
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center">
+      <div className="mx-auto max-w-4xl px-4 pb-32 pt-4 sm:pb-8 sm:pt-8">
+        {/* Progress Steps - Mobile Compact */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center justify-between">
             {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
+              <div key={step.id} className="flex items-center flex-1 last:flex-none">
                 <div className="flex flex-col items-center">
                   <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-300 ${
+                    className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 sm:h-12 sm:w-12 ${
                       currentStep > step.id
                         ? "border-emerald-500 bg-emerald-500 text-white"
                         : currentStep === step.id
@@ -171,19 +171,19 @@ export default function RegisterPage() {
                     }`}
                   >
                     {currentStep > step.id ? (
-                      <CheckCircle2 className="h-6 w-6" />
+                      <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6" />
                     ) : (
-                      <step.icon className="h-5 w-5" />
+                      <step.icon className="h-4 w-4 sm:h-5 sm:w-5" />
                     )}
                   </div>
-                  <p className={`mt-2 text-xs font-medium transition-colors ${
+                  <p className={`mt-1.5 text-[10px] font-medium sm:text-xs ${
                     currentStep >= step.id ? "text-blue-600" : "text-gray-400"
                   }`}>
                     {step.title}
                   </p>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className={`mx-2 h-0.5 w-16 transition-colors sm:w-24 ${
+                  <div className={`mx-1 h-0.5 flex-1 transition-colors sm:mx-2 ${
                     currentStep > step.id ? "bg-emerald-500" : "bg-gray-200"
                   }`} />
                 )}
@@ -193,109 +193,96 @@ export default function RegisterPage() {
         </div>
 
         {/* Form Card */}
-        <div className={`rounded-2xl border border-gray-100 bg-white p-6 shadow-xl transition-all duration-500 sm:p-8 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
+        <div className={`rounded-2xl border border-gray-100 bg-white p-4 shadow-xl transition-all duration-500 sm:p-8 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
           <form onSubmit={handleSubmit(onSubmit)}>
             {/* Step 1: Personal Info */}
             {currentStep === 1 && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Personal Information</h3>
-                  <p className="mt-1 text-sm text-gray-500">Tell us about yourself</p>
+                  <h3 className="text-lg font-bold text-gray-900 sm:text-xl">Personal Information</h3>
+                  <p className="mt-1 text-xs text-gray-500 sm:text-sm">Tell us about yourself</p>
                 </div>
                 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">First Name *</Label>
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label className="text-xs font-medium text-gray-700 sm:text-sm">First Name *</Label>
                     <Input
                       {...register("firstName")}
                       placeholder="Juan"
-                      className="h-12 rounded-xl transition-all focus:ring-2 focus:ring-blue-500/20"
+                      className="h-12 rounded-xl text-sm sm:text-base"
                     />
                     {errors.firstName && (
-                      <p className="text-xs text-red-500 flex items-center gap-1">
-                        <span className="inline-block h-1 w-1 rounded-full bg-red-500" />
-                        {errors.firstName.message}
-                      </p>
+                      <p className="text-[11px] text-red-500">{errors.firstName.message}</p>
                     )}
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">Last Name *</Label>
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label className="text-xs font-medium text-gray-700 sm:text-sm">Last Name *</Label>
                     <Input
                       {...register("lastName")}
                       placeholder="dela Cruz"
-                      className="h-12 rounded-xl transition-all focus:ring-2 focus:ring-blue-500/20"
+                      className="h-12 rounded-xl text-sm sm:text-base"
                     />
                     {errors.lastName && (
-                      <p className="text-xs text-red-500 flex items-center gap-1">
-                        <span className="inline-block h-1 w-1 rounded-full bg-red-500" />
-                        {errors.lastName.message}
-                      </p>
+                      <p className="text-[11px] text-red-500">{errors.lastName.message}</p>
                     )}
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Middle Name</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs font-medium text-gray-700 sm:text-sm">Middle Name</Label>
                   <Input
                     {...register("middleName")}
                     placeholder="Optional"
-                    className="h-12 rounded-xl transition-all focus:ring-2 focus:ring-blue-500/20"
+                    className="h-12 rounded-xl text-sm sm:text-base"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">Birth Date *</Label>
+                <div className="space-y-4">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label className="text-xs font-medium text-gray-700 sm:text-sm">Birth Date *</Label>
                     <Input
                       type="date"
                       {...register("birthDate")}
-                      className="h-12 rounded-xl transition-all focus:ring-2 focus:ring-blue-500/20"
+                      className="h-12 rounded-xl text-sm sm:text-base"
                     />
                     {errors.birthDate && (
-                      <p className="text-xs text-red-500 flex items-center gap-1">
-                        <span className="inline-block h-1 w-1 rounded-full bg-red-500" />
-                        {errors.birthDate.message}
-                      </p>
+                      <p className="text-[11px] text-red-500">{errors.birthDate.message}</p>
                     )}
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">Gender *</Label>
-                    <Select onValueChange={(v) => setValue("gender", v)}>
-                      <SelectTrigger className="h-12 rounded-xl">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="MALE">Male</SelectItem>
-                        <SelectItem value="FEMALE">Female</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {errors.gender && (
-                      <p className="text-xs text-red-500 flex items-center gap-1">
-                        <span className="inline-block h-1 w-1 rounded-full bg-red-500" />
-                        {errors.gender.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">Civil Status *</Label>
-                    <Select onValueChange={(v) => setValue("civilStatus", v)}>
-                      <SelectTrigger className="h-12 rounded-xl">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="SINGLE">Single</SelectItem>
-                        <SelectItem value="MARRIED">Married</SelectItem>
-                        <SelectItem value="WIDOWED">Widowed</SelectItem>
-                        <SelectItem value="SEPARATED">Separated</SelectItem>
-                        <SelectItem value="DIVORCED">Divorced</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {errors.civilStatus && (
-                      <p className="text-xs text-red-500 flex items-center gap-1">
-                        <span className="inline-block h-1 w-1 rounded-full bg-red-500" />
-                        {errors.civilStatus.message}
-                      </p>
-                    )}
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <Label className="text-xs font-medium text-gray-700 sm:text-sm">Gender *</Label>
+                      <Select onValueChange={(v) => setValue("gender", v)}>
+                        <SelectTrigger className="h-12 rounded-xl text-sm">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="MALE">Male</SelectItem>
+                          <SelectItem value="FEMALE">Female</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.gender && (
+                        <p className="text-[11px] text-red-500">{errors.gender.message}</p>
+                      )}
+                    </div>
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <Label className="text-xs font-medium text-gray-700 sm:text-sm">Civil Status *</Label>
+                      <Select onValueChange={(v) => setValue("civilStatus", v)}>
+                        <SelectTrigger className="h-12 rounded-xl text-sm">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="SINGLE">Single</SelectItem>
+                          <SelectItem value="MARRIED">Married</SelectItem>
+                          <SelectItem value="WIDOWED">Widowed</SelectItem>
+                          <SelectItem value="SEPARATED">Separated</SelectItem>
+                          <SelectItem value="DIVORCED">Divorced</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.civilStatus && (
+                        <p className="text-[11px] text-red-500">{errors.civilStatus.message}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -303,31 +290,28 @@ export default function RegisterPage() {
 
             {/* Step 2: Address */}
             {currentStep === 2 && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Address Information</h3>
-                  <p className="mt-1 text-sm text-gray-500">Where do you live?</p>
+                  <h3 className="text-lg font-bold text-gray-900 sm:text-xl">Address Information</h3>
+                  <p className="mt-1 text-xs text-gray-500 sm:text-sm">Where do you live?</p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Full Address *</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs font-medium text-gray-700 sm:text-sm">Full Address *</Label>
                   <Input
                     {...register("address")}
                     placeholder="e.g., 123 Rizal Street"
-                    className="h-12 rounded-xl transition-all focus:ring-2 focus:ring-blue-500/20"
+                    className="h-12 rounded-xl text-sm sm:text-base"
                   />
                   {errors.address && (
-                    <p className="text-xs text-red-500 flex items-center gap-1">
-                      <span className="inline-block h-1 w-1 rounded-full bg-red-500" />
-                      {errors.address.message}
-                    </p>
+                    <p className="text-[11px] text-red-500">{errors.address.message}</p>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Purok / Zone *</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs font-medium text-gray-700 sm:text-sm">Purok / Zone *</Label>
                   <Select onValueChange={(v) => setValue("purok", v)}>
-                    <SelectTrigger className="h-12 rounded-xl">
+                    <SelectTrigger className="h-12 rounded-xl text-sm">
                       <SelectValue placeholder="Select purok" />
                     </SelectTrigger>
                     <SelectContent>
@@ -337,17 +321,13 @@ export default function RegisterPage() {
                     </SelectContent>
                   </Select>
                   {errors.purok && (
-                    <p className="text-xs text-red-500 flex items-center gap-1">
-                      <span className="inline-block h-1 w-1 rounded-full bg-red-500" />
-                      {errors.purok.message}
-                    </p>
+                    <p className="text-[11px] text-red-500">{errors.purok.message}</p>
                   )}
                 </div>
 
-                {/* Preview Card */}
-                <div className="rounded-xl bg-gradient-to-r from-blue-50 to-emerald-50 p-4 border border-blue-100">
-                  <p className="text-xs font-medium text-blue-600 mb-2">YOUR ADDRESS</p>
-                  <p className="text-gray-900">
+                <div className="rounded-xl bg-gradient-to-r from-blue-50 to-emerald-50 p-3 border border-blue-100 sm:p-4">
+                  <p className="text-[10px] font-medium text-blue-600 mb-1 sm:text-xs sm:mb-2">YOUR ADDRESS</p>
+                  <p className="text-sm text-gray-900 sm:text-base">
                     {formData.address || "123 Rizal Street"}, {formData.purok ? `Purok ${formData.purok}` : "Purok ___"}
                   </p>
                 </div>
@@ -356,30 +336,29 @@ export default function RegisterPage() {
 
             {/* Step 3: Contact */}
             {currentStep === 3 && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Contact Information</h3>
-                  <p className="mt-1 text-sm text-gray-500">How can we reach you?</p>
+                  <h3 className="text-lg font-bold text-gray-900 sm:text-xl">Contact Information</h3>
+                  <p className="mt-1 text-xs text-gray-500 sm:text-sm">How can we reach you?</p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Contact Number *</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs font-medium text-gray-700 sm:text-sm">Contact Number *</Label>
                   <Input
                     {...register("contactNumber")}
                     placeholder="09XXXXXXXXX"
-                    className="h-12 rounded-xl transition-all focus:ring-2 focus:ring-blue-500/20"
+                    type="tel"
+                    inputMode="numeric"
+                    className="h-12 rounded-xl text-sm sm:text-base"
                   />
                   {errors.contactNumber && (
-                    <p className="text-xs text-red-500 flex items-center gap-1">
-                      <span className="inline-block h-1 w-1 rounded-full bg-red-500" />
-                      {errors.contactNumber.message}
-                    </p>
+                    <p className="text-[11px] text-red-500">{errors.contactNumber.message}</p>
                   )}
                 </div>
 
-                <div className="rounded-xl bg-amber-50 p-4 border border-amber-100">
-                  <p className="text-sm text-amber-700">
-                    <strong>Note:</strong> This number will be used for barangay notifications and emergency contact purposes.
+                <div className="rounded-xl bg-amber-50 p-3 border border-amber-100 sm:p-4">
+                  <p className="text-xs text-amber-700 sm:text-sm">
+                    This number will be used for barangay notifications and emergency contact purposes.
                   </p>
                 </div>
               </div>
@@ -387,105 +366,115 @@ export default function RegisterPage() {
 
             {/* Step 4: Additional */}
             {currentStep === 4 && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Additional Information</h3>
-                  <p className="mt-1 text-sm text-gray-500">Optional details (you can skip this)</p>
+                  <h3 className="text-lg font-bold text-gray-900 sm:text-xl">Additional Information</h3>
+                  <p className="mt-1 text-xs text-gray-500 sm:text-sm">Optional details (you can skip this)</p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Occupation</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs font-medium text-gray-700 sm:text-sm">Occupation</Label>
                   <Input
                     {...register("occupation")}
                     placeholder="e.g., Teacher, Engineer, Student"
-                    className="h-12 rounded-xl transition-all focus:ring-2 focus:ring-blue-500/20"
+                    className="h-12 rounded-xl text-sm sm:text-base"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">Emergency Contact Name</Label>
+                <div className="space-y-4">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label className="text-xs font-medium text-gray-700 sm:text-sm">Emergency Contact Name</Label>
                     <Input
                       {...register("emergencyContact")}
                       placeholder="Contact person"
-                      className="h-12 rounded-xl transition-all focus:ring-2 focus:ring-blue-500/20"
+                      className="h-12 rounded-xl text-sm sm:text-base"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">Emergency Contact Number</Label>
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label className="text-xs font-medium text-gray-700 sm:text-sm">Emergency Contact Number</Label>
                     <Input
                       {...register("emergencyPhone")}
                       placeholder="09XXXXXXXXX"
-                      className="h-12 rounded-xl transition-all focus:ring-2 focus:ring-blue-500/20"
+                      type="tel"
+                      inputMode="numeric"
+                      className="h-12 rounded-xl text-sm sm:text-base"
                     />
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-blue-50 p-4 border border-blue-100">
-                  <p className="text-sm text-blue-700">
-                    By submitting this form, you agree to have your information recorded in the Barangay IX resident database for governance and service delivery purposes.
+                <div className="rounded-xl bg-blue-50 p-3 border border-blue-100 sm:p-4">
+                  <p className="text-xs text-blue-700 sm:text-sm">
+                    By submitting, you agree to have your information recorded in the Barangay IX resident database.
                   </p>
                 </div>
               </div>
             )}
-
-            {/* Navigation Buttons */}
-            <div className="mt-8 flex gap-3">
-              {currentStep > 1 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={prevStep}
-                  className="h-12 flex-1 rounded-xl"
-                >
-                  <ChevronLeft className="mr-2 h-4 w-4" />
-                  Back
-                </Button>
-              )}
-              
-              {currentStep < 4 ? (
-                <Button
-                  type="button"
-                  onClick={nextStep}
-                  className="h-12 flex-1 rounded-xl bg-blue-900 hover:bg-blue-800 transition-all hover:shadow-lg"
-                >
-                  Continue
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  className="h-12 flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 transition-all hover:shadow-lg hover:shadow-emerald-600/20 active:scale-[0.98]"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      Submitting...
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-5 w-5" />
-                      Submit Registration
-                    </div>
-                  )}
-                </Button>
-              )}
-            </div>
           </form>
 
-          {/* Step Info */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-500">
+          {/* Step Info - Desktop only */}
+          <div className="mt-4 text-center sm:mt-6">
+            <p className="text-xs text-gray-500 sm:text-sm">
               Step {currentStep} of {steps.length}
             </p>
           </div>
         </div>
-
-        <p className="mt-6 text-center text-xs text-gray-400">
-          Barangay IX - Daan Banwa, City of Victorias, Negros Occidental
-        </p>
       </div>
+
+      {/* Bottom Navigation - Sticky on Mobile */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-gray-100 bg-white/95 backdrop-blur-md safe-area-bottom">
+        <div className="mx-auto flex max-w-4xl gap-3 p-4 sm:p-6">
+          {currentStep > 1 && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={prevStep}
+              className="h-12 flex-1 rounded-xl border-gray-200 text-sm font-medium sm:h-14"
+            >
+              <ChevronLeft className="mr-1 h-4 w-4" />
+              Back
+            </Button>
+          )}
+          
+          {currentStep < 4 ? (
+            <Button
+              type="button"
+              onClick={nextStep}
+              className={`h-12 rounded-xl bg-blue-900 text-sm font-medium hover:bg-blue-800 active:scale-[0.98] sm:h-14 ${
+                currentStep === 1 ? "flex-1" : "flex-1"
+              }`}
+            >
+              Continue
+              <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              onClick={handleSubmit(onSubmit)}
+              className="h-12 flex-1 rounded-xl bg-emerald-600 text-sm font-medium hover:bg-emerald-700 active:scale-[0.98] sm:h-14"
+              disabled={loading}
+            >
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Submitting...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Submit
+                </div>
+              )}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Safe area padding for mobile */}
+      <style jsx global>{`
+        .safe-area-bottom {
+          padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+      `}</style>
     </div>
   );
 }
