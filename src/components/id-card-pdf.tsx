@@ -25,9 +25,10 @@ interface IDCardData {
 interface IDCardPDFProps {
   data: IDCardData;
   showPrintLayout?: boolean;
+  captureId?: string;
 }
 
-export function IDCardPDF({ data, showPrintLayout = false }: IDCardPDFProps) {
+export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPDFProps) {
   const r = data.resident;
   const fullName = `${r.lastName}, ${r.firstName}${r.middleName ? ` ${r.middleName}` : ""}`;
   const birthDate = formatDate(r.birthDate);
@@ -36,6 +37,7 @@ export function IDCardPDF({ data, showPrintLayout = false }: IDCardPDFProps) {
 
   const cardFront = (
     <div
+      id={captureId ? `${captureId}-front` : undefined}
       className="relative overflow-hidden rounded-lg border-2 border-blue-900 bg-white shadow-lg"
       style={{ width: "3.375in", height: "2.125in" }}
     >
@@ -94,6 +96,7 @@ export function IDCardPDF({ data, showPrintLayout = false }: IDCardPDFProps) {
 
   const cardBack = (
     <div
+      id={captureId ? `${captureId}-back` : undefined}
       className="relative overflow-hidden rounded-lg border-2 border-blue-900 bg-white shadow-lg"
       style={{ width: "3.375in", height: "2.125in" }}
     >

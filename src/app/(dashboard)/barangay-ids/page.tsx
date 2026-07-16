@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
 import { IDCardPDF } from "@/components/id-card-pdf";
-import { downloadAsWord } from "@/lib/export-word";
+import { downloadAsJPEG } from "@/lib/export-jpeg";
 import { Plus, CreditCard, Printer, Search, Trash2, Eye, Ban, Download } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
@@ -288,7 +288,7 @@ export default function BarangayIDsPage() {
                       <Button variant="ghost" size="sm" onClick={() => setPreviewID(id)}>
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => downloadAsWord(id)} title="Save as Word">
+                      <Button variant="ghost" size="sm" onClick={() => downloadAsJPEG(`id-preview-${id.id}`, `BarangayID-${id.idNumber}`)} title="Save as JPEG">
                         <Download className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => setPrintID(id)}>
@@ -316,17 +316,22 @@ export default function BarangayIDsPage() {
       {/* Preview Dialog */}
       {previewID && (
         <Dialog open={!!previewID} onOpenChange={() => setPreviewID(null)}>
-          <DialogContent className="max-w-3xl">
+          <DialogContent className="max-w-5xl">
             <DialogHeader>
               <DialogTitle>ID Preview — {previewID.idNumber}</DialogTitle>
             </DialogHeader>
-            <div className="flex justify-center">
-              <IDCardPDF data={previewID} />
+            <div className="flex justify-center overflow-auto p-4">
+              <div className="origin-center scale-[2]">
+                <IDCardPDF data={previewID} captureId={`id-preview-${previewID.id}`} />
+              </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setPreviewID(null)}>Close</Button>
-              <Button variant="outline" onClick={() => downloadAsWord(previewID)}>
-                <Download className="mr-2 h-4 w-4" /> Save as Word
+              <Button variant="outline" onClick={() => downloadAsJPEG(`id-preview-${previewID.id}-front`, `BarangayID-${previewID.idNumber}-Front`)}>
+                <Download className="mr-2 h-4 w-4" /> Save Front as JPEG
+              </Button>
+              <Button variant="outline" onClick={() => downloadAsJPEG(`id-preview-${previewID.id}-back`, `BarangayID-${previewID.idNumber}-Back`)}>
+                <Download className="mr-2 h-4 w-4" /> Save Back as JPEG
               </Button>
             </div>
           </DialogContent>
@@ -345,9 +350,6 @@ export default function BarangayIDsPage() {
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setPrintID(null)}>Close</Button>
-              <Button variant="outline" onClick={() => downloadAsWord(printID)}>
-                <Download className="mr-2 h-4 w-4" /> Save as Word
-              </Button>
               <Button className="bg-blue-900 hover:bg-blue-800" onClick={() => window.print()}>
                 <Printer className="mr-2 h-4 w-4" /> Print
               </Button>
