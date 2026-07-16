@@ -18,15 +18,13 @@ import {
   Menu,
   X,
   ChevronLeft,
-  UserCheck,
 } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 
 const allNavItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN", "SECRETARY", "TREASURER", "KAGAWAD", "STAFF"] },
-  { href: "/residents", label: "Residents", icon: Users, roles: ["ADMIN", "SECRETARY", "TREASURER", "STAFF"] },
-  { href: "/pending-registrations", label: "Pending Registrations", icon: UserCheck, roles: ["ADMIN", "SECRETARY", "KAGAWAD"] },
+  { href: "/residents", label: "Residents", icon: Users, roles: ["ADMIN", "SECRETARY", "TREASURER", "KAGAWAD", "STAFF"] },
   { href: "/barangay-ids", label: "Barangay IDs", icon: CreditCard, roles: ["ADMIN", "SECRETARY"] },
   { href: "/certificates", label: "Certificates", icon: FileText, roles: ["ADMIN", "SECRETARY", "STAFF"] },
   { href: "/blotter", label: "Blotter", icon: AlertTriangle, roles: ["ADMIN", "SECRETARY", "KAGAWAD"] },
