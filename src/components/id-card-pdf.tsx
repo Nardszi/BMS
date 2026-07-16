@@ -148,7 +148,7 @@ export function IDCardPDF({ data, showPrintLayout = false }: IDCardPDFProps) {
 
   if (showPrintLayout) {
     return (
-      <div className="print:block">
+      <div className="print-area">
         <div className="flex gap-6">
           <div>
             <p className="mb-1 text-center text-xs font-medium text-gray-500">FRONT</p>

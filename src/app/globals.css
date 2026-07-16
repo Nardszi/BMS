@@ -55,3 +55,23 @@
 [data-radix-dialog-overlay][data-state="closed"] {
   opacity: 0;
 }
+
+/* Print: only show ID cards */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  .print-area,
+  .print-area * {
+    visibility: visible !important;
+  }
+
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white !important;
+  }
+}
