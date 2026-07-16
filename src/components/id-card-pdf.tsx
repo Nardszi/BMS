@@ -66,13 +66,13 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
           {/* Name */}
           <div style={{ fontSize: 10, fontWeight: 700, color: "#0f172a", lineHeight: 1.15, borderBottom: "1px solid #cbd5e1", paddingBottom: 1, marginBottom: 2 }}>{fullName}</div>
           {/* Fields */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px 6px", fontSize: 6, color: "#334155", lineHeight: 1.6 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 8px", fontSize: 7, color: "#334155", lineHeight: 1.7 }}>
             <div><span style={{ color: "#64748b" }}>Date of Birth:</span> {birthDate}</div>
             <div><span style={{ color: "#64748b" }}>Sex:</span> {r.gender}</div>
             <div><span style={{ color: "#64748b" }}>Civil Status:</span> {r.civilStatus}</div>
             <div><span style={{ color: "#64748b" }}>Contact:</span> {data.contactNumber || "—"}</div>
           </div>
-          <div style={{ fontSize: 6, color: "#334155", lineHeight: 1.5 }}><span style={{ color: "#64748b" }}>Address:</span> {data.address}</div>
+          <div style={{ fontSize: 7, color: "#334155", lineHeight: 1.7 }}><span style={{ color: "#64748b" }}>Address:</span> {data.address}</div>
         </div>
       </div>
 
@@ -173,13 +173,13 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
           {/* Name */}
           <div style={{ fontSize: 30, fontWeight: 700, color: "#0f172a", lineHeight: 1.15, borderBottom: "2px solid #cbd5e1", paddingBottom: 6, marginBottom: 10 }}>{fullName}</div>
           {/* Fields */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 28px", fontSize: 18, color: "#334155", lineHeight: 1.6 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 28px", fontSize: 22, color: "#334155", lineHeight: 1.6 }}>
             <div><span style={{ color: "#64748b" }}>Date of Birth:</span> {birthDate}</div>
             <div><span style={{ color: "#64748b" }}>Sex:</span> {r.gender}</div>
             <div><span style={{ color: "#64748b" }}>Civil Status:</span> {r.civilStatus}</div>
             <div><span style={{ color: "#64748b" }}>Contact:</span> {data.contactNumber || "—"}</div>
           </div>
-          <div style={{ marginTop: 6, fontSize: 16, color: "#334155" }}><span style={{ color: "#64748b" }}>Address:</span> {data.address}</div>
+          <div style={{ marginTop: 6, fontSize: 20, color: "#334155" }}><span style={{ color: "#64748b" }}>Address:</span> {data.address}</div>
         </div>
       </div>
 
