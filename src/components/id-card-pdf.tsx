@@ -62,22 +62,23 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
         </div>
 
         {/* Details */}
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 }}>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
           {/* Name */}
-          <div style={{ fontSize: 9, fontWeight: 700, color: "#0f172a", lineHeight: 1.15, borderBottom: "1px solid #cbd5e1", paddingBottom: 1 }}>{fullName}</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#0f172a", lineHeight: 1.15, borderBottom: "1px solid #cbd5e1", paddingBottom: 1, marginBottom: 2 }}>{fullName}</div>
           {/* Fields */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 4px", fontSize: 5, color: "#334155", lineHeight: 1.5 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px 6px", fontSize: 6, color: "#334155", lineHeight: 1.6 }}>
             <div><span style={{ color: "#64748b" }}>Date of Birth:</span> {birthDate}</div>
             <div><span style={{ color: "#64748b" }}>Sex:</span> {r.gender}</div>
             <div><span style={{ color: "#64748b" }}>Civil Status:</span> {r.civilStatus}</div>
             <div><span style={{ color: "#64748b" }}>Contact:</span> {data.contactNumber || "—"}</div>
           </div>
-          <div style={{ fontSize: 5, color: "#334155" }}><span style={{ color: "#64748b" }}>Address:</span> {data.address}</div>
-          {/* ID Number */}
-          <div style={{ marginTop: "auto", backgroundColor: "#1e3a5f", padding: "1px 4px", borderRadius: 2, textAlign: "center" }}>
-            <span style={{ fontSize: 7, fontWeight: 700, color: "#fff", letterSpacing: 1 }}>{data.idNumber}</span>
-          </div>
+          <div style={{ fontSize: 6, color: "#334155", lineHeight: 1.5 }}><span style={{ color: "#64748b" }}>Address:</span> {data.address}</div>
         </div>
+      </div>
+
+      {/* ID Number Bar */}
+      <div style={{ backgroundColor: "#1e3a5f", padding: "2px 8px", textAlign: "center" }}>
+        <span style={{ fontSize: 8, fontWeight: 700, color: "#fff", letterSpacing: 1.5 }}>{data.idNumber}</span>
       </div>
 
       {/* Footer */}
@@ -170,25 +171,27 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
         {/* Details */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
           {/* Name */}
-          <div style={{ fontSize: 26, fontWeight: 700, color: "#0f172a", lineHeight: 1.15, borderBottom: "2px solid #cbd5e1", paddingBottom: 4, marginBottom: 8 }}>{fullName}</div>
+          <div style={{ fontSize: 30, fontWeight: 700, color: "#0f172a", lineHeight: 1.15, borderBottom: "2px solid #cbd5e1", paddingBottom: 6, marginBottom: 10 }}>{fullName}</div>
           {/* Fields */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 24px", fontSize: 15, color: "#334155", lineHeight: 1.6 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 28px", fontSize: 18, color: "#334155", lineHeight: 1.6 }}>
             <div><span style={{ color: "#64748b" }}>Date of Birth:</span> {birthDate}</div>
             <div><span style={{ color: "#64748b" }}>Sex:</span> {r.gender}</div>
             <div><span style={{ color: "#64748b" }}>Civil Status:</span> {r.civilStatus}</div>
             <div><span style={{ color: "#64748b" }}>Contact:</span> {data.contactNumber || "—"}</div>
           </div>
-          <div style={{ marginTop: 4, fontSize: 14, color: "#334155" }}><span style={{ color: "#64748b" }}>Address:</span> {data.address}</div>
-          {/* ID Number */}
-          <div style={{ marginTop: "auto", backgroundColor: "#1e3a5f", padding: "5px 18px", borderRadius: 4, textAlign: "center" }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: 2 }}>{data.idNumber}</span>
-          </div>
-          {/* Footer */}
-          <div style={{ marginTop: 6, display: "flex", justifyContent: "space-between", fontSize: 12, color: "#94a3b8" }}>
-            <span>Valid: {issued} — {expiry}</span>
-            <span>Issued by: <b style={{ color: "#475569" }}>Barangay IX</b></span>
-          </div>
+          <div style={{ marginTop: 6, fontSize: 16, color: "#334155" }}><span style={{ color: "#64748b" }}>Address:</span> {data.address}</div>
         </div>
+      </div>
+
+      {/* ID Number Bar */}
+      <div style={{ backgroundColor: "#1e3a5f", padding: "6px 24px", textAlign: "center" }}>
+        <span style={{ fontSize: 24, fontWeight: 700, color: "#fff", letterSpacing: 3 }}>{data.idNumber}</span>
+      </div>
+
+      {/* Footer */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "space-between", borderTop: "2px solid #e2e8f0", backgroundColor: "#f8fafc", padding: "5px 22px", fontSize: 13, color: "#94a3b8" }}>
+        <span>Valid: {issued} — {expiry}</span>
+        <span>Issued by: <b style={{ color: "#475569" }}>Barangay IX</b></span>
       </div>
     </div>
   );
