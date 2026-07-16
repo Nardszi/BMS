@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
-import { Plus, Search, Pencil, Trash2, CheckCircle2, XCircle, Eye, Users, Clock, UserCheck } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, CheckCircle2, XCircle, Eye, Users, Clock, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 const residentSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -62,6 +62,8 @@ export default function ResidentsPage() {
   const [editing, setEditing] = useState<Resident | null>(null);
   const [purokFilter, setPurokFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [sortBy, setSortBy] = useState("lastName");
+  const [sortOrder, setSortOrder] = useState("asc");
   const [detailResident, setDetailResident] = useState<Resident | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -76,7 +78,7 @@ export default function ResidentsPage() {
   });
 
   const fetchResidents = async () => {
-    const params = new URLSearchParams({ page: String(page), limit: "15" });
+    const params = new URLSearchParams({ page: String(page), limit: "15", sortBy, sortOrder });
     if (search) params.set("search", search);
     if (purokFilter) params.set("purok", purokFilter);
     if (statusFilter) params.set("status", statusFilter);
@@ -86,7 +88,7 @@ export default function ResidentsPage() {
     setTotalPages(data.totalPages || 1);
   };
 
-  useEffect(() => { fetchResidents(); }, [page, search, purokFilter, statusFilter]);
+  useEffect(() => { fetchResidents(); }, [page, search, purokFilter, statusFilter, sortBy, sortOrder]);
 
   async function onSubmit(data: ResidentForm) {
     try {
@@ -401,6 +403,25 @@ export default function ResidentsPage() {
                 ))}
               </SelectContent>
             </Select>
+            <div className="flex items-center gap-2">
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v)}>
+                <SelectTrigger className="w-40"><SelectValue placeholder="Sort by" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="lastName">Name</SelectItem>
+                  <SelectItem value="purok">Purok</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                  <SelectItem value="date">Date Added</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                className="px-2"
+              >
+                {sortOrder === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
           <Table>
             <TableHeader>

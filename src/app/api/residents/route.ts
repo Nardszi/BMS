@@ -13,6 +13,8 @@ export async function GET(request: Request) {
   const limit = parseInt(searchParams.get("limit") || "10");
   const purok = searchParams.get("purok") || "";
   const status = searchParams.get("status") || "";
+  const sortBy = searchParams.get("sortBy") || "lastName";
+  const sortOrder = searchParams.get("sortOrder") || "asc";
 
   const where: any = {};
   if (search) {
@@ -32,13 +34,26 @@ export async function GET(request: Request) {
     where.status = { not: null };
   }
 
+  const order: any = {};
+  if (sortBy === "purok") {
+    order.household = { purok: sortOrder };
+  } else if (sortBy === "name") {
+    order.lastName = sortOrder;
+  } else if (sortBy === "status") {
+    order.status = sortOrder;
+  } else if (sortBy === "date") {
+    order.createdAt = sortOrder;
+  } else {
+    order[sortBy] = sortOrder;
+  }
+
   const [residents, total] = await Promise.all([
     prisma.resident.findMany({
       where,
       include: { household: true },
       skip: (page - 1) * limit,
       take: limit,
-      orderBy: { lastName: "asc" },
+      orderBy: order,
     }),
     prisma.resident.count({ where }),
   ]);
