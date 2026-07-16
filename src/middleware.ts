@@ -3,8 +3,8 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 const roleRoutes: Record<string, string[]> = {
-  ADMIN: ["/", "/residents", "/certificates", "/blotter", "/permits", "/officials", "/announcements", "/reports"],
-  SECRETARY: ["/", "/residents", "/certificates", "/blotter", "/announcements"],
+  ADMIN: ["/", "/residents", "/barangay-ids", "/certificates", "/blotter", "/permits", "/officials", "/announcements", "/reports"],
+  SECRETARY: ["/", "/residents", "/barangay-ids", "/certificates", "/blotter", "/announcements"],
   TREASURER: ["/", "/permits", "/residents"],
   KAGAWAD: ["/", "/blotter"],
   STAFF: ["/", "/residents", "/certificates"],
@@ -14,10 +14,12 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = request.nextUrl;
 
-  // Allow login page, static assets, and API auth routes
+  // Allow login page, static assets, API auth routes, and verify page
   if (
     pathname.startsWith("/login") ||
     pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/verify") ||
+    pathname.startsWith("/verify") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
     pathname === "/barangay-seal.png"

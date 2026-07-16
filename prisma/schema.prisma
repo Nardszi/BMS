@@ -54,6 +54,13 @@ enum PermitStatus {
   REVOKED
 }
 
+enum IDStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+  LOST
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -67,6 +74,7 @@ model User {
   issuedCertificates  CertificateRequest[] @relation("IssuedBy")
   handledBlotters     BlotterReport[]      @relation("HandledBy")
   postedAnnouncements Announcement[]       @relation("PostedBy")
+  issuedBarangayIds   BarangayID[]         @relation("IssuedById")
 }
 
 model Household {
@@ -92,6 +100,9 @@ model Resident {
   householdId       String
   occupation        String?
   contactNumber     String?
+  photoUrl          String?
+  emergencyContact  String?
+  emergencyPhone    String?
   isRegisteredVoter Boolean  @default(false)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -99,6 +110,7 @@ model Resident {
   household          Household            @relation(fields: [householdId], references: [id], onDelete: Cascade)
   certificateRequests CertificateRequest[]
   businessPermits    BusinessPermit[]
+  barangayIds        BarangayID[]
 }
 
 model Official {
@@ -170,4 +182,22 @@ model Announcement {
   expiresAt  DateTime?
 
   postedBy User @relation("PostedBy", fields: [postedById], references: [id], onDelete: Cascade)
+}
+
+model BarangayID {
+  id          String   @id @default(cuid())
+  residentId  String
+  idNumber    String   @unique
+  photoUrl    String?
+  issueDate   DateTime
+  expiryDate  DateTime
+  status      IDStatus @default(ACTIVE)
+  issuedById  String?
+  contactNumber String?
+  address     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resident Resident @relation(fields: [residentId], references: [id], onDelete: Cascade)
+  issuedBy User?    @relation("IssuedById", fields: [issuedById], references: [id], onDelete: SetNull)
 }
