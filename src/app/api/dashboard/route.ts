@@ -7,7 +7,17 @@ export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [totalResidents, pendingCertificates, openBlotterCases, activePermits, expiringSoonPermits, announcements] = await Promise.all([
+  const [
+    totalResidents,
+    pendingCertificates,
+    openBlotterCases,
+    activePermits,
+    expiringSoonPermits,
+    totalHouseholds,
+    totalOfficials,
+    announcements,
+    recentCertificates,
+  ] = await Promise.all([
     prisma.resident.count(),
     prisma.certificateRequest.count({ where: { status: "PENDING" } }),
     prisma.blotterReport.count({ where: { status: "OPEN" } }),
@@ -18,15 +28,23 @@ export async function GET() {
         expiryDate: { lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
       },
     }),
+    prisma.household.count(),
+    prisma.official.count(),
     prisma.announcement.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
+      include: { postedBy: { select: { name: true } } },
       where: {
         OR: [
           { expiresAt: null },
           { expiresAt: { gt: new Date() } },
         ],
       },
+    }),
+    prisma.certificateRequest.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: { resident: { select: { firstName: true, lastName: true } } },
     }),
   ]);
 
@@ -36,6 +54,9 @@ export async function GET() {
     openBlotterCases,
     activePermits,
     expiringSoonPermits,
+    totalHouseholds,
+    totalOfficials,
     announcements,
+    recentCertificates,
   });
 }

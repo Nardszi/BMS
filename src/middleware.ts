@@ -14,17 +14,28 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/login")) {
-    if (token) {
+  // Allow login page, static assets, and API auth routes
+  if (
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/favicon") ||
+    pathname === "/barangay-seal.png"
+  ) {
+    if (token && pathname.startsWith("/login")) {
       return NextResponse.redirect(new URL("/", request.url));
     }
     return NextResponse.next();
   }
 
+  // Redirect to login if not authenticated
   if (!token) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
+  // Check role-based access
   const userRole = token.role as string;
   const allowedRoutes = roleRoutes[userRole] || [];
 
