@@ -193,14 +193,14 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId, forExport 
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="mb-2 text-center text-sm font-medium text-gray-500">Front</p>
-        <div className="flex justify-center">{cardFront}</div>
+    <div className="flex items-start justify-center gap-6">
+      <div className="text-center">
+        <p className="mb-2 text-sm font-medium text-gray-500">Front</p>
+        {cardFront}
       </div>
-      <div>
-        <p className="mb-2 text-center text-sm font-medium text-gray-500">Back</p>
-        <div className="flex justify-center">{cardBack}</div>
+      <div className="text-center">
+        <p className="mb-2 text-sm font-medium text-gray-500">Back</p>
+        {cardBack}
       </div>
     </div>
   );

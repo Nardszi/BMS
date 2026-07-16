@@ -316,14 +316,12 @@ export default function BarangayIDsPage() {
       {/* Preview Dialog */}
       {previewID && (
         <Dialog open={!!previewID} onOpenChange={() => setPreviewID(null)}>
-          <DialogContent className="max-w-5xl">
+          <DialogContent className="max-w-4xl">
             <DialogHeader>
               <DialogTitle>ID Preview — {previewID.idNumber}</DialogTitle>
             </DialogHeader>
-            <div className="flex justify-center overflow-auto p-4">
-              <div className="origin-center scale-[1.5]">
-                <IDCardPDF data={previewID} captureId={`id-preview-${previewID.id}`} />
-              </div>
+            <div className="flex justify-center p-4">
+              <IDCardPDF data={previewID} captureId={`id-preview-${previewID.id}`} />
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setPreviewID(null)}>Close</Button>
