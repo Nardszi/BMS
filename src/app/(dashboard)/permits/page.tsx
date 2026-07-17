@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
 import { Plus, AlertTriangle, Eye, Search, FileText, RotateCcw, CheckCircle, XCircle, Clock } from "lucide-react";
-import { PermitPDF } from "@/components/permit-pdf";
+import { PermitPDF, buildPermitHTML } from "@/components/permit-pdf";
 
 const permitSchema = z.object({
   businessName: z.string().min(1, "Business name is required"),
@@ -73,7 +73,6 @@ export default function PermitsPage() {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<StatusTab>("ALL");
   const [stats, setStats] = useState({ total: 0, active: 0, expiring: 0, expired: 0 });
-  const printRef = useRef<HTMLDivElement>(null);
   const role = (session?.user as any)?.role;
   const canManage = ["ADMIN", "TREASURER"].includes(role);
 
@@ -175,18 +174,17 @@ export default function PermitsPage() {
   };
 
   const handlePrint = () => {
-    const printContent = printRef.current;
-    if (!printContent) return;
+    if (!viewPermit) return;
+    const html = buildPermitHTML(viewPermit);
     const w = window.open("", "_blank", "width=816,height=1056");
     if (!w) return;
-    w.document.write(`
-      <html><head><title>Business Permit</title>
-      <style>@page{size:letter;margin:0.5in}body{margin:0;padding:0;font-family:'Times New Roman',serif}</style>
-      </head><body>${printContent.innerHTML}</body></html>
-    `);
+    w.document.open();
+    w.document.write(html);
     w.document.close();
-    w.focus();
-    setTimeout(() => { w.print(); w.close(); }, 300);
+    w.onload = () => {
+      w.focus();
+      w.print();
+    };
   };
 
   const tabs: { key: StatusTab; label: string; icon: React.ReactNode; color: string }[] = [
@@ -471,13 +469,6 @@ export default function PermitsPage() {
           </DialogContent>
         </Dialog>
       )}
-
-      {/* Hidden print content */}
-      <div className="hidden">
-        <div ref={printRef}>
-          {viewPermit && <PermitPDF permit={viewPermit} />}
-        </div>
-      </div>
     </div>
   );
 }
