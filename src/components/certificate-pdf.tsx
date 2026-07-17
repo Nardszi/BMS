@@ -36,7 +36,6 @@ export function CertificatePDF({ certificate }: CertificateProps) {
 
   return (
     <div
-      id="certificate-print"
       style={{
         position: "relative",
         overflow: "hidden",

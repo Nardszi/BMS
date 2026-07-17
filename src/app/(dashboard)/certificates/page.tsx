@@ -108,24 +108,26 @@ export default function CertificatesPage() {
   }
 
   async function downloadCertPDF(cert: Certificate) {
-    const el = document.getElementById("certificate-print");
+    const el = document.getElementById("certificate-capture");
     if (!el) return;
+    el.style.display = "block";
     const canvas = await html2canvas(el, { scale: 3, useCORS: true, backgroundColor: "#ffffff", logging: false });
+    el.style.display = "none";
     const imgData = canvas.toDataURL("image/jpeg", 0.95);
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
     const pdfW = pdf.internal.pageSize.getWidth();
     const pdfH = pdf.internal.pageSize.getHeight();
-    const margin = 0;
-    const imgW = pdfW - margin * 2;
+    const imgW = pdfW;
     const imgH = (canvas.height / canvas.width) * imgW;
-    pdf.addImage(imgData, "JPEG", margin, margin, imgW, Math.min(imgH, pdfH - margin * 2));
+    pdf.addImage(imgData, "JPEG", 0, 0, imgW, Math.min(imgH, pdfH));
     const name = `${cert.resident.lastName}_${cert.type}`;
     pdf.save(`Certificate-${name}.pdf`);
   }
 
   function printCert() {
-    const content = document.getElementById("certificate-print");
-    if (!content) return;
+    const el = document.getElementById("certificate-capture");
+    if (!el) return;
+    el.style.display = "block";
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
     printWindow.document.write(`<!DOCTYPE html>
@@ -135,10 +137,13 @@ export default function CertificatesPage() {
 @media print { html, body { margin: 0 !important; padding: 0 !important; } }
 body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
 </style>
-</head><body>${content.outerHTML}</body></html>`);
+</head><body>${el.outerHTML}</body></html>`);
     printWindow.document.close();
     printWindow.focus();
-    setTimeout(() => { printWindow.print(); }, 300);
+    setTimeout(() => {
+      printWindow.print();
+      el.style.display = "none";
+    }, 300);
   }
 
   const statusColors: Record<string, string> = {
@@ -269,13 +274,24 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
         </CardContent>
       </Card>
 
+      {/* Hidden full-size certificate for PDF/print capture */}
+      {previewCert && (
+        <div id="certificate-capture" style={{ position: "fixed", left: "-9999px", top: 0 }}>
+          <CertificatePDF certificate={previewCert} />
+        </div>
+      )}
+
       {previewCert && (
         <Dialog open={!!previewCert} onOpenChange={() => setPreviewCert(null)}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Certificate Preview</DialogTitle>
             </DialogHeader>
-            <CertificatePDF certificate={previewCert} />
+            <div className="flex justify-center overflow-hidden rounded border bg-gray-50" style={{ height: "700px" }}>
+              <div style={{ width: "8.5in", transform: "scale(0.55)", transformOrigin: "top center" }}>
+                <CertificatePDF certificate={previewCert} />
+              </div>
+            </div>
             <div className="flex justify-end gap-2 mt-4">
               <Button variant="outline" size="sm" onClick={() => downloadCertPDF(previewCert)}>
                 <Download className="mr-2 h-4 w-4" /> Save as PDF
