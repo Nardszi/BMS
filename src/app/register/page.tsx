@@ -38,6 +38,9 @@ const steps = [
   { id: 4, title: "Other", icon: Briefcase },
 ];
 
+const inputClass = "w-full rounded-xl px-4 py-3.5 text-[15px] text-white placeholder:text-white/30 outline-none transition-all duration-300 border-0 focus:ring-2 focus:ring-amber-400/40";
+const inputBg = "bg-white/[0.07] hover:bg-white/[0.1] focus:bg-white/[0.12]";
+
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -45,11 +48,9 @@ export default function RegisterPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
-  const { register, handleSubmit, setValue, watch, trigger, formState: { errors, touchedFields } } = useForm<RegisterForm>({
+  const { register, handleSubmit, setValue, watch, trigger, formState: { errors } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
     mode: "onTouched",
   });
@@ -64,10 +65,9 @@ export default function RegisterPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-
       if (res.ok) {
-        const data = await res.json();
-        setRefNumber(data.referenceNumber || "");
+        const d = await res.json();
+        setRefNumber(d.referenceNumber || "");
         setSuccess(true);
       } else {
         const err = await res.json();
@@ -75,69 +75,54 @@ export default function RegisterPage() {
       }
     } catch {
       toast({ title: "Error", description: "Something went wrong", variant: "error" });
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }
 
   async function nextStep() {
-    let fieldsToValidate: (keyof RegisterForm)[] = [];
-    
-    switch (currentStep) {
-      case 1:
-        fieldsToValidate = ["firstName", "lastName", "birthDate", "gender", "civilStatus"];
-        break;
-      case 2:
-        fieldsToValidate = ["address", "purok"];
-        break;
-      case 3:
-        fieldsToValidate = ["contactNumber"];
-        break;
-    }
-    
-    const isValid = await trigger(fieldsToValidate);
-    if (isValid) {
-      setCurrentStep((prev) => Math.min(prev + 1, 4));
-    }
+    let fields: (keyof RegisterForm)[] = [];
+    if (currentStep === 1) fields = ["firstName", "lastName", "birthDate", "gender", "civilStatus"];
+    else if (currentStep === 2) fields = ["address", "purok"];
+    else if (currentStep === 3) fields = ["contactNumber"];
+    const isValid = await trigger(fields);
+    if (isValid) setCurrentStep((p) => Math.min(p + 1, 4));
   }
 
-  function prevStep() {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
-  }
+  function prevStep() { setCurrentStep((p) => Math.max(p - 1, 1)); }
 
   if (success) {
     return (
-      <div className="relative min-h-screen overflow-hidden bg-[#0c1929] flex items-center justify-center p-4">
-        <div className="absolute inset-0">
-          <Image src="/login-bg.jpg" alt="Daan Banwa" fill className="object-cover" priority />
-          <div className="absolute inset-0 bg-[#0c1929]/80" />
+      <div className="relative min-h-screen overflow-hidden bg-[#0a0e1a] flex items-center justify-center p-4">
+        {/* Animated Blobs */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-1/4 -left-1/4 w-[600px] h-[600px] rounded-full bg-amber-500/20 blur-[120px] animate-pulse" />
+          <div className="absolute -bottom-1/4 -right-1/4 w-[500px] h-[500px] rounded-full bg-orange-600/15 blur-[100px] animate-pulse" style={{ animationDelay: "1s" }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-amber-600/10 blur-[80px] animate-pulse" style={{ animationDelay: "2s" }} />
         </div>
-        <div className={`relative z-10 w-full max-w-md text-center transition-all duration-700 ${mounted ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}>
-          <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-white/15 to-amber-500/5 p-8 shadow-2xl backdrop-blur-xl sm:p-10">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-amber-500/20 border border-amber-400/30 sm:h-24 sm:w-24">
-              <CheckCircle2 className="h-10 w-10 text-amber-400 sm:h-12 sm:w-12" />
+
+        <div className={`relative z-10 w-full max-w-md transition-all duration-700 ${mounted ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}>
+          <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-8 sm:p-10 shadow-2xl backdrop-blur-2xl">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-400/30 to-orange-500/20 border border-amber-400/20">
+              <CheckCircle2 className="h-10 w-10 text-amber-400" />
             </div>
-            <h2 className="text-2xl font-bold text-white sm:text-3xl">Registration Successful!</h2>
-            <p className="mt-3 text-sm text-amber-100/60 sm:mt-4 sm:text-base">
+            <h2 className="text-2xl font-bold text-white text-center">Registration Successful!</h2>
+            <p className="mt-3 text-sm text-white/50 text-center">
               Your information has been submitted. Our staff will review and verify your records.
             </p>
             {refNumber && (
-              <div className="mt-4 rounded-xl border border-amber-400/20 bg-white/5 p-3">
-                <p className="text-[10px] uppercase tracking-wider text-amber-100/40">Reference Number</p>
+              <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.05] p-4 text-center">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-white/30 mb-1">Reference Number</p>
                 <p className="text-lg font-mono font-bold text-amber-400">{refNumber}</p>
               </div>
             )}
-            <div className="mt-6 space-y-3 sm:mt-8">
+            <div className="mt-6 space-y-3">
               <Link href="/login">
-                <Button className="h-12 w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-sm font-medium hover:from-amber-600 hover:to-amber-700 sm:h-13 sm:text-base">
+                <Button className="h-12 w-full rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-sm font-semibold text-white hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-500/20">
                   Go to Login
                 </Button>
               </Link>
-              <Link href="/register">
-                <Button variant="outline" className="h-12 w-full rounded-xl border-amber-400/20 text-sm text-white hover:bg-amber-400/10 sm:h-13" onClick={() => { setSuccess(false); setCurrentStep(1); setRefNumber(""); }}>
-                  Register Another
-                </Button>
-              </Link>
+              <Button variant="ghost" className="h-12 w-full rounded-xl text-sm text-white/50 hover:text-white hover:bg-white/5" onClick={() => { setSuccess(false); setCurrentStep(1); setRefNumber(""); }}>
+                Register Another
+              </Button>
             </div>
           </div>
         </div>
@@ -146,67 +131,66 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0c1929]">
-      {/* Full-Screen Background Image */}
-      <div className="absolute inset-0">
-        <Image src="/login-bg.jpg" alt="Daan Banwa" fill className="object-cover" priority />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0c1929]/90 via-[#0c1929]/70 to-[#0c1929]/90" />
+    <div className="relative min-h-screen overflow-hidden bg-[#0a0e1a]">
+      {/* Animated Blob Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-1/4 -left-1/4 w-[700px] h-[700px] rounded-full bg-amber-500/15 blur-[120px] animate-pulse" />
+        <div className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] rounded-full bg-orange-600/10 blur-[100px] animate-pulse" style={{ animationDelay: "1.5s" }} />
+        <div className="absolute top-1/3 left-1/2 w-[500px] h-[500px] rounded-full bg-amber-600/8 blur-[90px] animate-pulse" style={{ animationDelay: "3s" }} />
       </div>
 
       {/* Content */}
       <div className="relative z-10 flex min-h-screen flex-col">
-        {/* Header - Sticky */}
-        <div className="sticky top-0 z-20 border-b border-amber-400/10 bg-[#0c1929]/50 backdrop-blur-md">
-          <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3 sm:py-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Link href="/login" className="rounded-lg p-2 text-amber-200/60 hover:bg-white/10 hover:text-white transition-colors">
+        {/* Header */}
+        <div className="sticky top-0 z-20 border-b border-white/5 bg-[#0a0e1a]/40 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-3">
+              <Link href="/login" className="rounded-lg p-2 text-white/40 hover:bg-white/5 hover:text-white transition-colors">
                 <ArrowLeft className="h-5 w-5" />
               </Link>
-              <div className="relative h-9 w-9 flex-shrink-0 rounded-lg bg-white/10 p-1 border border-amber-400/20 sm:h-10 sm:w-10">
+              <div className="relative h-9 w-9 flex-shrink-0 rounded-xl bg-white/[0.05] border border-white/10 p-1">
                 <Image src="/barangay-seal.png" alt="Barangay Seal" fill className="object-contain p-0.5" />
               </div>
               <div>
-                <h1 className="text-base font-bold text-white sm:text-lg">Barangay IX</h1>
-                <p className="text-[10px] text-amber-200/50 sm:text-xs">Resident Registration</p>
+                <h1 className="text-sm font-bold text-white">Barangay IX</h1>
+                <p className="text-[10px] text-white/30">Resident Registration</p>
               </div>
             </div>
-            <Link href="/login" className="text-xs font-medium text-amber-400 hover:text-amber-300 sm:text-sm">
+            <Link href="/login" className="text-xs font-medium text-amber-400/80 hover:text-amber-300 transition-colors">
               Sign In
             </Link>
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-4xl flex-1 px-4 pb-32 pt-4 sm:pb-8 sm:pt-8">
+        <div className="mx-auto w-full max-w-4xl flex-1 px-4 pb-32 pt-6">
           {/* Progress Steps */}
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-8">
             <div className="flex items-center justify-between">
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center flex-1 last:flex-none">
                   <div className="flex flex-col items-center">
                     <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 sm:h-12 sm:w-12 ${
+                      className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-500 ${
                         currentStep > step.id
-                          ? "border-amber-500 bg-amber-500 text-white"
+                          ? "bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30"
                           : currentStep === step.id
-                          ? "border-amber-400 bg-amber-400/20 text-amber-400 scale-110 shadow-lg shadow-amber-500/20"
-                          : "border-white/20 bg-white/5 text-white/40"
+                          ? "bg-white/[0.08] border border-amber-400/30 text-amber-400 shadow-lg shadow-amber-500/10"
+                          : "bg-white/[0.03] border border-white/5 text-white/20"
                       }`}
                     >
                       {currentStep > step.id ? (
-                        <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6" />
+                        <CheckCircle2 className="h-5 w-5" />
                       ) : (
-                        <step.icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                        <step.icon className="h-4 w-4" />
                       )}
                     </div>
-                    <p className={`mt-1.5 text-[10px] font-medium sm:text-xs ${
-                      currentStep >= step.id ? "text-amber-400" : "text-white/40"
-                    }`}>
+                    <p className={`mt-2 text-[11px] font-medium ${currentStep >= step.id ? "text-white/70" : "text-white/15"}`}>
                       {step.title}
                     </p>
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={`mx-1 h-0.5 flex-1 transition-colors sm:mx-2 ${
-                      currentStep > step.id ? "bg-amber-500" : "bg-white/10"
+                    <div className={`mx-2 h-px flex-1 transition-colors duration-500 ${
+                      currentStep > step.id ? "bg-gradient-to-r from-amber-500/50 to-orange-500/30" : "bg-white/5"
                     }`} />
                   )}
                 </div>
@@ -214,97 +198,66 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Form Card */}
-          <div className={`rounded-3xl border border-amber-400/20 bg-gradient-to-br from-white/15 to-amber-500/5 p-4 shadow-2xl backdrop-blur-xl transition-all duration-500 sm:p-8 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
+          {/* Liquid Glass Card */}
+          <div className={`rounded-3xl border border-white/10 bg-white/[0.04] p-5 sm:p-8 shadow-2xl backdrop-blur-2xl transition-all duration-700 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
             <form onSubmit={handleSubmit(onSubmit)}>
               {/* Step 1: Personal Info */}
               {currentStep === 1 && (
-                <div className="space-y-4 sm:space-y-6">
+                <div className="space-y-5">
                   <div>
-                    <h3 className="text-lg font-bold text-white sm:text-xl">Personal Information</h3>
-                    <p className="mt-1 text-xs text-amber-100/50 sm:text-sm">Tell us about yourself</p>
+                    <h3 className="text-xl font-bold text-white">Personal Information</h3>
+                    <p className="mt-1 text-[13px] text-white/35">Tell us about yourself</p>
                   </div>
-                  
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="space-y-1.5 sm:space-y-2">
-                      <Label className="text-xs font-medium text-white/70 sm:text-sm">First Name *</Label>
-                      <Input
-                        {...register("firstName")}
-                        placeholder="Juan"
-                        className="h-12 rounded-xl border-amber-400/20 bg-white/10 text-sm text-white placeholder:text-white/40 focus:border-amber-400 focus:bg-white/15 focus:ring-2 focus:ring-amber-400/20 sm:text-base"
-                      />
-                      {errors.firstName && (
-                        <p className="text-[11px] text-red-400">{errors.firstName.message}</p>
-                      )}
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-medium text-white/50">First Name *</Label>
+                      <Input {...register("firstName")} placeholder="Juan" className={`${inputClass} ${inputBg}`} />
+                      {errors.firstName && <p className="text-[11px] text-red-400/80">{errors.firstName.message}</p>}
                     </div>
-                    <div className="space-y-1.5 sm:space-y-2">
-                      <Label className="text-xs font-medium text-white/70 sm:text-sm">Last Name *</Label>
-                      <Input
-                        {...register("lastName")}
-                        placeholder="dela Cruz"
-                        className="h-12 rounded-xl border-amber-400/20 bg-white/10 text-sm text-white placeholder:text-white/40 focus:border-amber-400 focus:bg-white/15 focus:ring-2 focus:ring-amber-400/20 sm:text-base"
-                      />
-                      {errors.lastName && (
-                        <p className="text-[11px] text-red-400">{errors.lastName.message}</p>
-                      )}
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-medium text-white/50">Last Name *</Label>
+                      <Input {...register("lastName")} placeholder="dela Cruz" className={`${inputClass} ${inputBg}`} />
+                      {errors.lastName && <p className="text-[11px] text-red-400/80">{errors.lastName.message}</p>}
                     </div>
                   </div>
-
-                  <div className="space-y-1.5 sm:space-y-2">
-                    <Label className="text-xs font-medium text-white/70 sm:text-sm">Middle Name</Label>
-                    <Input
-                      {...register("middleName")}
-                      placeholder="Optional"
-                      className="h-12 rounded-xl border-amber-400/20 bg-white/10 text-sm text-white placeholder:text-white/40 focus:border-amber-400 focus:bg-white/15 focus:ring-2 focus:ring-amber-400/20 sm:text-base"
-                    />
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px] font-medium text-white/50">Middle Name</Label>
+                    <Input {...register("middleName")} placeholder="Optional" className={`${inputClass} ${inputBg}`} />
                   </div>
-
-                  <div className="space-y-4">
-                    <div className="space-y-1.5 sm:space-y-2">
-                      <Label className="text-xs font-medium text-white/70 sm:text-sm">Birth Date *</Label>
-                      <Input
-                        type="date"
-                        {...register("birthDate")}
-                        className="h-12 rounded-xl border-amber-400/20 bg-white/10 text-sm text-white placeholder:text-white/40 focus:border-amber-400 focus:bg-white/15 focus:ring-2 focus:ring-amber-400/20 sm:text-base"
-                      />
-                      {errors.birthDate && (
-                        <p className="text-[11px] text-red-400">{errors.birthDate.message}</p>
-                      )}
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px] font-medium text-white/50">Birth Date *</Label>
+                    <Input type="date" {...register("birthDate")} className={`${inputClass} ${inputBg}`} />
+                    {errors.birthDate && <p className="text-[11px] text-red-400/80">{errors.birthDate.message}</p>}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-medium text-white/50">Gender *</Label>
+                      <Select onValueChange={(v) => setValue("gender", v)}>
+                        <SelectTrigger className={`${inputClass} ${inputBg} border-0 focus:ring-2 focus:ring-amber-400/40`}>
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent className="border-white/10 bg-[#141a2e] text-white backdrop-blur-xl">
+                          <SelectItem value="MALE">Male</SelectItem>
+                          <SelectItem value="FEMALE">Female</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.gender && <p className="text-[11px] text-red-400/80">{errors.gender.message}</p>}
                     </div>
-                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                      <div className="space-y-1.5 sm:space-y-2">
-                        <Label className="text-xs font-medium text-white/70 sm:text-sm">Gender *</Label>
-                        <Select onValueChange={(v) => setValue("gender", v)}>
-                          <SelectTrigger className="h-12 rounded-xl border-amber-400/20 bg-white/10 text-sm text-white focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20">
-                            <SelectValue placeholder="Select" />
-                          </SelectTrigger>
-                          <SelectContent className="border-amber-400/20 bg-[#1a2d42] text-white">
-                            <SelectItem value="MALE">Male</SelectItem>
-                            <SelectItem value="FEMALE">Female</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {errors.gender && (
-                          <p className="text-[11px] text-red-400">{errors.gender.message}</p>
-                        )}
-                      </div>
-                      <div className="space-y-1.5 sm:space-y-2">
-                        <Label className="text-xs font-medium text-white/70 sm:text-sm">Civil Status *</Label>
-                        <Select onValueChange={(v) => setValue("civilStatus", v)}>
-                          <SelectTrigger className="h-12 rounded-xl border-amber-400/20 bg-white/10 text-sm text-white focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20">
-                            <SelectValue placeholder="Select" />
-                          </SelectTrigger>
-                          <SelectContent className="border-amber-400/20 bg-[#1a2d42] text-white">
-                            <SelectItem value="SINGLE">Single</SelectItem>
-                            <SelectItem value="MARRIED">Married</SelectItem>
-                            <SelectItem value="WIDOWED">Widowed</SelectItem>
-                            <SelectItem value="SEPARATED">Separated</SelectItem>
-                            <SelectItem value="DIVORCED">Divorced</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {errors.civilStatus && (
-                          <p className="text-[11px] text-red-400">{errors.civilStatus.message}</p>
-                        )}
-                      </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-medium text-white/50">Civil Status *</Label>
+                      <Select onValueChange={(v) => setValue("civilStatus", v)}>
+                        <SelectTrigger className={`${inputClass} ${inputBg} border-0 focus:ring-2 focus:ring-amber-400/40`}>
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent className="border-white/10 bg-[#141a2e] text-white backdrop-blur-xl">
+                          <SelectItem value="SINGLE">Single</SelectItem>
+                          <SelectItem value="MARRIED">Married</SelectItem>
+                          <SelectItem value="WIDOWED">Widowed</SelectItem>
+                          <SelectItem value="SEPARATED">Separated</SelectItem>
+                          <SelectItem value="DIVORCED">Divorced</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.civilStatus && <p className="text-[11px] text-red-400/80">{errors.civilStatus.message}</p>}
                     </div>
                   </div>
                 </div>
@@ -312,44 +265,33 @@ export default function RegisterPage() {
 
               {/* Step 2: Address */}
               {currentStep === 2 && (
-                <div className="space-y-4 sm:space-y-6">
+                <div className="space-y-5">
                   <div>
-                    <h3 className="text-lg font-bold text-white sm:text-xl">Address Information</h3>
-                    <p className="mt-1 text-xs text-amber-100/50 sm:text-sm">Where do you live?</p>
+                    <h3 className="text-xl font-bold text-white">Address Information</h3>
+                    <p className="mt-1 text-[13px] text-white/35">Where do you live?</p>
                   </div>
-
-                  <div className="space-y-1.5 sm:space-y-2">
-                    <Label className="text-xs font-medium text-white/70 sm:text-sm">Full Address *</Label>
-                    <Input
-                      {...register("address")}
-                      placeholder="e.g., 123 Rizal Street"
-                      className="h-12 rounded-xl border-amber-400/20 bg-white/10 text-sm text-white placeholder:text-white/40 focus:border-amber-400 focus:bg-white/15 focus:ring-2 focus:ring-amber-400/20 sm:text-base"
-                    />
-                    {errors.address && (
-                      <p className="text-[11px] text-red-400">{errors.address.message}</p>
-                    )}
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px] font-medium text-white/50">Full Address *</Label>
+                    <Input {...register("address")} placeholder="e.g., 123 Rizal Street" className={`${inputClass} ${inputBg}`} />
+                    {errors.address && <p className="text-[11px] text-red-400/80">{errors.address.message}</p>}
                   </div>
-
-                  <div className="space-y-1.5 sm:space-y-2">
-                    <Label className="text-xs font-medium text-white/70 sm:text-sm">Purok / Zone *</Label>
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px] font-medium text-white/50">Purok / Zone *</Label>
                     <Select onValueChange={(v) => setValue("purok", v)}>
-                      <SelectTrigger className="h-12 rounded-xl border-amber-400/20 bg-white/10 text-sm text-white focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20">
+                      <SelectTrigger className={`${inputClass} ${inputBg} border-0 focus:ring-2 focus:ring-amber-400/40`}>
                         <SelectValue placeholder="Select purok" />
                       </SelectTrigger>
-                      <SelectContent className="border-amber-400/20 bg-[#1a2d42] text-white">
+                      <SelectContent className="border-white/10 bg-[#141a2e] text-white backdrop-blur-xl">
                         {[1, 2, 3, 4, 5, 6, 7].map((p) => (
                           <SelectItem key={p} value={String(p)}>Purok {p}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.purok && (
-                      <p className="text-[11px] text-red-400">{errors.purok.message}</p>
-                    )}
+                    {errors.purok && <p className="text-[11px] text-red-400/80">{errors.purok.message}</p>}
                   </div>
-
-                  <div className="rounded-xl bg-amber-400/10 p-3 border border-amber-400/20 sm:p-4">
-                    <p className="text-[10px] font-medium text-amber-400 mb-1 sm:text-xs sm:mb-2">YOUR ADDRESS</p>
-                    <p className="text-sm text-white sm:text-base">
+                  <div className="rounded-xl bg-white/[0.03] border border-white/5 p-4">
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-white/20 mb-1">Preview Address</p>
+                    <p className="text-[14px] text-white/60">
                       {formData.address || "123 Rizal Street"}, {formData.purok ? `Purok ${formData.purok}` : "Purok ___"}
                     </p>
                   </div>
@@ -358,157 +300,88 @@ export default function RegisterPage() {
 
               {/* Step 3: Contact */}
               {currentStep === 3 && (
-                <div className="space-y-4 sm:space-y-6">
+                <div className="space-y-5">
                   <div>
-                    <h3 className="text-lg font-bold text-white sm:text-xl">Contact Information</h3>
-                    <p className="mt-1 text-xs text-amber-100/50 sm:text-sm">How can we reach you?</p>
+                    <h3 className="text-xl font-bold text-white">Contact Information</h3>
+                    <p className="mt-1 text-[13px] text-white/35">How can we reach you?</p>
                   </div>
-
-                  <div className="space-y-1.5 sm:space-y-2">
-                    <Label className="text-xs font-medium text-white/70 sm:text-sm">Contact Number *</Label>
-                    <Input
-                      {...register("contactNumber")}
-                      placeholder="09XXXXXXXXX"
-                      type="tel"
-                      inputMode="numeric"
-                      className="h-12 rounded-xl border-amber-400/20 bg-white/10 text-sm text-white placeholder:text-white/40 focus:border-amber-400 focus:bg-white/15 focus:ring-2 focus:ring-amber-400/20 sm:text-base"
-                    />
-                    {errors.contactNumber && (
-                      <p className="text-[11px] text-red-400">{errors.contactNumber.message}</p>
-                    )}
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px] font-medium text-white/50">Contact Number *</Label>
+                    <Input {...register("contactNumber")} placeholder="09XXXXXXXXX" type="tel" inputMode="numeric" className={`${inputClass} ${inputBg}`} />
+                    {errors.contactNumber && <p className="text-[11px] text-red-400/80">{errors.contactNumber.message}</p>}
                   </div>
-
-                  <div className="rounded-xl bg-amber-400/10 p-3 border border-amber-400/20 sm:p-4">
-                    <p className="text-xs text-amber-200/70 sm:text-sm">
-                      This number will be used for barangay notifications and emergency contact purposes.
-                    </p>
+                  <div className="rounded-xl bg-white/[0.03] border border-white/5 p-4">
+                    <p className="text-[13px] text-white/30">Used for barangay notifications and emergency contact.</p>
                   </div>
                 </div>
               )}
 
               {/* Step 4: Additional */}
               {currentStep === 4 && (
-                <div className="space-y-4 sm:space-y-6">
+                <div className="space-y-5">
                   <div>
-                    <h3 className="text-lg font-bold text-white sm:text-xl">Additional Information</h3>
-                    <p className="mt-1 text-xs text-amber-100/50 sm:text-sm">Optional details (you can skip this)</p>
+                    <h3 className="text-xl font-bold text-white">Additional Information</h3>
+                    <p className="mt-1 text-[13px] text-white/35">Optional details</p>
                   </div>
-
-                  <div className="space-y-1.5 sm:space-y-2">
-                    <Label className="text-xs font-medium text-white/70 sm:text-sm">Occupation</Label>
-                    <Input
-                      {...register("occupation")}
-                      placeholder="e.g., Teacher, Engineer, Student"
-                      className="h-12 rounded-xl border-amber-400/20 bg-white/10 text-sm text-white placeholder:text-white/40 focus:border-amber-400 focus:bg-white/15 focus:ring-2 focus:ring-amber-400/20 sm:text-base"
-                    />
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px] font-medium text-white/50">Occupation</Label>
+                    <Input {...register("occupation")} placeholder="e.g., Teacher, Engineer, Student" className={`${inputClass} ${inputBg}`} />
                   </div>
-
-                  {/* Registered Voter Checkbox */}
-                  <div className="flex items-center gap-3 rounded-xl border border-amber-400/20 bg-white/5 p-4">
-                    <input
-                      type="checkbox"
-                      id="voter"
-                      {...register("isRegisteredVoter")}
-                      className="h-5 w-5 rounded border-amber-400/30 bg-white/10 text-amber-500 focus:ring-2 focus:ring-amber-400/20"
-                    />
+                  <label className="flex items-center gap-3 cursor-pointer py-2">
+                    <input type="checkbox" id="voter" {...register("isRegisteredVoter")} className="h-[18px] w-[18px] rounded-md border border-white/20 bg-white/[0.05] text-amber-500 focus:ring-0 focus:ring-offset-0" />
                     <div>
-                      <Label htmlFor="voter" className="text-sm font-medium text-white cursor-pointer">Registered Voter</Label>
-                      <p className="text-xs text-amber-100/50">Check if you are a registered voter in this barangay</p>
+                      <span className="text-[14px] text-white/70">Registered Voter</span>
+                      <span className="text-[12px] text-white/25 ml-2">— in this barangay</span>
+                    </div>
+                  </label>
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-medium text-white/50">Emergency Contact Name</Label>
+                      <Input {...register("emergencyContact")} placeholder="Contact person" className={`${inputClass} ${inputBg}`} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-medium text-white/50">Emergency Contact Number</Label>
+                      <Input {...register("emergencyPhone")} placeholder="09XXXXXXXXX" type="tel" inputMode="numeric" className={`${inputClass} ${inputBg}`} />
                     </div>
                   </div>
-
-                  <div className="space-y-4">
-                    <div className="space-y-1.5 sm:space-y-2">
-                      <Label className="text-xs font-medium text-white/70 sm:text-sm">Emergency Contact Name</Label>
-                      <Input
-                        {...register("emergencyContact")}
-                        placeholder="Contact person"
-                        className="h-12 rounded-xl border-amber-400/20 bg-white/10 text-sm text-white placeholder:text-white/40 focus:border-amber-400 focus:bg-white/15 focus:ring-2 focus:ring-amber-400/20 sm:text-base"
-                      />
-                    </div>
-                    <div className="space-y-1.5 sm:space-y-2">
-                      <Label className="text-xs font-medium text-white/70 sm:text-sm">Emergency Contact Number</Label>
-                      <Input
-                        {...register("emergencyPhone")}
-                        placeholder="09XXXXXXXXX"
-                        type="tel"
-                        inputMode="numeric"
-                        className="h-12 rounded-xl border-amber-400/20 bg-white/10 text-sm text-white placeholder:text-white/40 focus:border-amber-400 focus:bg-white/15 focus:ring-2 focus:ring-amber-400/20 sm:text-base"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl bg-amber-400/10 p-3 border border-amber-400/20 sm:p-4">
-                    <p className="text-xs text-amber-200/70 sm:text-sm">
-                      By submitting, you agree to have your information recorded in the Barangay IX resident database.
-                    </p>
+                  <div className="rounded-xl bg-white/[0.03] border border-white/5 p-4">
+                    <p className="text-[13px] text-white/25">By submitting, your information will be recorded in the barangay database.</p>
                   </div>
                 </div>
               )}
             </form>
 
-            {/* Step Info */}
-            <div className="mt-4 text-center sm:mt-6">
-              <p className="text-xs text-amber-200/40 sm:text-sm">
-                Step {currentStep} of {steps.length}
-              </p>
+            <div className="mt-6 text-center">
+              <p className="text-[12px] text-white/15">{currentStep} of {steps.length}</p>
             </div>
           </div>
         </div>
 
-        {/* Bottom Navigation - Sticky on Mobile */}
-        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-amber-400/10 bg-[#0c1929]/80 backdrop-blur-md safe-area-bottom">
-          <div className="mx-auto flex max-w-4xl gap-3 p-4 sm:p-6">
+        {/* Bottom Navigation */}
+        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/5 bg-[#0a0e1a]/60 backdrop-blur-xl safe-area-bottom">
+          <div className="mx-auto flex max-w-4xl gap-3 p-4">
             {currentStep > 1 && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={prevStep}
-                className="h-12 flex-1 rounded-xl border-amber-400/20 bg-transparent text-sm font-medium text-white hover:bg-amber-400/10 sm:h-14"
-              >
-                <ChevronLeft className="mr-1 h-4 w-4" />
-                Back
+              <Button type="button" variant="ghost" onClick={prevStep} className="h-12 flex-1 rounded-xl text-[14px] font-medium text-white/40 hover:text-white/70 hover:bg-white/5 transition-all">
+                <ChevronLeft className="mr-1 h-4 w-4" /> Back
               </Button>
             )}
-            
             {currentStep < 4 ? (
-              <Button
-                type="button"
-                onClick={nextStep}
-                className="h-12 flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-sm font-medium text-white hover:from-amber-600 hover:to-amber-700 active:scale-[0.98] sm:h-14"
-              >
-                Continue
-                <ChevronRight className="ml-1 h-4 w-4" />
+              <Button type="button" onClick={nextStep} className="h-12 flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-[14px] font-semibold text-white hover:from-amber-600 hover:to-orange-600 active:scale-[0.98] shadow-lg shadow-amber-500/20 transition-all">
+                Continue <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             ) : (
-              <Button
-                type="submit"
-                onClick={handleSubmit(onSubmit)}
-                className="h-12 flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-sm font-medium text-white hover:from-amber-600 hover:to-amber-700 active:scale-[0.98] sm:h-14"
-                disabled={loading}
-              >
+              <Button type="submit" onClick={handleSubmit(onSubmit)} className="h-12 flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-[14px] font-semibold text-white hover:from-amber-600 hover:to-orange-600 active:scale-[0.98] shadow-lg shadow-amber-500/20 transition-all" disabled={loading}>
                 {loading ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Submitting...
-                  </div>
+                  <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Submitting...</div>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Submit
-                  </div>
+                  <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /> Submit</div>
                 )}
               </Button>
             )}
           </div>
         </div>
 
-        {/* Safe area padding for mobile */}
-        <style jsx global>{`
-          .safe-area-bottom {
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-          }
-        `}</style>
+        <style jsx global>{`.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }`}</style>
       </div>
     </div>
   );
