@@ -112,10 +112,10 @@ export default function CertificatesPage() {
     if (!el) return;
     const canvas = await html2canvas(el, { scale: 3, useCORS: true, backgroundColor: "#ffffff", logging: false });
     const imgData = canvas.toDataURL("image/jpeg", 0.95);
-    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "long" });
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
     const pdfW = pdf.internal.pageSize.getWidth();
     const pdfH = pdf.internal.pageSize.getHeight();
-    const margin = 10;
+    const margin = 0;
     const imgW = pdfW - margin * 2;
     const imgH = (canvas.height / canvas.width) * imgW;
     pdf.addImage(imgData, "JPEG", margin, margin, imgW, Math.min(imgH, pdfH - margin * 2));
@@ -128,13 +128,17 @@ export default function CertificatesPage() {
     if (!content) return;
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
-    printWindow.document.write(`
-      <html><head><title>Print Certificate</title>
-      <style>@page{margin:0.5in}body{margin:0;font-family:"Times New Roman",serif}</style>
-      </head><body>${content.outerHTML}</body></html>`);
+    printWindow.document.write(`<!DOCTYPE html>
+<html><head><title>Barangay Certificate</title>
+<style>
+@page { size: letter; margin: 0; }
+@media print { html, body { margin: 0 !important; padding: 0 !important; } }
+body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
+</style>
+</head><body>${content.outerHTML}</body></html>`);
     printWindow.document.close();
     printWindow.focus();
-    setTimeout(() => { printWindow.print(); }, 500);
+    setTimeout(() => { printWindow.print(); }, 300);
   }
 
   const statusColors: Record<string, string> = {
