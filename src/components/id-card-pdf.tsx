@@ -40,9 +40,9 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
 
   // ─── SCREEN FRONT ───
   const front = (
-    <div style={{ position: "relative", width: "3.375in", height: "2.125in", overflow: "hidden", border: "2px solid #1e3a5f", borderRadius: 8, backgroundColor: "#fff", fontFamily: "Arial, Helvetica, sans-serif" }}>
+    <div style={{ position: "relative", width: "3.375in", height: "2.125in", overflow: "hidden", border: "2px solid #1e3a5f", borderRadius: 8, backgroundColor: "#fff", fontFamily: "Arial, Helvetica, sans-serif", display: "flex", flexDirection: "column" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", backgroundColor: "#1e3a5f", padding: "2px 6px", gap: 3 }}>
+      <div style={{ display: "flex", alignItems: "center", backgroundColor: "#1e3a5f", padding: "2px 6px", gap: 3, flexShrink: 0 }}>
         <img src="/barangay-seal.png" alt="" style={{ width: 18, height: 18, objectFit: "contain" }} />
         <div style={{ flex: 1, textAlign: "center" }}>
           <div style={{ fontSize: 7.5, fontWeight: 700, color: "#fff", lineHeight: 1.1 }}>BARANGAY IX — DAAN BANWA</div>
@@ -51,7 +51,7 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
       </div>
 
       {/* Body: Photo | Details */}
-      <div style={{ display: "flex", gap: 5, padding: "3px 6px 0" }}>
+      <div style={{ display: "flex", gap: 5, padding: "3px 6px", flex: 1, minHeight: 0 }}>
         {/* Photo */}
         <div style={{ flexShrink: 0 }}>
           {data.photoUrl ? (
@@ -67,7 +67,7 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
           <div style={{ fontSize: 9.5, fontWeight: 700, color: "#0f172a", lineHeight: 1.1, marginBottom: 2 }}>{fullName}</div>
           {/* Separator */}
           <div style={{ width: "100%", height: 1, backgroundColor: "#1e3a5f", marginBottom: 2, opacity: 0.3 }}></div>
-          {/* Fields - single column, bigger */}
+          {/* Fields */}
           <div style={{ fontSize: 6.5, color: "#1e293b", lineHeight: 1.65 }}>
             <div><span style={{ color: "#64748b", fontWeight: 600 }}>Birthdate:</span> <b>{birthDate}</b></div>
             <div><span style={{ color: "#64748b", fontWeight: 600 }}>Sex:</span> <b>{r.gender}</b> &nbsp;&nbsp;&nbsp;<span style={{ color: "#64748b", fontWeight: 600 }}>Status:</span> <b>{r.civilStatus}</b></div>
@@ -78,12 +78,12 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
       </div>
 
       {/* ID Number Bar */}
-      <div style={{ backgroundColor: "#1e3a5f", padding: "1.5px 6px", textAlign: "center", marginTop: 1 }}>
+      <div style={{ backgroundColor: "#1e3a5f", padding: "1.5px 6px", textAlign: "center", flexShrink: 0 }}>
         <span style={{ fontSize: 7.5, fontWeight: 700, color: "#fff", letterSpacing: 1.5 }}>{data.idNumber}</span>
       </div>
 
       {/* Footer */}
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", backgroundColor: "#f8fafc", padding: "1px 6px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", backgroundColor: "#f8fafc", padding: "1px 6px", flexShrink: 0 }}>
         <span style={{ fontSize: 4, color: "#94a3b8" }}>Valid: {issued} — {expiry}</span>
         <span style={{ fontSize: 4, color: "#94a3b8" }}>Issued by: <b style={{ color: "#475569" }}>Barangay IX</b></span>
       </div>
@@ -148,9 +148,9 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
 
   // ─── PIXEL FRONT (for PDF capture) ───
   const frontPx = (
-    <div id={captureId ? `${captureId}-front` : undefined} style={{ position: "relative", width: PX_W, height: PX_H, overflow: "hidden", border: "3px solid #1e3a5f", borderRadius: 14, backgroundColor: "#fff", fontFamily: "Arial, Helvetica, sans-serif", boxSizing: "border-box" }}>
+    <div id={captureId ? `${captureId}-front` : undefined} style={{ position: "relative", width: PX_W, height: PX_H, overflow: "hidden", border: "3px solid #1e3a5f", borderRadius: 14, backgroundColor: "#fff", fontFamily: "Arial, Helvetica, sans-serif", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", backgroundColor: "#1e3a5f", padding: "8px 20px", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", backgroundColor: "#1e3a5f", padding: "8px 20px", gap: 10, flexShrink: 0 }}>
         <img src="/barangay-seal.png" alt="" style={{ width: 48, height: 48, objectFit: "contain" }} />
         <div style={{ flex: 1, textAlign: "center" }}>
           <div style={{ fontSize: 24, fontWeight: 700, color: "#fff", lineHeight: 1.1 }}>BARANGAY IX — DAAN BANWA</div>
@@ -159,7 +159,7 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
       </div>
 
       {/* Body: Photo | Details */}
-      <div style={{ display: "flex", gap: 14, padding: "10px 18px 6px" }}>
+      <div style={{ display: "flex", gap: 14, padding: "10px 18px", flex: 1, minHeight: 0 }}>
         {/* Photo */}
         <div style={{ flexShrink: 0 }}>
           {data.photoUrl ? (
@@ -186,12 +186,12 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
       </div>
 
       {/* ID Number Bar */}
-      <div style={{ backgroundColor: "#1e3a5f", padding: "5px 20px", textAlign: "center", marginTop: 4 }}>
+      <div style={{ backgroundColor: "#1e3a5f", padding: "5px 20px", textAlign: "center", flexShrink: 0 }}>
         <span style={{ fontSize: 22, fontWeight: 700, color: "#fff", letterSpacing: 2 }}>{data.idNumber}</span>
       </div>
 
       {/* Footer */}
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "space-between", borderTop: "2px solid #e2e8f0", backgroundColor: "#f8fafc", padding: "4px 18px", fontSize: 12, color: "#94a3b8" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", borderTop: "2px solid #e2e8f0", backgroundColor: "#f8fafc", padding: "4px 18px", fontSize: 12, color: "#94a3b8", flexShrink: 0 }}>
         <span>Valid: {issued} — {expiry}</span>
         <span>Issued by: <b style={{ color: "#475569" }}>Barangay IX</b></span>
       </div>
