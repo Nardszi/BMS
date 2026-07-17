@@ -118,15 +118,10 @@ export default function RegisterPage() {
             <p className="mt-3 text-sm text-amber-100/60 sm:mt-4 sm:text-base">
               Your information has been submitted. Our staff will review and verify your records.
             </p>
-            <div className="mt-6 space-y-3 sm:mt-8">
-              <Link href="/login">
-                <Button className="h-12 w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-sm font-medium hover:from-amber-600 hover:to-amber-700 sm:h-13 sm:text-base">
-                  Go to Login
-                </Button>
-              </Link>
+            <div className="mt-6 sm:mt-8">
               <Link href="/register">
                 <Button variant="outline" className="h-12 w-full rounded-xl border-amber-400/20 text-sm text-white hover:bg-amber-400/10 sm:h-13" onClick={() => { setSuccess(false); setCurrentStep(1); }}>
-                  Register Another
+                  Register Another Resident
                 </Button>
               </Link>
             </div>
@@ -161,9 +156,6 @@ export default function RegisterPage() {
                 <p className="text-[10px] text-amber-200/50 sm:text-xs">Resident Registration</p>
               </div>
             </div>
-            <Link href="/login" className="text-xs font-medium text-amber-400 hover:text-amber-300 sm:text-sm">
-              Sign In
-            </Link>
           </div>
         </div>
 
