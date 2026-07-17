@@ -42,49 +42,50 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
   const front = (
     <div style={{ position: "relative", width: "3.375in", height: "2.125in", overflow: "hidden", border: "2px solid #1e3a5f", borderRadius: 8, backgroundColor: "#fff", fontFamily: "Arial, Helvetica, sans-serif" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", backgroundColor: "#1e3a5f", padding: "3px 8px", gap: 4 }}>
-        <img src="/barangay-seal.png" alt="" style={{ width: 20, height: 20, objectFit: "contain" }} />
+      <div style={{ display: "flex", alignItems: "center", backgroundColor: "#1e3a5f", padding: "2px 6px", gap: 3 }}>
+        <img src="/barangay-seal.png" alt="" style={{ width: 18, height: 18, objectFit: "contain" }} />
         <div style={{ flex: 1, textAlign: "center" }}>
-          <div style={{ fontSize: 8, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>BARANGAY IX — DAAN BANWA</div>
-          <div style={{ fontSize: 5, color: "#93c5fd" }}>City of Victorias, Negros Occidental</div>
+          <div style={{ fontSize: 7.5, fontWeight: 700, color: "#fff", lineHeight: 1.1 }}>BARANGAY IX — DAAN BANWA</div>
+          <div style={{ fontSize: 4.5, color: "#93c5fd" }}>City of Victorias, Negros Occidental</div>
         </div>
       </div>
 
       {/* Body: Photo | Details */}
-      <div style={{ display: "flex", gap: 6, padding: "4px 8px 1px" }}>
+      <div style={{ display: "flex", gap: 5, padding: "3px 6px 0" }}>
         {/* Photo */}
         <div style={{ flexShrink: 0 }}>
           {data.photoUrl ? (
-            <img src={data.photoUrl} alt="" style={{ width: "0.85in", height: "1in", objectFit: "cover", border: "1.5px solid #1e3a5f", borderRadius: 3 }} />
+            <img src={data.photoUrl} alt="" style={{ width: "0.8in", height: "0.95in", objectFit: "cover", border: "1.5px solid #1e3a5f", borderRadius: 2 }} />
           ) : (
-            <div style={{ width: "0.85in", height: "1in", display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px dashed #94a3b8", borderRadius: 3, backgroundColor: "#f1f5f9", fontSize: 6, color: "#94a3b8" }}>No Photo</div>
+            <div style={{ width: "0.8in", height: "0.95in", display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px dashed #94a3b8", borderRadius: 2, backgroundColor: "#f1f5f9", fontSize: 5, color: "#94a3b8" }}>No Photo</div>
           )}
         </div>
 
         {/* Details */}
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           {/* Name */}
-          <div style={{ fontSize: 10, fontWeight: 700, color: "#0f172a", lineHeight: 1.15, borderBottom: "1px solid #cbd5e1", paddingBottom: 1, marginBottom: 2 }}>{fullName}</div>
-          {/* Fields */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 8px", fontSize: 7, color: "#334155", lineHeight: 1.7 }}>
-            <div><span style={{ color: "#64748b" }}>Date of Birth:</span> {birthDate}</div>
-            <div><span style={{ color: "#64748b" }}>Sex:</span> {r.gender}</div>
-            <div><span style={{ color: "#64748b" }}>Civil Status:</span> {r.civilStatus}</div>
-            <div><span style={{ color: "#64748b" }}>Contact:</span> {data.contactNumber || "—"}</div>
+          <div style={{ fontSize: 9.5, fontWeight: 700, color: "#0f172a", lineHeight: 1.1, marginBottom: 2 }}>{fullName}</div>
+          {/* Separator */}
+          <div style={{ width: "100%", height: 1, backgroundColor: "#1e3a5f", marginBottom: 2, opacity: 0.3 }}></div>
+          {/* Fields - single column, bigger */}
+          <div style={{ fontSize: 6.5, color: "#1e293b", lineHeight: 1.65 }}>
+            <div><span style={{ color: "#64748b", fontWeight: 600 }}>Birthdate:</span> <b>{birthDate}</b></div>
+            <div><span style={{ color: "#64748b", fontWeight: 600 }}>Sex:</span> <b>{r.gender}</b> &nbsp;&nbsp;&nbsp;<span style={{ color: "#64748b", fontWeight: 600 }}>Status:</span> <b>{r.civilStatus}</b></div>
+            <div><span style={{ color: "#64748b", fontWeight: 600 }}>Contact:</span> <b>{data.contactNumber || "—"}</b></div>
+            <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}><span style={{ color: "#64748b", fontWeight: 600 }}>Address:</span> <b>{data.address}</b></div>
           </div>
-          <div style={{ fontSize: 7, color: "#334155", lineHeight: 1.7 }}><span style={{ color: "#64748b" }}>Address:</span> {data.address}</div>
         </div>
       </div>
 
       {/* ID Number Bar */}
-      <div style={{ backgroundColor: "#1e3a5f", padding: "2px 8px", textAlign: "center" }}>
-        <span style={{ fontSize: 8, fontWeight: 700, color: "#fff", letterSpacing: 1.5 }}>{data.idNumber}</span>
+      <div style={{ backgroundColor: "#1e3a5f", padding: "1.5px 6px", textAlign: "center", marginTop: 1 }}>
+        <span style={{ fontSize: 7.5, fontWeight: 700, color: "#fff", letterSpacing: 1.5 }}>{data.idNumber}</span>
       </div>
 
       {/* Footer */}
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", backgroundColor: "#f8fafc", padding: "1px 8px" }}>
-        <span style={{ fontSize: 4.5, color: "#94a3b8" }}>Valid: {issued} — {expiry}</span>
-        <span style={{ fontSize: 4.5, color: "#94a3b8" }}>Issued by: <b style={{ color: "#475569" }}>Barangay IX</b></span>
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", backgroundColor: "#f8fafc", padding: "1px 6px" }}>
+        <span style={{ fontSize: 4, color: "#94a3b8" }}>Valid: {issued} — {expiry}</span>
+        <span style={{ fontSize: 4, color: "#94a3b8" }}>Issued by: <b style={{ color: "#475569" }}>Barangay IX</b></span>
       </div>
     </div>
   );
@@ -149,47 +150,48 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
   const frontPx = (
     <div id={captureId ? `${captureId}-front` : undefined} style={{ position: "relative", width: PX_W, height: PX_H, overflow: "hidden", border: "3px solid #1e3a5f", borderRadius: 14, backgroundColor: "#fff", fontFamily: "Arial, Helvetica, sans-serif", boxSizing: "border-box" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", backgroundColor: "#1e3a5f", padding: "10px 24px", gap: 14 }}>
-        <img src="/barangay-seal.png" alt="" style={{ width: 52, height: 52, objectFit: "contain" }} />
+      <div style={{ display: "flex", alignItems: "center", backgroundColor: "#1e3a5f", padding: "8px 20px", gap: 10 }}>
+        <img src="/barangay-seal.png" alt="" style={{ width: 48, height: 48, objectFit: "contain" }} />
         <div style={{ flex: 1, textAlign: "center" }}>
-          <div style={{ fontSize: 26, fontWeight: 700, color: "#fff", lineHeight: 1.15 }}>BARANGAY IX — DAAN BANWA</div>
-          <div style={{ fontSize: 15, color: "#93c5fd" }}>City of Victorias, Negros Occidental</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: "#fff", lineHeight: 1.1 }}>BARANGAY IX — DAAN BANWA</div>
+          <div style={{ fontSize: 13, color: "#93c5fd" }}>City of Victorias, Negros Occidental</div>
         </div>
       </div>
 
-      {/* Body */}
-      <div style={{ display: "flex", gap: 16, padding: "12px 22px 8px" }}>
+      {/* Body: Photo | Details */}
+      <div style={{ display: "flex", gap: 14, padding: "10px 18px 6px" }}>
         {/* Photo */}
         <div style={{ flexShrink: 0 }}>
           {data.photoUrl ? (
-            <img src={data.photoUrl} alt="" style={{ width: 190, height: 220, objectFit: "cover", border: "3px solid #1e3a5f", borderRadius: 4 }} />
+            <img src={data.photoUrl} alt="" style={{ width: 180, height: 210, objectFit: "cover", border: "3px solid #1e3a5f", borderRadius: 4 }} />
           ) : (
-            <div style={{ width: 190, height: 220, display: "flex", alignItems: "center", justifyContent: "center", border: "3px dashed #94a3b8", borderRadius: 4, backgroundColor: "#f1f5f9", fontSize: 18, color: "#94a3b8" }}>No Photo</div>
+            <div style={{ width: 180, height: 210, display: "flex", alignItems: "center", justifyContent: "center", border: "3px dashed #94a3b8", borderRadius: 4, backgroundColor: "#f1f5f9", fontSize: 16, color: "#94a3b8" }}>No Photo</div>
           )}
         </div>
 
         {/* Details */}
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           {/* Name */}
-          <div style={{ fontSize: 30, fontWeight: 700, color: "#0f172a", lineHeight: 1.15, borderBottom: "2px solid #cbd5e1", paddingBottom: 6, marginBottom: 10 }}>{fullName}</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: "#0f172a", lineHeight: 1.1, marginBottom: 6 }}>{fullName}</div>
+          {/* Separator */}
+          <div style={{ width: "100%", height: 2, backgroundColor: "#1e3a5f", marginBottom: 6, opacity: 0.3 }}></div>
           {/* Fields */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 28px", fontSize: 22, color: "#334155", lineHeight: 1.6 }}>
-            <div><span style={{ color: "#64748b" }}>Date of Birth:</span> {birthDate}</div>
-            <div><span style={{ color: "#64748b" }}>Sex:</span> {r.gender}</div>
-            <div><span style={{ color: "#64748b" }}>Civil Status:</span> {r.civilStatus}</div>
-            <div><span style={{ color: "#64748b" }}>Contact:</span> {data.contactNumber || "—"}</div>
+          <div style={{ fontSize: 18, color: "#1e293b", lineHeight: 1.7 }}>
+            <div><span style={{ color: "#64748b", fontWeight: 600 }}>Birthdate:</span> <b>{birthDate}</b></div>
+            <div><span style={{ color: "#64748b", fontWeight: 600 }}>Sex:</span> <b>{r.gender}</b> &nbsp;&nbsp;&nbsp;<span style={{ color: "#64748b", fontWeight: 600 }}>Status:</span> <b>{r.civilStatus}</b></div>
+            <div><span style={{ color: "#64748b", fontWeight: 600 }}>Contact:</span> <b>{data.contactNumber || "—"}</b></div>
+            <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}><span style={{ color: "#64748b", fontWeight: 600 }}>Address:</span> <b>{data.address}</b></div>
           </div>
-          <div style={{ marginTop: 6, fontSize: 20, color: "#334155" }}><span style={{ color: "#64748b" }}>Address:</span> {data.address}</div>
         </div>
       </div>
 
       {/* ID Number Bar */}
-      <div style={{ backgroundColor: "#1e3a5f", padding: "6px 24px", textAlign: "center" }}>
-        <span style={{ fontSize: 24, fontWeight: 700, color: "#fff", letterSpacing: 3 }}>{data.idNumber}</span>
+      <div style={{ backgroundColor: "#1e3a5f", padding: "5px 20px", textAlign: "center", marginTop: 4 }}>
+        <span style={{ fontSize: 22, fontWeight: 700, color: "#fff", letterSpacing: 2 }}>{data.idNumber}</span>
       </div>
 
       {/* Footer */}
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "space-between", borderTop: "2px solid #e2e8f0", backgroundColor: "#f8fafc", padding: "5px 22px", fontSize: 13, color: "#94a3b8" }}>
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "space-between", borderTop: "2px solid #e2e8f0", backgroundColor: "#f8fafc", padding: "4px 18px", fontSize: 12, color: "#94a3b8" }}>
         <span>Valid: {issued} — {expiry}</span>
         <span>Issued by: <b style={{ color: "#475569" }}>Barangay IX</b></span>
       </div>
