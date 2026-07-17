@@ -14,8 +14,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
-import { Plus, FileText, Check, X, Eye } from "lucide-react";
+import { Plus, FileText, Check, X, Eye, Download, Printer } from "lucide-react";
 import { CertificatePDF } from "@/components/certificate-pdf";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const certSchema = z.object({
   residentId: z.string().min(1, "Resident is required"),
@@ -103,6 +105,36 @@ export default function CertificatesPage() {
       toast({ title: `Certificate ${status.toLowerCase()}`, variant: "success" });
       fetchCertificates();
     }
+  }
+
+  async function downloadCertPDF(cert: Certificate) {
+    const el = document.getElementById("certificate-print");
+    if (!el) return;
+    const canvas = await html2canvas(el, { scale: 3, useCORS: true, backgroundColor: "#ffffff", logging: false });
+    const imgData = canvas.toDataURL("image/jpeg", 0.95);
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "long" });
+    const pdfW = pdf.internal.pageSize.getWidth();
+    const pdfH = pdf.internal.pageSize.getHeight();
+    const margin = 10;
+    const imgW = pdfW - margin * 2;
+    const imgH = (canvas.height / canvas.width) * imgW;
+    pdf.addImage(imgData, "JPEG", margin, margin, imgW, Math.min(imgH, pdfH - margin * 2));
+    const name = `${cert.resident.lastName}_${cert.type}`;
+    pdf.save(`Certificate-${name}.pdf`);
+  }
+
+  function printCert() {
+    const content = document.getElementById("certificate-print");
+    if (!content) return;
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <html><head><title>Print Certificate</title>
+      <style>@page{margin:0.5in}body{margin:0;font-family:"Times New Roman",serif}</style>
+      </head><body>${content.outerHTML}</body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); }, 500);
   }
 
   const statusColors: Record<string, string> = {
@@ -240,6 +272,14 @@ export default function CertificatesPage() {
               <DialogTitle>Certificate Preview</DialogTitle>
             </DialogHeader>
             <CertificatePDF certificate={previewCert} />
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" size="sm" onClick={() => downloadCertPDF(previewCert)}>
+                <Download className="mr-2 h-4 w-4" /> Save as PDF
+              </Button>
+              <Button variant="outline" size="sm" onClick={printCert}>
+                <Printer className="mr-2 h-4 w-4" /> Print
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       )}
