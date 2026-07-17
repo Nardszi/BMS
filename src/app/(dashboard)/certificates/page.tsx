@@ -107,14 +107,61 @@ export default function CertificatesPage() {
     }
   }
 
+  function buildCertHTML(cert: Certificate) {
+    const r = cert.resident;
+    const fullName = `${r.lastName}, ${r.firstName}${r.middleName ? ` ${r.middleName}` : ""}`;
+    const birthDate = new Date(r.birthDate).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+    const typeLabel: Record<string, string> = { CLEARANCE: "BARANGAY CLEARANCE", RESIDENCY: "CERTIFICATE OF RESIDENCY", INDIGENCY: "CERTIFICATE OF INDIGENCY", BUSINESS_PERMIT: "BUSINESS PERMIT CERTIFICATE" };
+    const baseUrl = window.location.origin;
+    const seal = `${baseUrl}/barangay-seal.png`;
+
+    let body = "";
+    if (cert.type === "CLEARANCE") {
+      body = `<p>TO WHOM IT MAY CONCERN:</p><p style="text-align:justify;text-indent:48px">This is to certify that <strong>${fullName}</strong>, of legal age, Filipino, and a resident of <strong>${r.household.address}, Purok ${r.household.purok}</strong>, this barangay, is a person of good moral character and has no pending case or criminal record in this barangay as of this date.</p><p style="text-align:justify;text-indent:48px">This certification is being issued at the request of the interested party for <strong>${cert.purpose}</strong>.</p>`;
+    } else if (cert.type === "RESIDENCY") {
+      body = `<p>TO WHOM IT MAY CONCERN:</p><p style="text-align:justify;text-indent:48px">This is to certify that <strong>${fullName}</strong>, ${birthDate}, ${r.gender.toLowerCase()}, ${r.civilStatus.toLowerCase()}, Filipino, is a bonafide resident of <strong>${r.household.address}, Purok ${r.household.purok}</strong>, Barangay IX - Daan Banwa, City of Victorias, Negros Occidental.</p><p style="text-align:justify;text-indent:48px">This certification is issued upon request of the interested party for <strong>${cert.purpose}</strong>.</p>`;
+    } else if (cert.type === "INDIGENCY") {
+      body = `<p>TO WHOM IT MAY CONCERN:</p><p style="text-align:justify;text-indent:48px">This is to certify that <strong>${fullName}</strong>, of legal age, Filipino, and a resident of <strong>${r.household.address}, Purok ${r.household.purok}</strong>, this barangay, belongs to an indigent family and is considered a beneficiary of the barangay's social welfare programs.</p><p style="text-align:justify;text-indent:48px">This certification is being issued at the request of the interested party for <strong>${cert.purpose}</strong>.</p>`;
+    } else {
+      body = `<p>TO WHOM IT MAY CONCERN:</p><p style="text-align:justify;text-indent:48px">This is to certify that <strong>${fullName}</strong> has been granted permission to operate a business establishment within the jurisdiction of Barangay IX - Daan Banwa, City of Victorias, Negros Occidental, subject to the terms and conditions provided under existing barangay ordinances.</p><p style="text-align:justify;text-indent:48px">This certificate is issued for <strong>${cert.purpose}</strong>.</p>`;
+    }
+
+    return `<div style="position:relative;overflow:hidden;background:#fff;width:8.5in;min-height:11in;padding:1in 1.2in;font-family:'Times New Roman',Times,serif;color:#1a1a1a;box-sizing:border-box">
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.04;pointer-events:none;z-index:0"><img src="${seal}" style="width:350px;height:350px;object-fit:contain" /></div>
+      <div style="position:relative;z-index:1">
+        <div style="text-align:center;margin-bottom:40px">
+          <div style="display:flex;justify-content:center;margin-bottom:12px"><img src="${seal}" style="width:90px;height:90px;object-fit:contain" /></div>
+          <p style="font-size:14px;text-transform:uppercase;letter-spacing:1.5px;margin:0">Republic of the Philippines</p>
+          <p style="font-size:14px;text-transform:uppercase;letter-spacing:1.5px;margin:0">City of Victorias</p>
+          <p style="font-size:14px;text-transform:uppercase;letter-spacing:1.5px;margin:0">Negros Occidental</p>
+          <p style="font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-top:12px">Office of the Barangay IX - Daan Banwa</p>
+        </div>
+        <h2 style="text-align:center;font-size:20px;font-weight:700;text-transform:uppercase;text-decoration:underline;margin-bottom:40px">${typeLabel[cert.type] || cert.type}</h2>
+        <div style="font-size:15px;line-height:2;margin-bottom:60px">${body}</div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;margin-bottom:60px">
+          <div style="text-align:center"><p style="font-weight:600">Prepared by:</p><div style="margin-top:60px;border-top:1px solid #94a3b8;padding-top:4px;min-width:180px"><p style="font-weight:600">Secretary</p></div></div>
+          <div style="text-align:center"><p style="font-weight:600">Approved by:</p><div style="margin-top:60px;border-top:1px solid #94a3b8;padding-top:4px;min-width:180px"><p style="font-weight:600">Barangay Captain</p></div></div>
+        </div>
+        <div style="text-align:center;font-size:13px;color:#6b7280">
+          <p>Date of Request: ${new Date(cert.requestDate).toLocaleDateString("en-PH")}</p>
+          ${cert.releaseDate ? `<p>Date Issued: ${new Date(cert.releaseDate).toLocaleDateString("en-PH")}</p>` : ""}
+        </div>
+      </div>
+    </div>`;
+  }
+
   async function downloadCertPDF(cert: Certificate) {
-    const el = document.getElementById("certificate-capture");
-    if (!el) return;
-    const origDisplay = el.style.display;
-    el.style.display = "block";
-    await new Promise(r => setTimeout(r, 100));
+    const html = buildCertHTML(cert);
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    tmp.style.position = "fixed";
+    tmp.style.left = "-9999px";
+    tmp.style.top = "0";
+    document.body.appendChild(tmp);
+    const el = tmp.firstElementChild as HTMLElement;
+    await new Promise(r => setTimeout(r, 200));
     const canvas = await html2canvas(el, { scale: 3, useCORS: true, backgroundColor: "#ffffff", logging: false });
-    el.style.display = origDisplay || "none";
+    document.body.removeChild(tmp);
     const imgData = canvas.toDataURL("image/jpeg", 0.95);
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
     const pdfW = pdf.internal.pageSize.getWidth();
@@ -127,11 +174,9 @@ export default function CertificatesPage() {
   }
 
   function printCert() {
-    const el = document.getElementById("certificate-capture");
-    if (!el) return;
-    const baseUrl = window.location.origin;
-    const html = el.outerHTML.replace(/src="\/barangay-seal\.png"/g, `src="${baseUrl}/barangay-seal.png"`);
-    el.style.display = "block";
+    const cert = previewCert;
+    if (!cert) return;
+    const html = buildCertHTML(cert);
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
     printWindow.document.write(`<!DOCTYPE html>
@@ -146,8 +191,8 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
     const images = printWindow.document.querySelectorAll("img");
     let loaded = 0;
     const total = images.length;
-    const checkDone = () => { loaded++; if (loaded >= total) { printWindow.focus(); printWindow.print(); el.style.display = "none"; } };
-    if (total === 0) { printWindow.focus(); printWindow.print(); el.style.display = "none"; return; }
+    const checkDone = () => { loaded++; if (loaded >= total) { printWindow.focus(); printWindow.print(); } };
+    if (total === 0) { printWindow.focus(); printWindow.print(); return; }
     images.forEach(img => { if (img.complete) { checkDone(); } else { img.onload = checkDone; img.onerror = checkDone; } });
   }
 
@@ -278,13 +323,6 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
           </Table>
         </CardContent>
       </Card>
-
-      {/* Hidden full-size certificate for PDF/print capture */}
-      {previewCert && (
-        <div id="certificate-capture" style={{ position: "fixed", left: "-9999px", top: 0 }}>
-          <CertificatePDF certificate={previewCert} />
-        </div>
-      )}
 
       {previewCert && (
         <Dialog open={!!previewCert} onOpenChange={() => setPreviewCert(null)}>
