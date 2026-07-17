@@ -110,9 +110,11 @@ export default function CertificatesPage() {
   async function downloadCertPDF(cert: Certificate) {
     const el = document.getElementById("certificate-capture");
     if (!el) return;
+    const origDisplay = el.style.display;
     el.style.display = "block";
+    await new Promise(r => setTimeout(r, 100));
     const canvas = await html2canvas(el, { scale: 3, useCORS: true, backgroundColor: "#ffffff", logging: false });
-    el.style.display = "none";
+    el.style.display = origDisplay || "none";
     const imgData = canvas.toDataURL("image/jpeg", 0.95);
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
     const pdfW = pdf.internal.pageSize.getWidth();
@@ -127,6 +129,8 @@ export default function CertificatesPage() {
   function printCert() {
     const el = document.getElementById("certificate-capture");
     if (!el) return;
+    const baseUrl = window.location.origin;
+    const html = el.outerHTML.replace(/src="\/barangay-seal\.png"/g, `src="${baseUrl}/barangay-seal.png"`);
     el.style.display = "block";
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
@@ -137,13 +141,14 @@ export default function CertificatesPage() {
 @media print { html, body { margin: 0 !important; padding: 0 !important; } }
 body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
 </style>
-</head><body>${el.outerHTML}</body></html>`);
+</head><body>${html}</body></html>`);
     printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-      el.style.display = "none";
-    }, 300);
+    const images = printWindow.document.querySelectorAll("img");
+    let loaded = 0;
+    const total = images.length;
+    const checkDone = () => { loaded++; if (loaded >= total) { printWindow.focus(); printWindow.print(); el.style.display = "none"; } };
+    if (total === 0) { printWindow.focus(); printWindow.print(); el.style.display = "none"; return; }
+    images.forEach(img => { if (img.complete) { checkDone(); } else { img.onload = checkDone; img.onerror = checkDone; } });
   }
 
   const statusColors: Record<string, string> = {
