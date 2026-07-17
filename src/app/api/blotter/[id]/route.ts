@@ -12,6 +12,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     where: { id: params.id },
     data: {
       status: body.status,
+      resolutionNotes: body.resolutionNotes || undefined,
     },
   });
 

@@ -155,7 +155,10 @@ model BlotterReport {
   respondentName  String
   incidentDate    DateTime
   incidentType    String
+  location        String?
+  witnesses       String?
   narrative       String
+  resolutionNotes String?
   status          BlotterStatus @default(OPEN)
   handledById     String?
   createdAt       DateTime      @default(now())

@@ -9,9 +9,18 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status") || "";
+  const search = searchParams.get("search") || "";
 
   const where: any = {};
   if (status) where.status = status;
+  if (search) {
+    where.OR = [
+      { caseNumber: { contains: search, mode: "insensitive" } },
+      { complainantName: { contains: search, mode: "insensitive" } },
+      { respondentName: { contains: search, mode: "insensitive" } },
+      { incidentType: { contains: search, mode: "insensitive" } },
+    ];
+  }
 
   const blotters = await prisma.blotterReport.findMany({
     where,
@@ -19,7 +28,14 @@ export async function GET(request: Request) {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json(blotters);
+  const [totalCount, openCount, resolvedCount, escalatedCount] = await Promise.all([
+    prisma.blotterReport.count(),
+    prisma.blotterReport.count({ where: { status: "OPEN" } }),
+    prisma.blotterReport.count({ where: { status: "RESOLVED" } }),
+    prisma.blotterReport.count({ where: { status: "ESCALATED" } }),
+  ]);
+
+  return NextResponse.json({ blotters, totalCount, openCount, resolvedCount, escalatedCount });
 }
 
 export async function POST(request: Request) {
@@ -42,6 +58,8 @@ export async function POST(request: Request) {
       respondentName: body.respondentName,
       incidentDate: new Date(body.incidentDate),
       incidentType: body.incidentType,
+      location: body.location || null,
+      witnesses: body.witnesses || null,
       narrative: body.narrative,
       handledById: (session.user as any).id,
     },
