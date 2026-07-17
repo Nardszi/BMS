@@ -41,6 +41,7 @@ const steps = [
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [refNumber, setRefNumber] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const [mounted, setMounted] = useState(false);
 
@@ -65,6 +66,8 @@ export default function RegisterPage() {
       });
 
       if (res.ok) {
+        const data = await res.json();
+        setRefNumber(data.referenceNumber || "");
         setSuccess(true);
       } else {
         const err = await res.json();
@@ -107,23 +110,49 @@ export default function RegisterPage() {
       <div className="relative min-h-screen overflow-hidden bg-[#0c1929] flex items-center justify-center p-4">
         <div className="absolute inset-0">
           <Image src="/login-bg.jpg" alt="Daan Banwa" fill className="object-cover" priority />
-          <div className="absolute inset-0 bg-[#0c1929]/80" />
+          <div className="absolute inset-0 bg-[#0c1929]/85" />
         </div>
-        <div className={`relative z-10 w-full max-w-md text-center transition-all duration-700 ${mounted ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}>
-          <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-white/15 to-amber-500/5 p-8 shadow-2xl backdrop-blur-xl sm:p-10">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-amber-500/20 border border-amber-400/30 sm:h-24 sm:w-24">
-              <CheckCircle2 className="h-10 w-10 text-amber-400 sm:h-12 sm:w-12" />
+        <div className={`relative z-10 w-full max-w-sm transition-all duration-700 ${mounted ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-xl text-center">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20 border border-green-400/30">
+              <CheckCircle2 className="h-8 w-8 text-green-400" />
             </div>
-            <h2 className="text-2xl font-bold text-white sm:text-3xl">Registration Successful!</h2>
-            <p className="mt-3 text-sm text-amber-100/60 sm:mt-4 sm:text-base">
-              Your information has been submitted. Our staff will review and verify your records.
+            <h2 className="text-xl font-bold text-white">Registration Submitted</h2>
+            <p className="mt-2 text-sm text-white/50">
+              Your information has been received and is pending review by barangay staff.
             </p>
-            <div className="mt-6 sm:mt-8">
-              <Link href="/register">
-                <Button variant="outline" className="h-12 w-full rounded-xl border-amber-400/20 text-sm text-white hover:bg-amber-400/10 sm:h-13" onClick={() => { setSuccess(false); setCurrentStep(1); }}>
-                  Register Another Resident
-                </Button>
-              </Link>
+
+            <div className="mt-5 rounded-xl border border-white/10 bg-white/5 p-4">
+              <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">Reference Number</p>
+              <p className="text-lg font-mono font-bold text-amber-400">{refNumber}</p>
+            </div>
+
+            <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-left">
+              <p className="text-[10px] uppercase tracking-wider text-white/40 mb-2">What happens next?</p>
+              <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <div className="mt-0.5 h-1.5 w-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                  <p className="text-xs text-white/60">Barangay staff will review your records</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="mt-0.5 h-1.5 w-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                  <p className="text-xs text-white/60">Verification typically takes <span className="font-medium text-white/80">1-3 business days</span></p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="mt-0.5 h-1.5 w-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                  <p className="text-xs text-white/60">You will be contacted once approved</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <Button
+                variant="outline"
+                className="h-11 w-full rounded-xl border-white/10 bg-white/5 text-sm text-white hover:bg-white/10"
+                onClick={() => { setSuccess(false); setCurrentStep(1); setRefNumber(""); }}
+              >
+                Register Another Resident
+              </Button>
             </div>
           </div>
         </div>

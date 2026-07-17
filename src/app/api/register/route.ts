@@ -47,9 +47,13 @@ export async function POST(request: Request) {
       },
     });
 
+    const count = await prisma.resident.count();
+    const refNumber = `REG-${new Date().getFullYear()}-${String(count).padStart(4, "0")}`;
+
     return NextResponse.json({
       message: "Registration successful! Your records have been submitted to the barangay for verification.",
       residentId: resident.id,
+      referenceNumber: refNumber,
     }, { status: 201 });
   } catch (error) {
     console.error("Registration error:", error);
