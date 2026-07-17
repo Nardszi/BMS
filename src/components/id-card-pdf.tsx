@@ -139,6 +139,11 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
         </div>
       </div>
 
+      {/* Watermark Seal - Security */}
+      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", opacity: 0.06, pointerEvents: "none" }}>
+        <img src="/barangay-seal.png" alt="" style={{ width: "1.4in", height: "1.4in", objectFit: "contain" }} />
+      </div>
+
       {/* Footer */}
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, borderTop: "1px solid #e2e8f0", backgroundColor: "#f8fafc", padding: "1px 8px", textAlign: "center" }}>
         <div style={{ fontSize: 4, color: "#94a3b8" }}>This card is property of Barangay IX — Daan Banwa. If found, please return to the Barangay Hall.</div>
@@ -247,8 +252,8 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
         </div>
       </div>
 
-      {/* Watermark */}
-      <div style={{ position: "absolute", right: "50%", bottom: "25%", transform: "translateX(50%)", opacity: 0.04, pointerEvents: "none" }}>
+      {/* Watermark Seal - Security */}
+      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", opacity: 0.06, pointerEvents: "none" }}>
         <img src="/barangay-seal.png" alt="" style={{ width: 200, height: 200, objectFit: "contain" }} />
       </div>
 
