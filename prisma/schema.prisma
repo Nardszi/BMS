@@ -48,6 +48,21 @@ enum BlotterStatus {
   ESCALATED
 }
 
+enum AnnouncementPriority {
+  URGENT
+  IMPORTANT
+  GENERAL
+}
+
+enum AnnouncementCategory {
+  HEALTH
+  SAFETY
+  EVENT
+  MEETING
+  GENERAL
+  OTHERS
+}
+
 enum PermitStatus {
   ACTIVE
   EXPIRED
@@ -184,12 +199,17 @@ model BusinessPermit {
 }
 
 model Announcement {
-  id         String    @id @default(cuid())
+  id         String                @id @default(cuid())
   title      String
   content    String
   postedById String
-  createdAt  DateTime  @default(now())
+  createdAt  DateTime              @default(now())
   expiresAt  DateTime?
+  priority   AnnouncementPriority  @default(GENERAL)
+  category   AnnouncementCategory  @default(GENERAL)
+  pinned     Boolean               @default(false)
+  imageUrl   String?
+  viewCount  Int                   @default(0)
 
   postedBy User @relation("PostedBy", fields: [postedById], references: [id], onDelete: Cascade)
 }

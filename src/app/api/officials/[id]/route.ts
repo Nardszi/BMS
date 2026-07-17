@@ -15,3 +15,26 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   await prisma.official.delete({ where: { id: params.id } });
   return NextResponse.json({ message: "Deleted" });
 }
+
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const role = (session.user as any).role;
+  if (role !== "ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const body = await request.json();
+  const official = await prisma.official.update({
+    where: { id: params.id },
+    data: {
+      position: body.position,
+      termStart: new Date(body.termStart),
+      termEnd: new Date(body.termEnd),
+    },
+    include: { user: true },
+  });
+
+  return NextResponse.json(official);
+}

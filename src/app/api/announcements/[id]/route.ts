@@ -19,10 +19,43 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       title: body.title,
       content: body.content,
       expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
+      priority: body.priority,
+      category: body.category,
+      pinned: body.pinned,
+      imageUrl: body.imageUrl || null,
     },
   });
 
   return NextResponse.json(announcement);
+}
+
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const body = await request.json();
+
+  if (body.viewCount !== undefined) {
+    const announcement = await prisma.announcement.update({
+      where: { id: params.id },
+      data: { viewCount: { increment: 1 } },
+    });
+    return NextResponse.json(announcement);
+  }
+
+  if (body.pinned !== undefined) {
+    const role = (session.user as any).role;
+    if (!["ADMIN", "SECRETARY"].includes(role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const announcement = await prisma.announcement.update({
+      where: { id: params.id },
+      data: { pinned: body.pinned },
+    });
+    return NextResponse.json(announcement);
+  }
+
+  return NextResponse.json({ error: "Bad request" }, { status: 400 });
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
