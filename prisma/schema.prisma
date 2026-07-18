@@ -97,6 +97,7 @@ model User {
   postedAnnouncements Announcement[]       @relation("PostedBy")
   issuedBarangayIds   BarangayID[]         @relation("IssuedById")
   auditLogs           AuditLog[]
+  notifications       Notification[]
 }
 
 model Household {
@@ -278,5 +279,22 @@ model AuditLog {
 
   @@index([userId])
   @@index([entity])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
   @@index([createdAt])
 }

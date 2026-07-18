@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { notifyUsersByRole } from "@/lib/notify";
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -29,6 +30,12 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
       include: { resident: true },
     });
+
+    if (status === "APPROVED") {
+      notifyUsersByRole("SECRETARY", "Certificate Approved", `${certificate.type} request for ${certificate.resident.firstName} ${certificate.resident.lastName} has been approved.`, "certificate", "/certificates");
+    } else if (status === "DENIED") {
+      notifyUsersByRole("SECRETARY", "Certificate Denied", `${certificate.type} request for ${certificate.resident.firstName} ${certificate.resident.lastName} has been denied.`, "certificate", "/certificates");
+    }
 
     return NextResponse.json(certificate);
   } catch (error) {

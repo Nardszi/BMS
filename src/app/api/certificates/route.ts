@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { notifyUsersByRole } from "@/lib/notify";
 
 export async function GET(request: Request) {
   try {
@@ -53,6 +54,8 @@ export async function POST(request: Request) {
       data: { residentId, type, purpose },
       include: { resident: true },
     });
+
+    notifyUsersByRole("SECRETARY", "New Certificate Request", `A new ${type} request has been submitted for ${residentExists.firstName} ${residentExists.lastName}.`, "certificate", "/certificates");
 
     return NextResponse.json(certificate, { status: 201 });
   } catch (error) {

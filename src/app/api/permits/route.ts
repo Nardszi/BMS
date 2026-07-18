@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { notifyUsersByRole } from "@/lib/notify";
 
 function generatePermitNumber(): string {
   const year = new Date().getFullYear();
@@ -97,6 +98,8 @@ export async function POST(request: Request) {
       },
       include: { owner: true },
     });
+
+    notifyUsersByRole("TREASURER", "New Business Permit", `${businessName} (${permitNumber}) has been registered.`, "permit", "/permits");
 
     return NextResponse.json(permit, { status: 201 });
   } catch (error) {

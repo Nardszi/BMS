@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
+import { notifyUsersByRole } from "@/lib/notify";
 
 export async function POST(request: Request) {
   try {
@@ -55,6 +56,8 @@ export async function POST(request: Request) {
     });
 
     const refNumber = `REG-${Date.now().toString(36).toUpperCase()}`;
+
+    notifyUsersByRole("SECRETARY", "New Resident Registration", `${body.firstName} ${body.lastName} has submitted a registration request.`, "resident", "/residents");
 
     return NextResponse.json({
       message: "Registration successful! Your records have been submitted to the barangay for verification.",
