@@ -4,6 +4,8 @@ import { hash } from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+const VALID_ROLES = ["ADMIN", "SECRETARY", "TREASURER", "KAGAWAD", "STAFF"] as const;
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -21,7 +23,6 @@ export async function GET() {
 
     return NextResponse.json(users);
   } catch (error) {
-    console.error("GET /api/users error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -43,6 +44,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    if (!VALID_ROLES.includes(newRole)) {
+      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+    }
+
     const hashedPassword = await hash(password, 10);
 
     const user = await prisma.user.create({
@@ -52,9 +57,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(user, { status: 201 });
   } catch (error: any) {
-    console.error("POST /api/users error:", error);
     if (error?.code === "P2002") {
-      return NextResponse.json({ error: "Email already in use" }, { status: 409 });
+      return NextResponse.json({ error: "An account with this email already exists" }, { status: 409 });
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

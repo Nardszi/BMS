@@ -11,19 +11,11 @@ export async function GET(request: Request) {
 
   const barangayId = await prisma.barangayID.findUnique({
     where: { idNumber },
-    include: {
-      resident: {
-        include: { household: true },
-        select: {
-          firstName: true,
-          lastName: true,
-          middleName: true,
-          birthDate: true,
-          gender: true,
-          civilStatus: true,
-          contactNumber: true,
-        },
-      },
+    select: {
+      idNumber: true,
+      status: true,
+      issueDate: true,
+      expiryDate: true,
     },
   });
 
@@ -36,8 +28,6 @@ export async function GET(request: Request) {
     status: barangayId.status,
     issueDate: barangayId.issueDate,
     expiryDate: barangayId.expiryDate,
-    resident: {
-      name: `${barangayId.resident.lastName}, ${barangayId.resident.firstName} ${barangayId.resident.middleName || ""}`,
-    },
+    verified: true,
   });
 }

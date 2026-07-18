@@ -3,10 +3,17 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+const VALID_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const role = (session.user as any).role;
+    if (!["ADMIN", "SECRETARY", "TREASURER"].includes(role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const resident = await prisma.resident.findUnique({
       where: { id: params.id },
@@ -15,7 +22,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
     if (!resident) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(resident);
   } catch (error) {
-    console.error("GET /api/residents/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -26,7 +32,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const role = (session.user as any).role;
-    if (!["ADMIN", "SECRETARY", "STAFF"].includes(role)) {
+    if (!["ADMIN", "SECRETARY"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -62,7 +68,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     return NextResponse.json(resident);
   } catch (error) {
-    console.error("PUT /api/residents/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -80,7 +85,6 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     await prisma.resident.delete({ where: { id: params.id } });
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
-    console.error("DELETE /api/residents/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -91,12 +95,12 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const role = (session.user as any).role;
-    if (!["ADMIN", "SECRETARY", "KAGAWAD"].includes(role)) {
+    if (!["ADMIN", "SECRETARY"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
-    if (!body.status || !["PENDING", "APPROVED", "REJECTED"].includes(body.status)) {
+    if (!body.status || !VALID_STATUSES.includes(body.status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
@@ -107,7 +111,6 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
     return NextResponse.json(resident);
   } catch (error) {
-    console.error("PATCH /api/residents/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

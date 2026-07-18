@@ -3,6 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+const VALID_PRIORITIES = ["URGENT", "IMPORTANT", "GENERAL"] as const;
+const VALID_CATEGORIES = ["HEALTH", "SAFETY", "EVENT", "MEETING", "GENERAL", "OTHERS"] as const;
+
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,6 +17,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 
     const body = await request.json();
+    if (body.priority && !VALID_PRIORITIES.includes(body.priority)) {
+      return NextResponse.json({ error: "Invalid priority" }, { status: 400 });
+    }
+    if (body.category && !VALID_CATEGORIES.includes(body.category)) {
+      return NextResponse.json({ error: "Invalid category" }, { status: 400 });
+    }
+
     const announcement = await prisma.announcement.update({
       where: { id: params.id },
       data: {
@@ -29,7 +39,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     return NextResponse.json(announcement);
   } catch (error) {
-    console.error("PUT /api/announcements/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -63,7 +72,6 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   } catch (error) {
-    console.error("PATCH /api/announcements/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -81,7 +89,6 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     await prisma.announcement.delete({ where: { id: params.id } });
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
-    console.error("DELETE /api/announcements/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

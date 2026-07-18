@@ -4,6 +4,8 @@ import { hash } from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+const VALID_ROLES = ["ADMIN", "SECRETARY", "TREASURER", "KAGAWAD", "STAFF"] as const;
+
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
@@ -21,6 +23,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    if (!VALID_ROLES.includes(newRole)) {
+      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+    }
+
     const data: any = { name, email, role: newRole };
     if (password) {
       data.password = await hash(password, 10);
@@ -34,9 +40,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     return NextResponse.json(user);
   } catch (error: any) {
-    console.error("PUT /api/users/[id] error:", error);
     if (error?.code === "P2002") {
-      return NextResponse.json({ error: "Email already in use" }, { status: 409 });
+      return NextResponse.json({ error: "An account with this email already exists" }, { status: 409 });
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
@@ -52,10 +57,14 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    const currentUserId = (session.user as any).id;
+    if (currentUserId === params.id) {
+      return NextResponse.json({ error: "Cannot delete your own account" }, { status: 400 });
+    }
+
     await prisma.user.delete({ where: { id: params.id } });
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
-    console.error("DELETE /api/users/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -62,27 +62,27 @@ export async function POST(request: Request) {
     }
 
     const year = new Date().getFullYear();
-    const caseNumber = await prisma.$transaction(async (tx) => {
+    const blotter = await prisma.$transaction(async (tx) => {
       const latest = await tx.blotterReport.findFirst({
         where: { caseNumber: { startsWith: `BRG-${year}-` } },
         orderBy: { caseNumber: "desc" },
       });
       const nextNum = latest ? parseInt(latest.caseNumber.split("-")[2]) + 1 : 1;
-      return `BRG-${year}-${String(nextNum).padStart(4, "0")}`;
+      const caseNumber = `BRG-${year}-${String(nextNum).padStart(4, "0")}`;
+
+      return tx.blotterReport.create({
+        data: {
+          caseNumber,
+          complainantName, respondentName,
+          incidentDate: new Date(incidentDate),
+          incidentType, location: location || null,
+          witnesses: witnesses || null, narrative,
+          handledById: (session.user as any).id,
+        },
+      });
     });
 
-    const blotter = await prisma.blotterReport.create({
-      data: {
-        caseNumber,
-        complainantName, respondentName,
-        incidentDate: new Date(incidentDate),
-        incidentType, location: location || null,
-        witnesses: witnesses || null, narrative,
-        handledById: (session.user as any).id,
-      },
-    });
-
-    notifyUsersByRole("KAGAWAD", "New Blotter Report", `Case ${caseNumber}: ${incidentType} reported by ${complainantName} vs ${respondentName}.`, "blotter", "/blotter");
+    notifyUsersByRole("KAGAWAD", "New Blotter Report", `Case ${blotter.caseNumber}: ${incidentType} reported by ${complainantName} vs ${respondentName}.`, "blotter", "/blotter");
 
     return NextResponse.json(blotter, { status: 201 });
   } catch (error) {

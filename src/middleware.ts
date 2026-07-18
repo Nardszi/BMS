@@ -55,7 +55,7 @@ export async function middleware(request: NextRequest) {
   // API route protection
   if (pathname.startsWith("/api/")) {
     const allowedApis = apiRoleRoutes[userRole] || [];
-    const isAllowed = allowedApis.some((route) => pathname.startsWith(route));
+    const isAllowed = allowedApis.some((route) => pathname === route || pathname.startsWith(route + "/"));
     if (!isAllowed) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -66,7 +66,7 @@ export async function middleware(request: NextRequest) {
   const allowedRoutes = roleRoutes[userRole] || [];
   const isAllowed = allowedRoutes.some((route) => {
     if (route === "/") return pathname === "/";
-    return pathname.startsWith(route);
+    return pathname === route || pathname.startsWith(route + "/");
   });
 
   if (!isAllowed) {

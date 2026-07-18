@@ -36,10 +36,12 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { userId, title, message, type, link } = await request.json();
-    if (!userId || !title || !message || !type) {
+    const { title, message, type, link } = await request.json();
+    if (!title || !message || !type) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
+
+    const userId = (session.user as any).id;
 
     const notification = await prisma.notification.create({
       data: { userId, title, message, type, link: link || null },

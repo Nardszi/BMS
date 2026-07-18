@@ -9,13 +9,12 @@ export async function GET() {
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const officials = await prisma.official.findMany({
-      include: { user: true },
+      include: { user: { select: { id: true, name: true, role: true } } },
       orderBy: { termStart: "desc" },
     });
 
     return NextResponse.json(officials);
   } catch (error) {
-    console.error("GET /api/officials error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -37,28 +36,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const existingUserOfficial = await prisma.official.findFirst({
-      where: { userId, termEnd: { gt: new Date() } },
-    });
-    if (existingUserOfficial) {
-      return NextResponse.json({ error: "This user already has an active official record" }, { status: 400 });
+    const userExists = await prisma.user.findUnique({ where: { id: userId } });
+    if (!userExists) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const existingPosition = await prisma.official.findFirst({
-      where: { position, termEnd: { gt: new Date() } },
-    });
-    if (existingPosition) {
-      return NextResponse.json({ error: `Position "${position}" is already filled` }, { status: 400 });
+    const existingOfficial = await prisma.official.findUnique({ where: { userId } });
+    if (existingOfficial) {
+      return NextResponse.json({ error: "User is already an official" }, { status: 409 });
+    }
+
+    const positionTaken = await prisma.official.findFirst({ where: { position } });
+    if (positionTaken) {
+      return NextResponse.json({ error: `Position "${position}" is already occupied` }, { status: 409 });
     }
 
     const official = await prisma.official.create({
-      data: { userId, position, termStart: new Date(termStart), termEnd: new Date(termEnd) },
-      include: { user: true },
+      data: {
+        userId,
+        position,
+        termStart: new Date(termStart),
+        termEnd: new Date(termEnd),
+      },
+      include: { user: { select: { id: true, name: true, role: true } } },
     });
 
     return NextResponse.json(official, { status: 201 });
   } catch (error) {
-    console.error("POST /api/officials error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -21,18 +21,19 @@ export async function DELETE(
       return NextResponse.json({ error: "Household not found" }, { status: 404 });
     }
 
-    const residentCount = await prisma.resident.count({ where: { householdId: params.id } });
-    if (residentCount > 0) {
-      return NextResponse.json(
-        { error: `Cannot delete household with ${residentCount} resident(s). Remove residents first.` },
-        { status: 400 }
-      );
-    }
+    const result = await prisma.$transaction(async (tx) => {
+      const residentCount = await tx.resident.count({ where: { householdId: params.id } });
+      if (residentCount > 0) {
+        throw new Error(`Cannot delete household with ${residentCount} resident(s)`);
+      }
+      return tx.household.delete({ where: { id: params.id } });
+    });
 
-    await prisma.household.delete({ where: { id: params.id } });
     return NextResponse.json({ message: "Household deleted" });
-  } catch (error) {
-    console.error("DELETE /api/households/[id] error:", error);
+  } catch (error: any) {
+    if (error.message?.includes("Cannot delete household")) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
