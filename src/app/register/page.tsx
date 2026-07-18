@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,18 +11,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/toast";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, ChevronRight, ChevronLeft, User, MapPin, Phone, Briefcase, Loader2 } from "lucide-react";
+import {
+  ArrowLeft, CheckCircle2, ChevronRight, ChevronLeft, User, MapPin,
+  Phone, Briefcase, Loader2, Camera, X, Printer, Download, AlertTriangle,
+} from "lucide-react";
+
+const phoneRegex = /^(09|\+639)\d{9}$/;
 
 const registerSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  middleName: z.string().optional(),
+  firstName: z.string().min(1, "First name is required").max(50),
+  lastName: z.string().min(1, "Last name is required").max(50),
+  middleName: z.string().max(50).optional(),
   birthDate: z.string().min(1, "Birth date is required"),
   gender: z.string().min(1, "Gender is required"),
   civilStatus: z.string().min(1, "Civil status is required"),
   address: z.string().min(1, "Address is required"),
   purok: z.string().min(1, "Purok is required"),
-  contactNumber: z.string().min(1, "Contact number is required"),
+  contactNumber: z.string().min(1, "Contact number is required").regex(phoneRegex, "Must be a valid Philippine number (09XXXXXXXXX)"),
   occupation: z.string().optional(),
   emergencyContact: z.string().optional(),
   emergencyPhone: z.string().optional(),
@@ -41,34 +46,142 @@ const steps = [
 const inputClass = "w-full rounded-xl px-4 py-3.5 text-[15px] text-white placeholder:text-white/30 outline-none transition-all duration-300 border-0 focus:ring-2 focus:ring-amber-400/40";
 const inputBg = "bg-white/[0.07] hover:bg-white/[0.1] focus:bg-white/[0.12]";
 
+const STREET_SUGGESTIONS: Record<string, string[]> = {
+  "1": ["Rizal Street", "Mabini Street", "Burgos Street", "Gomburza Street"],
+  "2": ["Bonifacio Avenue", "Aguinaldo Drive", "Luna Street", "Del Pilar Street"],
+  "3": ["Quezon Boulevard", "Roxas Boulevard", "Magsaysay Street", "Osmeña Avenue"],
+  "4": ["Tandang Sora Street", "Katipunan Road", "Marcos Highway", "EDSA Extension"],
+  "5": ["San Juan Street", "Castillejos Road", "P. Burgos Street", "Rajah Sulayman Street"],
+  "6": ["General Luna Street", "Ibarra Street", "Aviles Street", "Fernando Street"],
+  "7": ["Calle Real", "Insurgentes Street", "Derham Street", "Burgos Extension"],
+};
+
+const AUTO_SAVE_KEY = "bms-register-draft";
+
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [refNumber, setRefNumber] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const [mounted, setMounted] = useState(false);
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+  const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
-  const { register, handleSubmit, setValue, watch, trigger, formState: { errors } } = useForm<RegisterForm>({
+  const { register, handleSubmit, setValue, watch, trigger, reset, formState: { errors } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
     mode: "onTouched",
+    defaultValues: (() => {
+      try {
+        const saved = localStorage.getItem(AUTO_SAVE_KEY);
+        if (saved) return JSON.parse(saved);
+      } catch {}
+      return {};
+    })(),
   });
 
   const formData = watch();
 
+  useEffect(() => {
+    const subscription = watch((data) => {
+      try {
+        localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(data));
+      } catch {}
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
+
+  useEffect(() => {
+    const purok = formData.purok;
+    if (purok && STREET_SUGGESTIONS[purok]) {
+      setAddressSuggestions(STREET_SUGGESTIONS[purok]);
+    } else {
+      setAddressSuggestions([]);
+    }
+  }, [formData.purok]);
+
+  useEffect(() => {
+    const checkDuplicate = async () => {
+      if (!formData.firstName || !formData.lastName || !formData.birthDate) {
+        setDuplicateWarning(null);
+        return;
+      }
+      try {
+        const params = new URLSearchParams({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          birthDate: formData.birthDate,
+        });
+        const res = await fetch(`/api/residents/check-duplicate?${params}`);
+        const data = await res.json();
+        if (data.exists) {
+          setDuplicateWarning(
+            `A resident named ${data.resident.firstName} ${data.resident.lastName} already exists (status: ${data.resident.status}).`
+          );
+        } else {
+          setDuplicateWarning(null);
+        }
+      } catch {}
+    };
+    const timer = setTimeout(checkDuplicate, 500);
+    return () => clearTimeout(timer);
+  }, [formData.firstName, formData.lastName, formData.birthDate]);
+
+  const handlePhotoChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Photo too large", description: "Maximum size is 5MB", variant: "error" });
+      return;
+    }
+    setPhoto(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  }, []);
+
+  const uploadPhoto = async (): Promise<string | null> => {
+    if (!photo) return null;
+    const fd = new FormData();
+    fd.append("photo", photo);
+    const res = await fetch("/api/upload/photo", { method: "POST", body: fd });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.url;
+  };
+
+  function getAge(birthDate: string): number {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  }
+
   async function onSubmit(data: RegisterForm) {
+    if (data.birthDate && getAge(data.birthDate) < 15) {
+      toast({ title: "Age Requirement", description: "You must be at least 15 years old to register.", variant: "error" });
+      return;
+    }
     setLoading(true);
     try {
+      const photoUrl = await uploadPhoto();
+      const payload = { ...data, photoUrl };
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         const d = await res.json();
         setRefNumber(d.referenceNumber || "");
         setSuccess(true);
+        localStorage.removeItem(AUTO_SAVE_KEY);
       } else {
         const err = await res.json();
         toast({ title: "Registration Failed", description: err.error || "Please try again", variant: "error" });
@@ -89,14 +202,37 @@ export default function RegisterPage() {
 
   function prevStep() { setCurrentStep((p) => Math.max(p - 1, 1)); }
 
+  function printReference() {
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(`
+      <html><head><title>Registration Reference</title>
+      <style>body{font-family:sans-serif;text-align:center;padding:60px 20px;}
+      h1{font-size:24px;margin-bottom:8px;} p{color:#666;font-size:14px;}
+      .ref{font-size:28px;font-weight:bold;color:#d97706;margin:20px 0;letter-spacing:2px;}
+      .seal{font-size:48px;margin-bottom:16px;}</style></head>
+      <body><div class="seal">Barangay IX</div>
+      <h1>Resident Registration</h1><p>Barangay IX - Daan Banwa, City of Victorias</p>
+      <div class="ref">${refNumber}</div>
+      <p>Please save this reference number for your records.</p>
+      <p style="margin-top:40px;color:#999;font-size:12px;">Printed: ${new Date().toLocaleString()}</p>
+      </body></html>
+    `);
+    win.document.close();
+    win.print();
+  }
+
   if (success) {
     return (
       <div className="relative min-h-screen overflow-hidden bg-[#0a0e1a] flex items-center justify-center p-4">
-        {/* Animated Blobs */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-1/4 -left-1/4 w-[600px] h-[600px] rounded-full bg-amber-500/20 blur-[120px] animate-pulse" />
           <div className="absolute -bottom-1/4 -right-1/4 w-[500px] h-[500px] rounded-full bg-orange-600/15 blur-[100px] animate-pulse" style={{ animationDelay: "1s" }} />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-amber-600/10 blur-[80px] animate-pulse" style={{ animationDelay: "2s" }} />
+        </div>
+
+        <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+          <Image src="/barangay-seal.png" alt="" width={500} height={500} className="object-contain" />
         </div>
 
         <div className={`relative z-10 w-full max-w-md transition-all duration-700 ${mounted ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}>
@@ -115,12 +251,24 @@ export default function RegisterPage() {
               </div>
             )}
             <div className="mt-6 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <Button variant="outline" onClick={printReference} className="h-11 rounded-xl border-white/10 bg-white/[0.05] text-white/70 hover:bg-white/10 hover:text-white text-sm">
+                  <Printer className="mr-2 h-4 w-4" /> Print
+                </Button>
+                <Button variant="outline" onClick={() => {
+                  const text = `Barangay IX Registration\nReference: ${refNumber}\nDate: ${new Date().toLocaleString()}`;
+                  navigator.clipboard.writeText(text);
+                  toast({ title: "Copied", variant: "success" });
+                }} className="h-11 rounded-xl border-white/10 bg-white/[0.05] text-white/70 hover:bg-white/10 hover:text-white text-sm">
+                  <Download className="mr-2 h-4 w-4" /> Copy
+                </Button>
+              </div>
               <Link href="/login">
                 <Button className="h-12 w-full rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-sm font-semibold text-white hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-500/20">
                   Go to Login
                 </Button>
               </Link>
-              <Button variant="ghost" className="h-12 w-full rounded-xl text-sm text-white/50 hover:text-white hover:bg-white/5" onClick={() => { setSuccess(false); setCurrentStep(1); setRefNumber(""); }}>
+              <Button variant="ghost" className="h-12 w-full rounded-xl text-sm text-white/50 hover:text-white hover:bg-white/5" onClick={() => { setSuccess(false); setCurrentStep(1); setRefNumber(""); setPhoto(null); setPhotoPreview(null); }}>
                 Register Another
               </Button>
             </div>
@@ -132,16 +280,13 @@ export default function RegisterPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0a0e1a]">
-      {/* Animated Blob Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-1/4 -left-1/4 w-[700px] h-[700px] rounded-full bg-amber-500/15 blur-[120px] animate-pulse" />
         <div className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] rounded-full bg-orange-600/10 blur-[100px] animate-pulse" style={{ animationDelay: "1.5s" }} />
         <div className="absolute top-1/3 left-1/2 w-[500px] h-[500px] rounded-full bg-amber-600/8 blur-[90px] animate-pulse" style={{ animationDelay: "3s" }} />
       </div>
 
-      {/* Content */}
       <div className="relative z-10 flex min-h-screen flex-col">
-        {/* Header */}
         <div className="sticky top-0 z-20 border-b border-white/5 bg-[#0a0e1a]/40 backdrop-blur-xl">
           <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
             <div className="flex items-center gap-3">
@@ -163,7 +308,6 @@ export default function RegisterPage() {
         </div>
 
         <div className="mx-auto w-full max-w-4xl flex-1 px-4 pb-32 pt-6">
-          {/* Progress Steps */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
               {steps.map((step, index) => (
@@ -198,16 +342,40 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Liquid Glass Card */}
           <div className={`rounded-3xl border border-white/10 bg-white/[0.04] p-5 sm:p-8 shadow-2xl backdrop-blur-2xl transition-all duration-700 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
             <form onSubmit={handleSubmit(onSubmit)}>
-              {/* Step 1: Personal Info */}
               {currentStep === 1 && (
                 <div className="space-y-5">
                   <div>
                     <h3 className="text-xl font-bold text-white">Personal Information</h3>
                     <p className="mt-1 text-[13px] text-white/35">Tell us about yourself</p>
                   </div>
+
+                  <div className="flex justify-center">
+                    <div className="relative group">
+                      <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-full border-2 border-dashed border-white/15 bg-white/[0.03] transition-all hover:border-amber-400/40 hover:bg-white/[0.06]">
+                        {photoPreview ? (
+                          <>
+                            <img src={photoPreview} alt="Preview" className="h-full w-full rounded-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setPhoto(null); setPhotoPreview(null); }}
+                              className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <Camera className="h-6 w-6 text-white/30" />
+                            <span className="mt-1 text-[10px] text-white/25">Photo</span>
+                          </>
+                        )}
+                      </label>
+                      <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label className="text-[13px] font-medium text-white/50">First Name *</Label>
@@ -226,8 +394,13 @@ export default function RegisterPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-[13px] font-medium text-white/50">Birth Date *</Label>
-                    <Input type="date" {...register("birthDate")} className={`${inputClass} ${inputBg}`} />
+                    <Input type="date" {...register("birthDate")} max={new Date().toISOString().split("T")[0]} className={`${inputClass} ${inputBg}`} />
                     {errors.birthDate && <p className="text-[11px] text-red-400/80">{errors.birthDate.message}</p>}
+                    {formData.birthDate && getAge(formData.birthDate) < 15 && (
+                      <p className="text-[11px] text-amber-400/80 flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3" /> You must be at least 15 years old to register
+                      </p>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
@@ -260,19 +433,44 @@ export default function RegisterPage() {
                       {errors.civilStatus && <p className="text-[11px] text-red-400/80">{errors.civilStatus.message}</p>}
                     </div>
                   </div>
+                  {duplicateWarning && (
+                    <div className="rounded-xl border border-amber-400/20 bg-amber-400/5 p-3 flex items-start gap-2">
+                      <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+                      <p className="text-[12px] text-amber-300/80">{duplicateWarning}</p>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Step 2: Address */}
               {currentStep === 2 && (
                 <div className="space-y-5">
                   <div>
                     <h3 className="text-xl font-bold text-white">Address Information</h3>
                     <p className="mt-1 text-[13px] text-white/35">Where do you live?</p>
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 relative">
                     <Label className="text-[13px] font-medium text-white/50">Full Address *</Label>
-                    <Input {...register("address")} placeholder="e.g., 123 Rizal Street" className={`${inputClass} ${inputBg}`} />
+                    <Input
+                      {...register("address")}
+                      placeholder="e.g., 123 Rizal Street"
+                      className={`${inputClass} ${inputBg}`}
+                      onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    />
+                    {showSuggestions && addressSuggestions.length > 0 && (
+                      <div className="absolute z-10 mt-1 w-full rounded-xl border border-white/10 bg-[#141a2e] shadow-xl">
+                        {addressSuggestions.map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            className="w-full px-4 py-2.5 text-left text-[13px] text-white/60 hover:bg-white/[0.06] hover:text-white transition-colors first:rounded-t-xl last:rounded-b-xl"
+                            onMouseDown={() => { setValue("address", `123 ${s}`, { shouldValidate: true }); setShowSuggestions(false); }}
+                          >
+                            123 {s}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     {errors.address && <p className="text-[11px] text-red-400/80">{errors.address.message}</p>}
                   </div>
                   <div className="space-y-1.5">
@@ -298,7 +496,6 @@ export default function RegisterPage() {
                 </div>
               )}
 
-              {/* Step 3: Contact */}
               {currentStep === 3 && (
                 <div className="space-y-5">
                   <div>
@@ -307,8 +504,9 @@ export default function RegisterPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-[13px] font-medium text-white/50">Contact Number *</Label>
-                    <Input {...register("contactNumber")} placeholder="09XXXXXXXXX" type="tel" inputMode="numeric" className={`${inputClass} ${inputBg}`} />
+                    <Input {...register("contactNumber")} placeholder="09XXXXXXXXX" type="tel" inputMode="numeric" maxLength={11} className={`${inputClass} ${inputBg}`} />
                     {errors.contactNumber && <p className="text-[11px] text-red-400/80">{errors.contactNumber.message}</p>}
+                    <p className="text-[11px] text-white/20">Format: 09XXXXXXXXX or +639XXXXXXXXX</p>
                   </div>
                   <div className="rounded-xl bg-white/[0.03] border border-white/5 p-4">
                     <p className="text-[13px] text-white/30">Used for barangay notifications and emergency contact.</p>
@@ -316,7 +514,6 @@ export default function RegisterPage() {
                 </div>
               )}
 
-              {/* Step 4: Additional */}
               {currentStep === 4 && (
                 <div className="space-y-5">
                   <div>
@@ -341,7 +538,7 @@ export default function RegisterPage() {
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-[13px] font-medium text-white/50">Emergency Contact Number</Label>
-                      <Input {...register("emergencyPhone")} placeholder="09XXXXXXXXX" type="tel" inputMode="numeric" className={`${inputClass} ${inputBg}`} />
+                      <Input {...register("emergencyPhone")} placeholder="09XXXXXXXXX" type="tel" inputMode="numeric" maxLength={11} className={`${inputClass} ${inputBg}`} />
                     </div>
                   </div>
                   <div className="rounded-xl bg-white/[0.03] border border-white/5 p-4">
@@ -357,7 +554,6 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Bottom Navigation */}
         <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/5 bg-[#0a0e1a]/60 backdrop-blur-xl safe-area-bottom">
           <div className="mx-auto flex max-w-4xl gap-3 p-4">
             {currentStep > 1 && (

@@ -11,11 +11,11 @@ const roleRoutes: Record<string, string[]> = {
 };
 
 const apiRoleRoutes: Record<string, string[]> = {
-  ADMIN: ["/api/residents", "/api/barangay-ids", "/api/certificates", "/api/blotter", "/api/permits", "/api/officials", "/api/announcements", "/api/reports", "/api/users", "/api/dashboard", "/api/households"],
-  SECRETARY: ["/api/residents", "/api/barangay-ids", "/api/certificates", "/api/blotter", "/api/announcements", "/api/reports", "/api/dashboard"],
-  TREASURER: ["/api/permits", "/api/residents", "/api/reports", "/api/dashboard"],
-  KAGAWAD: ["/api/blotter", "/api/residents", "/api/dashboard"],
-  STAFF: ["/api/residents", "/api/certificates", "/api/dashboard"],
+  ADMIN: ["/api/residents", "/api/barangay-ids", "/api/certificates", "/api/blotter", "/api/permits", "/api/officials", "/api/announcements", "/api/reports", "/api/users", "/api/dashboard", "/api/households", "/api/upload", "/api/notifications"],
+  SECRETARY: ["/api/residents", "/api/barangay-ids", "/api/certificates", "/api/blotter", "/api/announcements", "/api/reports", "/api/dashboard", "/api/upload", "/api/notifications"],
+  TREASURER: ["/api/permits", "/api/residents", "/api/reports", "/api/dashboard", "/api/notifications"],
+  KAGAWAD: ["/api/blotter", "/api/residents", "/api/dashboard", "/api/notifications"],
+  STAFF: ["/api/residents", "/api/certificates", "/api/dashboard", "/api/notifications"],
 };
 
 export async function middleware(request: NextRequest) {

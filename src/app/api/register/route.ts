@@ -51,6 +51,7 @@ export async function POST(request: Request) {
         emergencyContact: body.emergencyContact || null,
         emergencyPhone: body.emergencyPhone || null,
         isRegisteredVoter: body.isRegisteredVoter || false,
+        photoUrl: body.photoUrl || null,
         status: "PENDING",
       },
     });
