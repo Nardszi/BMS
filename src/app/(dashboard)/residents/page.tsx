@@ -15,6 +15,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
 import { Plus, Search, Pencil, Trash2, CheckCircle2, XCircle, Eye, Users, Clock, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { StatusBadge } from "@/components/status-badge";
+import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
 
 const residentSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -225,11 +228,7 @@ export default function ResidentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Residents</h2>
-          <p className="text-sm text-gray-500">Manage barangay resident records and registrations</p>
-        </div>
+      <PageHeader title="Residents" subtitle="Manage barangay resident records and registrations">
         {canEdit && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -348,7 +347,7 @@ export default function ResidentsPage() {
             </DialogContent>
           </Dialog>
         )}
-      </div>
+      </PageHeader>
 
       {/* Status Tabs */}
       <div className="flex gap-2">
@@ -451,9 +450,8 @@ export default function ResidentsPage() {
             <TableBody>
               {residents.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-12 text-center">
-                    <Users className="mx-auto mb-3 h-10 w-10 text-gray-300" />
-                    <p className="text-gray-500">No residents found</p>
+                  <TableCell colSpan={6}>
+                    <EmptyState icon={Users} title="No residents found" />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -465,9 +463,7 @@ export default function ResidentsPage() {
                     <TableCell>Purok {r.household.purok}</TableCell>
                     <TableCell>{r.contactNumber || "-"}</TableCell>
                     <TableCell>
-                      <Badge className={statusColors[r.status] || "bg-gray-100 text-gray-700"}>
-                        {r.status}
-                      </Badge>
+                      <StatusBadge status={r.status} />
                     </TableCell>
                     <TableCell>
                       <Badge variant={r.isRegisteredVoter ? "success" : "secondary"}>
@@ -557,7 +553,7 @@ export default function ResidentsPage() {
                 )}
                 <div>
                   <p className="text-xs font-medium text-gray-500">Status</p>
-                  <Badge className={statusColors[detailResident.status]}>{detailResident.status}</Badge>
+                  <StatusBadge status={detailResident.status} />
                 </div>
                 <div>
                   <p className="text-xs font-medium text-gray-500">Registered Voter</p>

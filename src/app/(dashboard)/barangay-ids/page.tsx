@@ -18,6 +18,9 @@ import { IDCardPDF } from "@/components/id-card-pdf";
 import { downloadAsPDF } from "@/lib/export-pdf";
 import { Plus, CreditCard, Printer, Search, Trash2, Eye, Ban, FileDown } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { StatusBadge } from "@/components/status-badge";
+import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
 
 const idSchema = z.object({
   residentId: z.string().min(1, "Resident is required"),
@@ -159,11 +162,7 @@ export default function BarangayIDsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Barangay ID</h2>
-          <p className="text-sm text-gray-500">Generate and manage official Barangay IDs</p>
-        </div>
+      <PageHeader title="Barangay ID" subtitle="Generate and manage official Barangay IDs">
         {canManage && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -230,10 +229,10 @@ export default function BarangayIDsPage() {
                   <CreditCard className="mr-2 h-4 w-4" /> Generate ID
                 </Button>
               </form>
-            </DialogContent>
-          </Dialog>
+          </DialogContent>
+        </Dialog>
         )}
-      </div>
+      </PageHeader>
 
       <Card>
         <CardContent className="p-0">
@@ -267,9 +266,8 @@ export default function BarangayIDsPage() {
             <TableBody>
               {ids.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="py-12 text-center">
-                    <CreditCard className="mx-auto mb-3 h-10 w-10 text-gray-300" />
-                    <p className="text-gray-500">No Barangay IDs generated yet</p>
+                  <TableCell colSpan={7}>
+                    <EmptyState icon={CreditCard} title="No Barangay IDs generated yet" />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -283,7 +281,7 @@ export default function BarangayIDsPage() {
                     <TableCell className="text-sm">{formatDate(id.issueDate)}</TableCell>
                     <TableCell className="text-sm">{formatDate(id.expiryDate)}</TableCell>
                     <TableCell>
-                      <Badge className={statusColors[id.status]}>{id.status}</Badge>
+                      <StatusBadge status={id.status} />
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => setPreviewID(id)}>

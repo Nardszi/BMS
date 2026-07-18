@@ -18,6 +18,9 @@ import { toast } from "@/components/ui/toast";
 import { Plus, Eye, Download, Printer, Search as SearchIcon } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { StatusBadge } from "@/components/status-badge";
+import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
 
 const blotterSchema = z.object({
   complainantName: z.string().min(1, "Complainant name is required"),
@@ -234,11 +237,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Blotter Reports</h2>
-          <p className="text-sm text-gray-500">Incident reports and case management</p>
-        </div>
+      <PageHeader title="Blotter Reports" subtitle="Incident reports and case management">
         {canCreate && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -303,7 +302,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             </DialogContent>
           </Dialog>
         )}
-      </div>
+      </PageHeader>
 
       {/* Status Tabs */}
       <div className="flex gap-2">
@@ -355,7 +354,11 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             </TableHeader>
             <TableBody>
               {blotters.length === 0 ? (
-                <TableRow><TableCell colSpan={8} className="text-center text-gray-500">No blotter reports</TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={8}>
+                    <EmptyState icon={Eye} title="No blotter reports" />
+                  </TableCell>
+                </TableRow>
               ) : (
                 blotters.map((b) => (
                   <TableRow key={b.id}>
@@ -365,7 +368,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                     <TableCell>{b.incidentType}</TableCell>
                     <TableCell>{new Date(b.incidentDate).toLocaleDateString("en-PH")}</TableCell>
                     <TableCell>
-                      <Badge variant={statusColors[b.status] as any}>{b.status}</Badge>
+                      <StatusBadge status={b.status} />
                     </TableCell>
                     <TableCell>{b.handledBy?.name || "-"}</TableCell>
                     <TableCell className="text-right">
@@ -381,7 +384,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                         </Button>
                         {canCreate && b.status === "OPEN" && (
                           <>
-                            <Button variant="ghost" size="sm" onClick={() => handleResolve(b.id)} className="text-green-600 hover:text-green-700">
+                            <Button variant="ghost" size="sm" onClick={() => handleResolve(b.id)} className="text-emerald-600 hover:text-emerald-700">
                               Resolve
                             </Button>
                             <Button variant="ghost" size="sm" onClick={() => updateStatus(b.id, "ESCALATED")} className="text-yellow-600 hover:text-yellow-700">
@@ -427,9 +430,9 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                 <p className="mt-1 leading-relaxed text-justify">{detailCert.narrative}</p>
               </div>
               {detailCert.resolutionNotes && (
-                <div className="rounded-md border border-green-200 bg-green-50 p-3">
-                  <span className="font-semibold text-green-800">Resolution Notes:</span>
-                  <p className="mt-1 text-green-900">{detailCert.resolutionNotes}</p>
+                <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3">
+                  <span className="font-semibold text-emerald-800">Resolution Notes:</span>
+                  <p className="mt-1 text-emerald-900">{detailCert.resolutionNotes}</p>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4 border-t pt-3 text-xs text-gray-500">
@@ -457,7 +460,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             />
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setResolveTarget(null)}>Cancel</Button>
-              <Button className="bg-green-600 hover:bg-green-700" onClick={confirmResolve}>Confirm Resolve</Button>
+              <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={confirmResolve}>Confirm Resolve</Button>
             </div>
           </div>
         </DialogContent>

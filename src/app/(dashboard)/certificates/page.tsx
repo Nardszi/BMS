@@ -16,6 +16,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
 import { Plus, FileText, Check, X, Eye, Download, Printer } from "lucide-react";
 import { CertificatePDF } from "@/components/certificate-pdf";
+import { StatusBadge } from "@/components/status-badge";
+import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
@@ -212,11 +215,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Certificates</h2>
-          <p className="text-sm text-gray-500">Manage certificate requests</p>
-        </div>
+      <PageHeader title="Certificates" subtitle="Manage certificate requests">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="bg-blue-900 hover:bg-blue-800">
@@ -264,7 +263,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             </form>
           </DialogContent>
         </Dialog>
-      </div>
+      </PageHeader>
 
       <Card>
         <CardContent className="p-0">
@@ -281,7 +280,11 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             </TableHeader>
             <TableBody>
               {certificates.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center text-gray-500">No certificate requests</TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={6}>
+                    <EmptyState icon={FileText} title="No certificate requests" />
+                  </TableCell>
+                </TableRow>
               ) : (
                 certificates.map((c) => (
                   <TableRow key={c.id}>
@@ -291,7 +294,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                     <TableCell>{typeLabels[c.type] || c.type}</TableCell>
                     <TableCell className="max-w-[200px] truncate">{c.purpose}</TableCell>
                     <TableCell>
-                      <Badge variant={statusColors[c.status] as any}>{c.status}</Badge>
+                      <StatusBadge status={c.status} />
                     </TableCell>
                     <TableCell>{new Date(c.requestDate).toLocaleDateString("en-PH")}</TableCell>
                     {canManage && (
@@ -299,7 +302,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                         {c.status === "PENDING" && (
                           <>
                             <Button variant="ghost" size="sm" onClick={() => updateStatus(c.id, "APPROVED")}>
-                              <Check className="h-4 w-4 text-green-500" />
+                              <Check className="h-4 w-4 text-emerald-600" />
                             </Button>
                             <Button variant="ghost" size="sm" onClick={() => updateStatus(c.id, "DENIED")}>
                               <X className="h-4 w-4 text-red-500" />
