@@ -120,6 +120,9 @@ export default function AnnouncementsPage() {
       setEditing(null);
       reset();
       fetchAnnouncements();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to save announcement", variant: "error" });
     }
   }
 
@@ -129,6 +132,9 @@ export default function AnnouncementsPage() {
     if (res.ok) {
       toast({ title: "Announcement Deleted", variant: "success" });
       fetchAnnouncements();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to delete announcement", variant: "error" });
     }
   }
 
@@ -141,6 +147,9 @@ export default function AnnouncementsPage() {
     if (res.ok) {
       toast({ title: ann.pinned ? "Unpinned" : "Pinned", variant: "success" });
       fetchAnnouncements();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to update pin status", variant: "error" });
     }
   }
 

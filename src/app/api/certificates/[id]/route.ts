@@ -36,3 +36,21 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const role = (session.user as any).role;
+    if (!["ADMIN", "SECRETARY"].includes(role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    await prisma.certificateRequest.delete({ where: { id: params.id } });
+    return NextResponse.json({ message: "Deleted" });
+  } catch (error) {
+    console.error("DELETE /api/certificates/[id] error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

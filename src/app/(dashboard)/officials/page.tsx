@@ -127,6 +127,9 @@ export default function OfficialsPage() {
       setEditing(null);
       reset();
       fetchOfficials();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to save official", variant: "error" });
     }
   }
 
@@ -136,6 +139,9 @@ export default function OfficialsPage() {
     if (res.ok) {
       toast({ title: "Official Removed", variant: "success" });
       fetchOfficials();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to remove official", variant: "error" });
     }
   }
 
@@ -159,6 +165,8 @@ export default function OfficialsPage() {
   const handlePrint = () => {
     const content = printRef.current;
     if (!content) return;
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const sealUrl = `${baseUrl}/barangay-seal.png`;
     const w = window.open("", "_blank", "width=816,height=1056");
     if (!w) return;
     w.document.open();
@@ -179,7 +187,7 @@ export default function OfficialsPage() {
       .seal{position:absolute;bottom:0.6in;right:0.8in;width:1.1in;height:1.1in;opacity:0.8}
       .seal img{width:100%;height:100%;object-fit:contain}
     </style></head><body>
-    <div class="wm"><img src="https://raw.githubusercontent.com/Nardszi/BMS/main/public/barangay-seal.png" alt=""></div>
+    <div class="wm"><img src="${sealUrl}" alt=""></div>
     <div class="content">
       <h1>Barangay Officials</h1>
       <div class="subtitle">Barangay IX - Daan Banwa, City of Victorias, Negros Occidental</div>
@@ -193,7 +201,7 @@ export default function OfficialsPage() {
         </tbody>
       </table>
     </div>
-    <div class="seal"><img src="https://raw.githubusercontent.com/Nardszi/BMS/main/public/barangay-seal.png" alt=""></div>
+    <div class="seal"><img src="${sealUrl}" alt=""></div>
     </body></html>`);
     w.document.close();
     w.onload = () => { w.focus(); w.print(); };

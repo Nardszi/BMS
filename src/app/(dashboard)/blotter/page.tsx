@@ -71,7 +71,7 @@ export default function BlotterPage() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [detailCert, setDetailCert] = useState<Blotter | null>(null);
+  const [detailBlotter, setDetailBlotter] = useState<Blotter | null>(null);
   const [resolveNotes, setResolveNotes] = useState("");
   const [resolveTarget, setResolveTarget] = useState<string | null>(null);
   const [counts, setCounts] = useState({ totalCount: 0, openCount: 0, resolvedCount: 0, escalatedCount: 0 });
@@ -105,6 +105,9 @@ export default function BlotterPage() {
       setOpen(false);
       reset();
       fetchBlotters();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to file report", variant: "error" });
     }
   }
 
@@ -119,6 +122,9 @@ export default function BlotterPage() {
     if (res.ok) {
       toast({ title: "Status Updated", variant: "success" });
       fetchBlotters();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to update status", variant: "error" });
     }
   }
 
@@ -373,7 +379,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                     <TableCell>{b.handledBy?.name || "-"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => setDetailCert(b)}>
+                        <Button variant="ghost" size="sm" onClick={() => setDetailBlotter(b)}>
                           <Eye className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => downloadBlotterPDF(b)}>
@@ -403,41 +409,41 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
       </Card>
 
       {/* View Details Dialog */}
-      {detailCert && (
-        <Dialog open={!!detailCert} onOpenChange={() => setDetailCert(null)}>
+      {detailBlotter && (
+        <Dialog open={!!detailBlotter} onOpenChange={() => setDetailBlotter(null)}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto z-[90]">
             <DialogHeader>
-              <DialogTitle className="font-mono">{detailCert.caseNumber}</DialogTitle>
+              <DialogTitle className="font-mono">{detailBlotter.caseNumber}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 text-sm">
               <div className="grid grid-cols-2 gap-4">
-                <div><span className="font-semibold text-gray-500">Complainant:</span><p>{detailCert.complainantName}</p></div>
-                <div><span className="font-semibold text-gray-500">Respondent:</span><p>{detailCert.respondentName}</p></div>
+                <div><span className="font-semibold text-gray-500">Complainant:</span><p>{detailBlotter.complainantName}</p></div>
+                <div><span className="font-semibold text-gray-500">Respondent:</span><p>{detailBlotter.respondentName}</p></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><span className="font-semibold text-gray-500">Date of Incident:</span><p>{new Date(detailCert.incidentDate).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}</p></div>
-                <div><span className="font-semibold text-gray-500">Type:</span><p>{detailCert.incidentType}</p></div>
+                <div><span className="font-semibold text-gray-500">Date of Incident:</span><p>{new Date(detailBlotter.incidentDate).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}</p></div>
+                <div><span className="font-semibold text-gray-500">Type:</span><p>{detailBlotter.incidentType}</p></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><span className="font-semibold text-gray-500">Location:</span><p>{detailCert.location || "N/A"}</p></div>
-                <div><span className="font-semibold text-gray-500">Status:</span><p><Badge variant={statusColors[detailCert.status] as any}>{detailCert.status}</Badge></p></div>
+                <div><span className="font-semibold text-gray-500">Location:</span><p>{detailBlotter.location || "N/A"}</p></div>
+                <div><span className="font-semibold text-gray-500">Status:</span><p><Badge variant={statusColors[detailBlotter.status] as any}>{detailBlotter.status}</Badge></p></div>
               </div>
-              {detailCert.witnesses && (
-                <div><span className="font-semibold text-gray-500">Witnesses:</span><p>{detailCert.witnesses}</p></div>
+              {detailBlotter.witnesses && (
+                <div><span className="font-semibold text-gray-500">Witnesses:</span><p>{detailBlotter.witnesses}</p></div>
               )}
               <div>
                 <span className="font-semibold text-gray-500">Narrative:</span>
-                <p className="mt-1 leading-relaxed text-justify">{detailCert.narrative}</p>
+                <p className="mt-1 leading-relaxed text-justify">{detailBlotter.narrative}</p>
               </div>
-              {detailCert.resolutionNotes && (
+              {detailBlotter.resolutionNotes && (
                 <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3">
                   <span className="font-semibold text-emerald-800">Resolution Notes:</span>
-                  <p className="mt-1 text-emerald-900">{detailCert.resolutionNotes}</p>
+                  <p className="mt-1 text-emerald-900">{detailBlotter.resolutionNotes}</p>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4 border-t pt-3 text-xs text-gray-500">
-                <div>Handled by: {detailCert.handledBy?.name || "N/A"}</div>
-                <div>Date Filed: {new Date(detailCert.createdAt).toLocaleDateString("en-PH")}</div>
+                <div>Handled by: {detailBlotter.handledBy?.name || "N/A"}</div>
+                <div>Date Filed: {new Date(detailBlotter.createdAt).toLocaleDateString("en-PH")}</div>
               </div>
             </div>
           </DialogContent>

@@ -196,6 +196,9 @@ export default function ResidentsPage() {
     if (res.ok) {
       toast({ title: "Resident Deleted", variant: "success" });
       fetchResidents();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to delete resident", variant: "error" });
     }
   }
 

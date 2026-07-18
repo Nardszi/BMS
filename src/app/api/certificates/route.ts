@@ -44,6 +44,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid certificate type" }, { status: 400 });
     }
 
+    const residentExists = await prisma.resident.findUnique({ where: { id: residentId } });
+    if (!residentExists) {
+      return NextResponse.json({ error: "Resident not found" }, { status: 404 });
+    }
+
     const certificate = await prisma.certificateRequest.create({
       data: { residentId, type, purpose },
       include: { resident: true },

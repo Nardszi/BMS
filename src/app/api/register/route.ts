@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+    const rateCheck = checkRateLimit(`register:${ip}`, RATE_LIMITS.register);
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ error: "Too many registration attempts. Please try again later." }, { status: 429 });
+    }
+
     const body = await request.json();
 
     const requiredFields = ["firstName", "lastName", "birthDate", "gender", "civilStatus", "address", "purok", "contactNumber"];
@@ -47,8 +54,7 @@ export async function POST(request: Request) {
       },
     });
 
-    const count = await prisma.resident.count();
-    const refNumber = `REG-${new Date().getFullYear()}-${String(count).padStart(4, "0")}`;
+    const refNumber = `REG-${Date.now().toString(36).toUpperCase()}`;
 
     return NextResponse.json({
       message: "Registration successful! Your records have been submitted to the barangay for verification.",

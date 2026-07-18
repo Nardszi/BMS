@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { Bell, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/ui/toast";
 
 export function Header() {
   const { data: session } = useSession();
@@ -18,7 +19,7 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-3">
-        <button className="relative rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600">
+        <button className="relative rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600" onClick={() => toast({ title: "Notifications", description: "No new notifications", variant: "default" })}>
           <Bell className="h-5 w-5" />
           <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
         </button>

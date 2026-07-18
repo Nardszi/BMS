@@ -125,7 +125,7 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
           {/* Signature */}
           <div style={{ textAlign: "center", flex: 1, margin: "0 8px" }}>
             <div style={{ width: "100%", borderBottom: "1px solid #94a3b8", marginBottom: 2 }} />
-            <div style={{ fontSize: 5, fontWeight: 700, color: "#1e293b" }}>HON. JUAN DELA CRUZ</div>
+            <div style={{ fontSize: 5, fontWeight: 700, color: "#1e293b" }}>Barangay Captain</div>
             <div style={{ fontSize: 4, color: "#64748b" }}>Barangay Captain</div>
           </div>
 
@@ -238,7 +238,7 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
           {/* Signature */}
           <div style={{ textAlign: "center", flex: 1, margin: "0 24px" }}>
             <div style={{ width: "100%", borderBottom: "2px solid #94a3b8", marginBottom: 6 }} />
-            <div style={{ fontSize: 16, fontWeight: 700, color: "#1e293b" }}>HON. JUAN DELA CRUZ</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#1e293b" }}>Barangay Captain</div>
             <div style={{ fontSize: 12, color: "#64748b" }}>Barangay Captain</div>
           </div>
 

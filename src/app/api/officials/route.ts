@@ -37,6 +37,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    const existingUserOfficial = await prisma.official.findFirst({
+      where: { userId, termEnd: { gt: new Date() } },
+    });
+    if (existingUserOfficial) {
+      return NextResponse.json({ error: "This user already has an active official record" }, { status: 400 });
+    }
+
+    const existingPosition = await prisma.official.findFirst({
+      where: { position, termEnd: { gt: new Date() } },
+    });
+    if (existingPosition) {
+      return NextResponse.json({ error: `Position "${position}" is already filled` }, { status: 400 });
+    }
+
     const official = await prisma.official.create({
       data: { userId, position, termStart: new Date(termStart), termEnd: new Date(termEnd) },
       include: { user: true },

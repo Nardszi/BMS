@@ -42,20 +42,38 @@ interface ReportData {
 
 export default function ReportsPage() {
   const [data, setData] = useState<ReportData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [year, setYear] = useState(new Date().getFullYear().toString());
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setLoading(true);
+    setError(false);
     fetch(`/api/reports?year=${year}`)
       .then((res) => res.json())
-      .then(setData)
-      .catch(console.error);
+      .then((d) => { setData(d); setLoading(false); })
+      .catch((err) => {
+        console.error(err);
+        setError(true);
+        setLoading(false);
+      });
   }, [year]);
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading reports...</p></div>;
+  }
+
+  if (error || !data) {
+    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Failed to load reports. Please try again later.</p></div>;
+  }
 
   const handlePrint = () => {
     if (!data) return;
     const w = window.open("", "_blank", "width=816,height=1056");
     if (!w) return;
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const sealUrl = `${baseUrl}/barangay-seal.png`;
     w.document.open();
     w.document.write(`<!DOCTYPE html><html><head><title>Barangay Report ${year}</title>
     <style>
@@ -77,7 +95,7 @@ export default function ReportsPage() {
       .seal{position:fixed;bottom:0.4in;right:0.6in;width:1in;height:1in;opacity:0.7;z-index:0}
       .seal img{width:100%;height:100%;object-fit:contain}
     </style></head><body>
-    <div class="wm"><img src="https://raw.githubusercontent.com/Nardszi/BMS/main/public/barangay-seal.png" alt=""></div>
+    <div class="wm"><img src="${sealUrl}" alt=""></div>
     <div class="content">
       <h1>Barangay Report ${year}</h1>
       <div class="subtitle">Barangay IX - Daan Banwa, City of Victorias, Negros Occidental</div>
@@ -128,7 +146,7 @@ export default function ReportsPage() {
       <tr><td><b>Total</b></td><td><b>${data.blotterStats.total}</b></td></tr>
       </tbody></table>
     </div>
-    <div class="seal"><img src="https://raw.githubusercontent.com/Nardszi/BMS/main/public/barangay-seal.png" alt=""></div>
+    <div class="seal"><img src="${sealUrl}" alt=""></div>
     </body></html>`);
     w.document.close();
     w.onload = () => { w.focus(); w.print(); };

@@ -78,6 +78,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    const ownerExists = await prisma.resident.findUnique({ where: { id: ownerResidentId } });
+    if (!ownerExists) {
+      return NextResponse.json({ error: "Owner resident not found" }, { status: 404 });
+    }
+
     let permitNumber: string;
     let attempts = 0;
     do {

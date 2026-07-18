@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { hash } from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -9,26 +10,34 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const role = (session.user as any).role;
-    if (!["ADMIN", "SECRETARY", "KAGAWAD"].includes(role)) {
+    if (role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
-    if (body.status && !["OPEN", "RESOLVED", "ESCALATED"].includes(body.status)) {
-      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    const { name, email, role: newRole, password } = body;
+
+    if (!name || !email || !newRole) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const blotter = await prisma.blotterReport.update({
+    const data: any = { name, email, role: newRole };
+    if (password) {
+      data.password = await hash(password, 10);
+    }
+
+    const user = await prisma.user.update({
       where: { id: params.id },
-      data: {
-        status: body.status,
-        resolutionNotes: body.resolutionNotes || undefined,
-      },
+      data,
+      select: { id: true, name: true, email: true, role: true, createdAt: true },
     });
 
-    return NextResponse.json(blotter);
-  } catch (error) {
-    console.error("PUT /api/blotter/[id] error:", error);
+    return NextResponse.json(user);
+  } catch (error: any) {
+    console.error("PUT /api/users/[id] error:", error);
+    if (error?.code === "P2002") {
+      return NextResponse.json({ error: "Email already in use" }, { status: 409 });
+    }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -39,14 +48,14 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const role = (session.user as any).role;
-    if (!["ADMIN", "SECRETARY", "KAGAWAD"].includes(role)) {
+    if (role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await prisma.blotterReport.delete({ where: { id: params.id } });
+    await prisma.user.delete({ where: { id: params.id } });
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
-    console.error("DELETE /api/blotter/[id] error:", error);
+    console.error("DELETE /api/users/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

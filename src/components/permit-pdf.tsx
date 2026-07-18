@@ -26,6 +26,8 @@ export function buildPermitHTML(p: PermitProps["permit"]): string {
   const expiryDate = new Date(p.expiryDate).toLocaleDateString("en-PH", {
     year: "numeric", month: "long", day: "numeric",
   });
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const sealUrl = `${baseUrl}/barangay-seal.png`;
 
   return `<!DOCTYPE html>
 <html>
@@ -96,7 +98,7 @@ export function buildPermitHTML(p: PermitProps["permit"]): string {
 </style>
 </head>
 <body>
-  <div class="watermark"><img src="https://raw.githubusercontent.com/Nardszi/BMS/main/public/barangay-seal.png" alt=""></div>
+  <div class="watermark"><img src="${sealUrl}" alt=""></div>
   <div class="content">
     <div class="header">
       <div class="republic">Republic of the Philippines</div>
@@ -118,7 +120,7 @@ export function buildPermitHTML(p: PermitProps["permit"]): string {
     </div>
     <div class="seal-and-sigs">
       <div class="sig-block"><div class="sig-line"><div class="sig-name">${fullName}</div><div class="sig-title">Permit Holder</div></div></div>
-      <div class="seal-img"><img src="https://raw.githubusercontent.com/Nardszi/BMS/main/public/barangay-seal.png" alt="Seal"></div>
+      <div class="seal-img"><img src="${sealUrl}" alt="Seal"></div>
       <div class="sig-block"><div class="sig-line"><div class="sig-name">HON. _______________</div><div class="sig-title">Barangay Captain</div></div></div>
     </div>
   </div>

@@ -74,9 +74,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid civil status" }, { status: 400 });
     }
 
-    const household = await prisma.household.create({
-      data: { householdNumber: `HH-${Date.now()}`, address, purok },
+    let household = await prisma.household.findFirst({
+      where: { address, purok },
     });
+
+    if (!household) {
+      household = await prisma.household.create({
+        data: { householdNumber: `HH-${Date.now().toString(36).toUpperCase()}`, address, purok },
+      });
+    }
 
     const resident = await prisma.resident.create({
       data: {

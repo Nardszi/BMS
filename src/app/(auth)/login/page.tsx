@@ -165,7 +165,7 @@ export default function LoginPage() {
                     <button
                       type="button"
                       className="text-xs font-medium text-amber-400 hover:text-amber-300 transition-colors"
-                      onClick={() => toast({ title: "Password Reset", description: "Please contact your barangay administrator.", variant: "default" })}
+                      onClick={() => window.location.href = "/forgot-password"}
                     >
                       Forgot password?
                     </button>

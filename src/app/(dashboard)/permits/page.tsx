@@ -145,6 +145,9 @@ export default function PermitsPage() {
       setOpen(false);
       reset();
       fetchPermits();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to create permit", variant: "error" });
     }
   }
 
@@ -157,6 +160,9 @@ export default function PermitsPage() {
     if (res.ok) {
       toast({ title: "Permit Revoked", variant: "success" });
       fetchPermits();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to revoke permit", variant: "error" });
     }
   }
 
@@ -170,6 +176,9 @@ export default function PermitsPage() {
     if (res.ok) {
       toast({ title: "Permit Renewed", variant: "success" });
       fetchPermits();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to renew permit", variant: "error" });
     }
   }
 

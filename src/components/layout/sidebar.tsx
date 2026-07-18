@@ -42,6 +42,7 @@ const allNavItems: NavItem[] = [
   { href: "/blotter", label: "Blotter Reports", icon: AlertTriangle, roles: ["ADMIN", "SECRETARY", "KAGAWAD"], group: "Services" },
   { href: "/permits", label: "Business Permits", icon: Building2, roles: ["ADMIN", "TREASURER"], group: "Services" },
   { href: "/officials", label: "Officials", icon: Shield, roles: ["ADMIN"], group: "Administration" },
+  { href: "/users", label: "User Management", icon: Users, roles: ["ADMIN"], group: "Administration" },
   { href: "/announcements", label: "Announcements", icon: Megaphone, roles: ["ADMIN", "SECRETARY"], group: "Administration" },
   { href: "/reports", label: "Reports", icon: BarChart3, roles: ["ADMIN"], group: "Administration" },
 ];
@@ -112,7 +113,7 @@ export function Sidebar() {
               {collapsed && <div className="mx-auto mb-2 h-px w-6 bg-slate-700" />}
               <div className="space-y-1">
                 {items.map((item) => {
-                  const isActive = pathname === item.href;
+                  const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
                   return (
                     <div key={item.href} className="relative">
                       <Link

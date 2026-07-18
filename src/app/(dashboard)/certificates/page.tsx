@@ -95,6 +95,9 @@ export default function CertificatesPage() {
       setOpen(false);
       reset();
       fetchCertificates();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to create request", variant: "error" });
     }
   }
 
@@ -107,6 +110,9 @@ export default function CertificatesPage() {
     if (res.ok) {
       toast({ title: `Certificate ${status.toLowerCase()}`, variant: "success" });
       fetchCertificates();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to update status", variant: "error" });
     }
   }
 

@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
     const announcements = await prisma.announcement.findMany({
       where,
-      include: { postedBy: true },
+      include: { postedBy: { select: { name: true } } },
       orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
     });
 
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         pinned: pinned || false,
         imageUrl: imageUrl || null,
       },
-      include: { postedBy: true },
+      include: { postedBy: { select: { name: true } } },
     });
 
     return NextResponse.json(announcement, { status: 201 });

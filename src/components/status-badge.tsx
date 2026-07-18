@@ -1,5 +1,3 @@
-import { LucideIcon } from "lucide-react";
-
 const STATUS_CONFIG: Record<string, { className: string }> = {
   ACTIVE: { className: "bg-emerald-100 text-emerald-800" },
   APPROVED: { className: "bg-emerald-100 text-emerald-800" },
