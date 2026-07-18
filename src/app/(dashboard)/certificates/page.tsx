@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
-import { Plus, FileText, Check, X, Eye, Download, Printer } from "lucide-react";
+import { Plus, FileText, Check, X, Eye, Download, Printer, RotateCcw } from "lucide-react";
 import { CertificatePDF } from "@/components/certificate-pdf";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
@@ -312,6 +312,11 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                         {c.status === "APPROVED" && (
                           <Button variant="ghost" size="sm" onClick={() => updateStatus(c.id, "RELEASED")}>
                             <FileText className="h-4 w-4 text-blue-500" />
+                          </Button>
+                        )}
+                        {c.status === "DENIED" && (
+                          <Button variant="ghost" size="sm" onClick={() => updateStatus(c.id, "PENDING")} title="Revert to Pending">
+                            <RotateCcw className="h-4 w-4 text-amber-500" />
                           </Button>
                         )}
                         <Button variant="ghost" size="sm" onClick={() => setPreviewCert(c)}>

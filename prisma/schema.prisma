@@ -96,6 +96,7 @@ model User {
   handledBlotters     BlotterReport[]      @relation("HandledBy")
   postedAnnouncements Announcement[]       @relation("PostedBy")
   issuedBarangayIds   BarangayID[]         @relation("IssuedById")
+  auditLogs           AuditLog[]
 }
 
 model Household {
@@ -108,6 +109,9 @@ model Household {
   updatedAt       DateTime @updatedAt
 
   residents Resident[]
+
+  @@index([purok])
+  @@index([householdNumber])
 }
 
 model Resident {
@@ -133,6 +137,12 @@ model Resident {
   certificateRequests CertificateRequest[]
   businessPermits    BusinessPermit[]
   barangayIds        BarangayID[]
+
+  @@index([lastName])
+  @@index([firstName])
+  @@index([status])
+  @@index([householdId])
+  @@index([contactNumber])
 }
 
 model Official {
@@ -161,6 +171,10 @@ model CertificateRequest {
 
   resident Resident @relation(fields: [residentId], references: [id], onDelete: Cascade)
   issuedBy User?    @relation("IssuedBy", fields: [issuedById], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([type])
+  @@index([residentId])
 }
 
 model BlotterReport {
@@ -180,6 +194,10 @@ model BlotterReport {
   updatedAt       DateTime      @updatedAt
 
   handledBy User? @relation("HandledBy", fields: [handledById], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([caseNumber])
+  @@index([incidentType])
 }
 
 model BusinessPermit {
@@ -196,6 +214,11 @@ model BusinessPermit {
   updatedAt       DateTime     @updatedAt
 
   owner Resident @relation(fields: [ownerResidentId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([expiryDate])
+  @@index([ownerResidentId])
+  @@index([permitNumber])
 }
 
 model Announcement {
@@ -212,6 +235,11 @@ model Announcement {
   viewCount  Int                   @default(0)
 
   postedBy User @relation("PostedBy", fields: [postedById], references: [id], onDelete: Cascade)
+
+  @@index([priority])
+  @@index([category])
+  @@index([pinned])
+  @@index([createdAt])
 }
 
 model BarangayID {
@@ -230,4 +258,25 @@ model BarangayID {
 
   resident Resident @relation(fields: [residentId], references: [id], onDelete: Cascade)
   issuedBy User?    @relation("IssuedById", fields: [issuedById], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([residentId])
+  @@index([idNumber])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String
+  entityId  String
+  details   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([entity])
+  @@index([createdAt])
 }

@@ -18,6 +18,8 @@ interface IDCardData {
     gender: string;
     civilStatus: string;
     contactNumber: string | null;
+    emergencyContact: string | null;
+    emergencyPhone: string | null;
     household: { address: string; purok: string };
   };
 }
@@ -103,7 +105,7 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
         {/* Emergency */}
         <div style={{ backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: 3, padding: "3px 6px", marginBottom: 3 }}>
           <div style={{ fontSize: 5, fontWeight: 700, color: "#991b1b" }}>⚠ IN CASE OF EMERGENCY</div>
-          <div style={{ fontSize: 5, color: "#7f1d1d" }}>Contact: <b>{r.lastName}</b> — {r.contactNumber || "N/A"}</div>
+          <div style={{ fontSize: 5, color: "#7f1d1d" }}>Contact: <b>{r.emergencyContact || "N/A"}</b> — {r.emergencyPhone || "N/A"}</div>
         </div>
 
         {/* Bottom row */}
@@ -216,7 +218,7 @@ export function IDCardPDF({ data, showPrintLayout = false, captureId }: IDCardPD
         {/* Emergency */}
         <div style={{ backgroundColor: "#fef2f2", border: "2px solid #fecaca", borderRadius: 6, padding: "10px 16px", marginBottom: 14 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: "#991b1b", marginBottom: 3 }}>⚠ IN CASE OF EMERGENCY</div>
-          <div style={{ fontSize: 15, color: "#7f1d1d", lineHeight: 1.5 }}>Contact: <b style={{ fontSize: 16 }}>{r.lastName}</b> — {r.contactNumber || "N/A"}</div>
+          <div style={{ fontSize: 15, color: "#7f1d1d", lineHeight: 1.5 }}>Contact: <b style={{ fontSize: 16 }}>{r.emergencyContact || "N/A"}</b> — {r.emergencyPhone || "N/A"}</div>
         </div>
 
         {/* Bottom row */}

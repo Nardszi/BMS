@@ -2,8 +2,11 @@
 
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
+import { useSessionTimeout } from "@/hooks/use-session-timeout";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  useSessionTimeout();
+
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <Sidebar />

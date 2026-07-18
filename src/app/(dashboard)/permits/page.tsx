@@ -83,15 +83,8 @@ export default function PermitsPage() {
   const issueDate = watch("issueDate");
 
   const fetchPermits = async () => {
-    const params = new URLSearchParams();
-    if (search) params.set("search", search);
-    if (activeTab === "EXPIRING") params.set("expiringSoon", "true");
-    else if (activeTab !== "ALL") params.set("status", activeTab);
-    const res = await fetch(`/api/permits?${params.toString()}`);
-    const data = await res.json();
-    setPermits(data || []);
-    const allRes = await fetch("/api/permits");
-    const allData = await allRes.json();
+    const res = await fetch("/api/permits");
+    const allData = await res.json();
     const all: Permit[] = allData || [];
     const now = Date.now();
     setStats({
@@ -104,6 +97,26 @@ export default function PermitsPage() {
       }).length,
       expired: all.filter((p) => p.status === "EXPIRED" || (p.status === "ACTIVE" && new Date(p.expiryDate).getTime() < now)).length,
     });
+    let filtered = all;
+    if (search) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter((p) =>
+        p.businessName.toLowerCase().includes(q) ||
+        p.permitNumber.toLowerCase().includes(q) ||
+        p.owner.lastName.toLowerCase().includes(q) ||
+        p.owner.firstName.toLowerCase().includes(q)
+      );
+    }
+    if (activeTab === "ACTIVE") filtered = filtered.filter((p) => p.status === "ACTIVE");
+    else if (activeTab === "EXPIRED") filtered = filtered.filter((p) => p.status === "EXPIRED");
+    else if (activeTab === "EXPIRING") {
+      filtered = filtered.filter((p) => {
+        if (p.status !== "ACTIVE") return false;
+        const days = Math.ceil((new Date(p.expiryDate).getTime() - now) / 86400000);
+        return days > 0 && days <= 30;
+      });
+    }
+    setPermits(filtered);
   };
 
   const fetchResidents = async () => {
@@ -148,23 +161,14 @@ export default function PermitsPage() {
   }
 
   async function renewPermit(permit: Permit) {
-    const issue = new Date().toISOString().split("T")[0];
     const expiry = new Date(Date.now() + 365 * 86400000).toISOString().split("T")[0];
-    const res = await fetch("/api/permits", {
-      method: "POST",
+    const res = await fetch(`/api/permits/${permit.id}`, {
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        businessName: permit.businessName,
-        ownerResidentId: permit.owner ? residents.find((r) => r.lastName === permit.owner.lastName && r.firstName === permit.owner.firstName)?.id : "",
-        businessType: permit.businessType,
-        address: permit.address,
-        issueDate: issue,
-        expiryDate: expiry,
-      }),
+      body: JSON.stringify({ status: "ACTIVE", expiryDate: expiry }),
     });
     if (res.ok) {
-      const created = await res.json();
-      toast({ title: `Permit Renewed — ${created.permitNumber}`, variant: "success" });
+      toast({ title: "Permit Renewed", variant: "success" });
       fetchPermits();
     }
   }

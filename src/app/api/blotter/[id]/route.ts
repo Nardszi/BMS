@@ -4,17 +4,31 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await request.json();
-  const blotter = await prisma.blotterReport.update({
-    where: { id: params.id },
-    data: {
-      status: body.status,
-      resolutionNotes: body.resolutionNotes || undefined,
-    },
-  });
+    const role = (session.user as any).role;
+    if (!["ADMIN", "SECRETARY", "KAGAWAD"].includes(role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
-  return NextResponse.json(blotter);
+    const body = await request.json();
+    if (body.status && !["OPEN", "RESOLVED", "ESCALATED"].includes(body.status)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+
+    const blotter = await prisma.blotterReport.update({
+      where: { id: params.id },
+      data: {
+        status: body.status,
+        resolutionNotes: body.resolutionNotes || undefined,
+      },
+    });
+
+    return NextResponse.json(blotter);
+  } catch (error) {
+    console.error("PUT /api/blotter/[id] error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

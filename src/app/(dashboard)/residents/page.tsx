@@ -112,9 +112,12 @@ export default function ResidentsPage() {
             birthDate: data.birthDate,
             gender: data.gender,
             civilStatus: data.civilStatus,
-            householdId: editing.household.id,
+            address: data.address,
+            purok: data.purok,
             occupation: data.occupation,
             contactNumber: data.contactNumber,
+            emergencyContact: data.emergencyContact,
+            emergencyPhone: data.emergencyPhone,
             isRegisteredVoter: data.isRegisteredVoter || false,
           }),
         });
@@ -129,7 +132,7 @@ export default function ResidentsPage() {
           toast({ title: "Error", description: err.error, variant: "error" });
         }
       } else {
-        const res = await fetch("/api/register", {
+        const res = await fetch("/api/residents", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -295,42 +298,38 @@ export default function ResidentsPage() {
                   </div>
                 </div>
 
-                {!editing && (
-                  <>
-                    <div className="border-t border-gray-100 pt-4">
-                      <p className="mb-3 text-sm font-medium text-gray-700">Address Information</p>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Full Address *</Label>
-                          <Input {...register("address")} placeholder="123 Rizal Street" />
-                          {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Purok *</Label>
-                          <Select onValueChange={(v) => setValue("purok", v)}>
-                            <SelectTrigger><SelectValue placeholder="Select purok" /></SelectTrigger>
-                            <SelectContent>
-                              {[1, 2, 3, 4, 5, 6, 7].map((p) => (
-                                <SelectItem key={p} value={String(p)}>Purok {p}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          {errors.purok && <p className="text-sm text-red-500">{errors.purok.message}</p>}
-                        </div>
-                      </div>
+                <div className="border-t border-gray-100 pt-4">
+                  <p className="mb-3 text-sm font-medium text-gray-700">Address Information</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Full Address *</Label>
+                      <Input {...register("address")} placeholder="123 Rizal Street" />
+                      {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Emergency Contact Name</Label>
-                        <Input {...register("emergencyContact")} placeholder="Optional" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Emergency Contact Number</Label>
-                        <Input {...register("emergencyPhone")} placeholder="Optional" />
-                      </div>
+                    <div className="space-y-2">
+                      <Label>Purok *</Label>
+                      <Select onValueChange={(v) => setValue("purok", v)} defaultValue={editing?.household?.purok}>
+                        <SelectTrigger><SelectValue placeholder="Select purok" /></SelectTrigger>
+                        <SelectContent>
+                          {[1, 2, 3, 4, 5, 6, 7].map((p) => (
+                            <SelectItem key={p} value={String(p)}>Purok {p}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.purok && <p className="text-sm text-red-500">{errors.purok.message}</p>}
                     </div>
-                  </>
-                )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Emergency Contact Name</Label>
+                    <Input {...register("emergencyContact")} placeholder="Optional" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Emergency Contact Number</Label>
+                    <Input {...register("emergencyPhone")} placeholder="Optional" />
+                  </div>
+                </div>
 
                 <div className="space-y-2">
                   <Label>Occupation</Label>

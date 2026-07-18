@@ -49,6 +49,8 @@ interface BarangayIDData {
     gender: string;
     civilStatus: string;
     contactNumber: string | null;
+    emergencyContact: string | null;
+    emergencyPhone: string | null;
     household: { address: string; purok: string };
   };
   issuedBy: { name: string } | null;

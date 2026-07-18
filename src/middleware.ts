@@ -10,11 +10,19 @@ const roleRoutes: Record<string, string[]> = {
   STAFF: ["/", "/residents", "/certificates"],
 };
 
+const apiRoleRoutes: Record<string, string[]> = {
+  ADMIN: ["/api/residents", "/api/barangay-ids", "/api/certificates", "/api/blotter", "/api/permits", "/api/officials", "/api/announcements", "/api/reports", "/api/users", "/api/dashboard", "/api/households"],
+  SECRETARY: ["/api/residents", "/api/barangay-ids", "/api/certificates", "/api/blotter", "/api/announcements", "/api/reports", "/api/dashboard"],
+  TREASURER: ["/api/permits", "/api/residents", "/api/reports", "/api/dashboard"],
+  KAGAWAD: ["/api/blotter", "/api/residents", "/api/dashboard"],
+  STAFF: ["/api/residents", "/api/certificates", "/api/dashboard"],
+};
+
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = request.nextUrl;
 
-  // Allow login page, static assets, API auth routes, verify page, and public register
+  // Allow public routes
   if (
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
@@ -34,15 +42,28 @@ export async function middleware(request: NextRequest) {
 
   // Redirect to login if not authenticated
   if (!token) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Check role-based access
   const userRole = token.role as string;
-  const allowedRoutes = roleRoutes[userRole] || [];
 
+  // API route protection
+  if (pathname.startsWith("/api/")) {
+    const allowedApis = apiRoleRoutes[userRole] || [];
+    const isAllowed = allowedApis.some((route) => pathname.startsWith(route));
+    if (!isAllowed) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    return NextResponse.next();
+  }
+
+  // Page route protection
+  const allowedRoutes = roleRoutes[userRole] || [];
   const isAllowed = allowedRoutes.some((route) => {
     if (route === "/") return pathname === "/";
     return pathname.startsWith(route);
@@ -56,5 +77,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|barangay-seal.png).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|barangay-seal.png).*)"],
 };

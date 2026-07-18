@@ -24,7 +24,10 @@ function Toast({ title, description, variant = "default", onClose }: ToastProps)
   }, [onClose]);
 
   return (
-    <div className={cn("fixed bottom-4 right-4 z-[100] rounded-lg p-4 shadow-lg animate-in slide-in-from-bottom-5", variants[variant])}>
+    <div className={cn(
+      "rounded-lg p-4 shadow-lg animate-in slide-in-from-bottom-5 fade-in duration-300",
+      variants[variant]
+    )}>
       {title && <div className="font-semibold">{title}</div>}
       {description && <div className="mt-1 text-sm opacity-90">{description}</div>}
     </div>
@@ -52,10 +55,12 @@ export function Toaster() {
   }, []);
 
   return (
-    <>
+    <div className="fixed bottom-4 right-4 z-[100] flex flex-col-reverse gap-2 max-h-screen overflow-hidden pointer-events-none">
       {toasts.map((t) => (
-        <Toast key={t.id} {...t} />
+        <div key={t.id} className="pointer-events-auto">
+          <Toast {...t} />
+        </div>
       ))}
-    </>
+    </div>
   );
 }

@@ -4,25 +4,35 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await request.json();
-  const role = (session.user as any).role;
+    const role = (session.user as any).role;
+    if (!["ADMIN", "SECRETARY"].includes(role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
-  if (body.status && !["ADMIN", "SECRETARY"].includes(role)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const body = await request.json();
+    const { status } = body;
+
+    if (!status || !["PENDING", "APPROVED", "RELEASED", "DENIED"].includes(status)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+
+    const certificate = await prisma.certificateRequest.update({
+      where: { id: params.id },
+      data: {
+        status,
+        releaseDate: status === "RELEASED" ? new Date() : undefined,
+        issuedById: status === "APPROVED" ? (session.user as any).id : undefined,
+      },
+      include: { resident: true },
+    });
+
+    return NextResponse.json(certificate);
+  } catch (error) {
+    console.error("PUT /api/certificates/[id] error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  const certificate = await prisma.certificateRequest.update({
-    where: { id: params.id },
-    data: {
-      status: body.status,
-      releaseDate: body.status === "RELEASED" ? new Date() : undefined,
-      issuedById: body.status === "APPROVED" ? (session.user as any).id : undefined,
-    },
-    include: { resident: true },
-  });
-
-  return NextResponse.json(certificate);
 }
