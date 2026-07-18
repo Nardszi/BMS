@@ -3,8 +3,8 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 const roleRoutes: Record<string, string[]> = {
-  ADMIN: ["/", "/residents", "/barangay-ids", "/certificates", "/blotter", "/permits", "/officials", "/announcements", "/reports"],
-  SECRETARY: ["/", "/residents", "/barangay-ids", "/certificates", "/blotter", "/announcements"],
+  ADMIN: ["/", "/residents", "/households", "/barangay-ids", "/certificates", "/blotter", "/permits", "/officials", "/announcements", "/reports", "/users"],
+  SECRETARY: ["/", "/residents", "/households", "/barangay-ids", "/certificates", "/blotter", "/announcements"],
   TREASURER: ["/", "/permits", "/residents"],
   KAGAWAD: ["/", "/blotter"],
   STAFF: ["/", "/residents", "/certificates"],
