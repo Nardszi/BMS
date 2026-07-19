@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/toast";
 import Image from "next/image";
 import Link from "next/link";
-import { Eye, EyeOff, ArrowRight, Loader2, Lock, Mail, Shield, MapPin, Phone } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Loader2, Lock, Mail, Shield, MapPin, Phone, Search, CreditCard } from "lucide-react";
 import { BARANGAY_FULL_NAME, BARANGAY_ADDRESS, BARANGAY_PHONE } from "@/lib/constants";
 
 const loginSchema = z.object({
@@ -27,6 +27,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [idSearch, setIdSearch] = useState("");
 
   useEffect(() => {
     setMounted(true);
@@ -236,6 +237,41 @@ export default function LoginPage() {
                   Register as New Resident
                 </Button>
               </Link>
+
+              {/* Resident ID Verification */}
+              <div className="mt-4 space-y-3">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-200/50">
+                      <CreditCard className="h-4 w-4" />
+                    </div>
+                    <Input
+                      type="text"
+                      placeholder="Enter Resident ID"
+                      value={idSearch}
+                      onChange={(e) => setIdSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && idSearch.trim()) {
+                          window.location.href = `/verify/${idSearch.trim()}`;
+                        }
+                      }}
+                      className="h-11 rounded-xl border-amber-400/20 bg-white/10 pl-10 pr-4 text-sm text-white placeholder:text-white/40 focus:border-amber-400 focus:bg-white/15 focus:ring-2 focus:ring-amber-400/20"
+                    />
+                  </div>
+                  <Link href={idSearch.trim() ? `/verify/${idSearch.trim()}` : "/verify"}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-11 rounded-xl border-amber-400/20 bg-transparent text-sm font-medium text-white hover:bg-amber-400/10 hover:border-amber-400/30 transition-all px-4"
+                    >
+                      <Search className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+                <p className="text-center text-xs text-amber-200/40">
+                  Already have an ID? <Link href="/verify" className="text-amber-400 hover:text-amber-300 transition-colors font-medium">Verify your ID here</Link>
+                </p>
+              </div>
             </div>
 
             {/* Footer */}

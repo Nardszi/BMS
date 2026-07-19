@@ -35,7 +35,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const user = await prisma.user.update({
       where: { id: params.id },
       data,
-      select: { id: true, name: true, email: true, role: true, createdAt: true },
+      select: { id: true, name: true, email: true, role: true, createdAt: true, lastLoginAt: true },
     });
 
     return NextResponse.json(user);

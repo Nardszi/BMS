@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import QRCode from "qrcode";
+
 interface CertificateProps {
   certificate: {
     id: string;
@@ -33,6 +36,12 @@ export function CertificatePDF({ certificate }: CertificateProps) {
   const r = c.resident;
   const fullName = `${r.lastName}, ${r.firstName}${r.middleName ? ` ${r.middleName}` : ""}`;
   const birthDate = new Date(r.birthDate).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+
+  const [qrUrl, setQrUrl] = useState("");
+  useEffect(() => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    QRCode.toDataURL(`${origin}/verify/${c.id}`, { width: 80, margin: 1 }).then(setQrUrl);
+  }, [c.id]);
 
   return (
     <div
@@ -167,6 +176,12 @@ export function CertificatePDF({ certificate }: CertificateProps) {
               <p style={{ fontWeight: 600 }}>Barangay Captain</p>
             </div>
           </div>
+        </div>
+
+        {/* QR Verification */}
+        <div style={{ position: "absolute", bottom: 40, left: 50, textAlign: "center" }}>
+          {qrUrl && <img src={qrUrl} alt="Verify" style={{ width: 70, height: 70 }} />}
+          <p style={{ fontSize: 8, color: "#94a3b8", marginTop: 2 }}>Scan to verify</p>
         </div>
 
         {/* Dates */}

@@ -20,6 +20,7 @@ import {
   ChevronLeft,
   Bell,
   Settings,
+  History,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -44,6 +45,7 @@ const allNavItems: NavItem[] = [
   { href: "/users", label: "User Management", icon: Users, roles: ["ADMIN"], group: "Administration" },
   { href: "/announcements", label: "Announcements", icon: Megaphone, roles: ["ADMIN", "SECRETARY"], group: "Administration" },
   { href: "/reports", label: "Reports", icon: BarChart3, roles: ["ADMIN"], group: "Administration" },
+  { href: "/audit", label: "Audit Trail", icon: History, roles: ["ADMIN", "SECRETARY"], group: "Administration" },
 ];
 
 const roleColors: Record<string, string> = {

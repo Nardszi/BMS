@@ -98,3 +98,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const role = session.user.role;
+    if (!["ADMIN", "SECRETARY"].includes(role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { ids } = body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: "No resident IDs provided" }, { status: 400 });
+    }
+
+    await prisma.resident.deleteMany({ where: { id: { in: ids } } });
+
+    return NextResponse.json({ success: true, deleted: ids.length });
+  } catch (error) {
+    console.error("DELETE /api/residents error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

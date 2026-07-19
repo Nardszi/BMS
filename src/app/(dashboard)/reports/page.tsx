@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
-import { Users, Vote, FileText, Activity, Baby, Briefcase, Heart, Printer, TrendingUp, Award, AlertTriangle, Shield } from "lucide-react";
+import { Users, Vote, FileText, Activity, Baby, Briefcase, Heart, Printer, TrendingUp, Award, AlertTriangle, Shield, Download } from "lucide-react";
 import { BARANGAY_ADDRESS } from "@/lib/constants";
 
 const COLORS = ["#1a56db", "#0e7c61", "#f59e0b", "#dc2626", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16"];
@@ -150,6 +150,20 @@ export default function ReportsPage() {
     return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading reports...</p></div>;
   }
 
+  function exportPopulationCSV() {
+    const headers = ["Purok", "Population"];
+    const rows = data!.populationByPurok.map((p) => [p.purok, String(p.count)]);
+    const csvContent = [headers, ...rows].map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const date = new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.download = `population-by-purok-${date}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   const years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
 
   return (
@@ -166,6 +180,7 @@ export default function ReportsPage() {
               {years.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}
             </SelectContent>
           </Select>
+          <Button variant="outline" onClick={exportPopulationCSV}><Download className="mr-2 h-4 w-4" /> Export CSV</Button>
           <Button variant="outline" onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print Report</Button>
         </div>
       </div>

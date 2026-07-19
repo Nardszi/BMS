@@ -1,7 +1,8 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { Bell, Check, Trash2, FileText, AlertTriangle, Building2, Users, Megaphone } from "lucide-react";
+import { Bell, Check, Trash2, FileText, AlertTriangle, Building2, Users, Megaphone, Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
@@ -36,6 +37,7 @@ const typeColors: Record<string, string> = {
 };
 
 export function Header() {
+  const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
   const role = session?.user?.role ?? "";
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -107,15 +109,23 @@ export function Header() {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-gray-100 bg-white px-6">
+    <header className="flex h-16 items-center justify-between border-b border-gray-100 bg-white px-6 dark:border-gray-800 dark:bg-gray-900">
       <div className="flex items-center gap-4">
         <div className="hidden md:block">
-          <h1 className="text-lg font-semibold text-gray-900">Barangay Management System</h1>
-          <p className="text-xs text-gray-500">{BARANGAY_FULL_NAME}, {BARANGAY_CITY}</p>
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Barangay Management System</h1>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{BARANGAY_FULL_NAME}, {BARANGAY_CITY}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-3">
+        <button
+          className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          aria-label="Toggle theme"
+        >
+          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </button>
+
         <div className="relative" ref={dropdownRef}>
           <button
             className="relative rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
@@ -130,9 +140,9 @@ export function Header() {
           </button>
 
           {open && (
-            <div className="absolute right-0 top-full z-50 mt-2 w-96 rounded-xl border border-gray-200 bg-white shadow-2xl">
-              <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-                <h3 className="text-sm font-semibold text-gray-900">
+            <div className="absolute right-0 top-full z-50 mt-2 w-96 rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-800">
+              <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-700">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                   Notifications
                   {unreadCount > 0 && (
                     <Badge variant="secondary" className="ml-2 text-xs">
@@ -149,8 +159,8 @@ export function Header() {
 
               <div className="max-h-96 overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <div className="py-8 text-center text-sm text-gray-500">
-                    <Bell className="mx-auto mb-2 h-8 w-8 text-gray-300" />
+                  <div className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                    <Bell className="mx-auto mb-2 h-8 w-8 text-gray-300 dark:text-gray-600" />
                     No notifications yet
                   </div>
                 ) : (
@@ -160,8 +170,8 @@ export function Header() {
                     return (
                       <div
                         key={n.id}
-                        className={`flex gap-3 border-b border-gray-50 px-4 py-3 transition-colors hover:bg-gray-50 ${
-                          !n.read ? "bg-blue-50/50" : ""
+                        className={`flex gap-3 border-b border-gray-50 px-4 py-3 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 ${
+                          !n.read ? "bg-blue-50/50 dark:bg-blue-900/20" : ""
                         }`}
                       >
                         <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${colorClass}`}>
@@ -169,12 +179,12 @@ export function Header() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-2">
-                            <p className={`text-sm ${!n.read ? "font-semibold text-gray-900" : "text-gray-700"}`}>
+                            <p className={`text-sm ${!n.read ? "font-semibold text-gray-900 dark:text-gray-100" : "text-gray-700 dark:text-gray-300"}`}>
                               {n.title}
                             </p>
                             <span className="shrink-0 text-[10px] text-gray-400">{timeAgo(n.createdAt)}</span>
                           </div>
-                          <p className="mt-0.5 text-xs text-gray-500 line-clamp-2">{n.message}</p>
+                          <p className="mt-0.5 text-xs text-gray-500 line-clamp-2 dark:text-gray-400">{n.message}</p>
                           <div className="mt-1.5 flex items-center gap-2">
                             {!n.read && (
                               <button
@@ -201,11 +211,11 @@ export function Header() {
           )}
         </div>
 
-        <div className="h-8 w-px bg-gray-200" />
+        <div className="h-8 w-px bg-gray-200 dark:bg-gray-700" />
 
         <div className="flex items-center gap-3">
           <div className="hidden text-right sm:block">
-            <p className="text-sm font-medium text-gray-900">{session?.user?.name}</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{session?.user?.name}</p>
             <Badge variant="outline" className="text-[10px]">
               {role}
             </Badge>

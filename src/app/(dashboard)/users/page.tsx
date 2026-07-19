@@ -30,6 +30,7 @@ interface User {
   email: string;
   role: string;
   createdAt: string;
+  lastLoginAt: string | null;
 }
 
 export default function UsersPage() {
@@ -156,6 +157,7 @@ export default function UsersPage() {
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Created</TableHead>
+                  <TableHead>Last Login</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -170,6 +172,12 @@ export default function UsersPage() {
                       </span>
                     </TableCell>
                     <TableCell>{new Date(u.createdAt).toLocaleDateString("en-PH")}</TableCell>
+                    <TableCell>
+                      {u.lastLoginAt
+                        ? new Date(u.lastLoginAt).toLocaleString("en-PH", { dateStyle: "medium", timeStyle: "short" })
+                        : <span className="text-gray-400 italic">Never</span>
+                      }
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <Button variant="ghost" size="sm" onClick={() => openEdit(u)} aria-label="Edit">

@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
-import { Plus, Search, Pencil, Trash2, CheckCircle2, XCircle, Eye, Users, Clock, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, CheckCircle2, XCircle, Eye, Users, Clock, ArrowUpDown, ArrowUp, ArrowDown, Download } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
@@ -71,9 +71,34 @@ export default function ResidentsPage() {
   const [detailResident, setDetailResident] = useState<Resident | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  function exportToCSV() {
+    const headers = ["First Name", "Last Name", "Middle Name", "Gender", "Civil Status", "Purok", "Address", "Contact Number", "Status"];
+    const rows = residents.map((r) => [
+      r.firstName,
+      r.lastName,
+      r.middleName || "",
+      r.gender,
+      r.civilStatus,
+      r.household.purok,
+      r.household.address,
+      r.contactNumber || "",
+      r.status,
+    ]);
+    const csvContent = [headers, ...rows].map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const date = new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.download = `residents-${date}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   const [pendingCount, setPendingCount] = useState(0);
   const [approvedCount, setApprovedCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const role = session?.user?.role ?? "";
   const canEdit = ["ADMIN", "SECRETARY", "STAFF"].includes(role);
@@ -201,6 +226,63 @@ export default function ResidentsPage() {
       const err = await res.json();
       toast({ title: "Error", description: err.error || "Failed to delete resident", variant: "error" });
     }
+  }
+
+  async function handleBulkDelete() {
+    if (!confirm(`Are you sure you want to delete ${selectedIds.length} selected resident(s)? This cannot be undone.`)) return;
+    try {
+      const res = await fetch("/api/residents", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedIds }),
+      });
+      if (res.ok) {
+        toast({ title: `${selectedIds.length} resident(s) deleted`, variant: "success" });
+        setSelectedIds([]);
+        fetchResidents();
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to delete residents", variant: "error" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
+    }
+  }
+
+  function printAll() {
+    const headers = ["Name", "Purok", "Contact", "Status", "Voter"];
+    const rows = residents.map((r) => [
+      `${r.lastName}, ${r.firstName} ${r.middleName || ""}`,
+      `Purok ${r.household.purok}`,
+      r.contactNumber || "-",
+      r.status,
+      r.isRegisteredVoter ? "Yes" : "No",
+    ]);
+    const html = `
+      <html><head><title>Residents List</title>
+      <style>
+        @page { size: landscape; margin: 15mm; }
+        body { font-family: Arial, sans-serif; }
+        h1 { font-size: 18px; margin-bottom: 4px; }
+        p { font-size: 12px; color: #666; margin: 0 0 16px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+        th { background: #f0f0f0; font-weight: bold; }
+        tr:nth-child(even) { background: #fafafa; }
+      </style>
+      </head><body>
+      <h1>Barangay Residents List</h1>
+      <p>Generated: ${new Date().toLocaleString()}</p>
+      <table>
+        <thead><tr>${headers.map((h) => `<th>${h}</th>`).join("")}</tr></thead>
+        <tbody>${rows.map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("")}</tbody>
+      </table>
+      <script>window.onload = function() { window.print(); }</script>
+      </body></html>`;
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    printWindow.document.write(html);
+    printWindow.document.close();
   }
 
   function openEdit(resident: Resident) {
@@ -438,11 +520,40 @@ export default function ResidentsPage() {
               >
                 {sortOrder === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
               </Button>
+              {residents.length > 0 && (
+                <>
+                  <Button variant="outline" size="sm" onClick={exportToCSV}>
+                    <Download className="mr-2 h-4 w-4" /> Export CSV
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={printAll}>
+                    <Download className="mr-2 h-4 w-4" /> Print All
+                  </Button>
+                </>
+              )}
+              {selectedIds.length > 0 && (
+                <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete Selected ({selectedIds.length})
+                </Button>
+              )}
             </div>
           </div>
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">
+                  <input
+                    type="checkbox"
+                    className="rounded"
+                    checked={residents.length > 0 && selectedIds.length === residents.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedIds(residents.map((r) => r.id));
+                      } else {
+                        setSelectedIds([]);
+                      }
+                    }}
+                  />
+                </TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Purok</TableHead>
                 <TableHead>Contact</TableHead>
@@ -454,13 +565,27 @@ export default function ResidentsPage() {
             <TableBody>
               {residents.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6}>
+                  <TableCell colSpan={7}>
                     <EmptyState icon={Users} title="No residents found" />
                   </TableCell>
                 </TableRow>
               ) : (
                 residents.map((r) => (
                   <TableRow key={r.id}>
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        className="rounded"
+                        checked={selectedIds.includes(r.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedIds((prev) => [...prev, r.id]);
+                          } else {
+                            setSelectedIds((prev) => prev.filter((id) => id !== r.id));
+                          }
+                        }}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium">
                       {r.lastName}, {r.firstName} {r.middleName || ""}
                     </TableCell>
