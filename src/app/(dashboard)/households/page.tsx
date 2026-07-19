@@ -165,8 +165,8 @@ export default function HouseholdsPage() {
                     <Select onValueChange={(v) => setValue("purok", v)}>
                       <SelectTrigger><SelectValue placeholder="Select purok" /></SelectTrigger>
                       <SelectContent>
-                        {[1, 2, 3, 4, 5, 6, 7].map((p) => (
-                          <SelectItem key={p} value={String(p)}>Purok {p}</SelectItem>
+                        {[1, 2, 3, 4, 5, 6, 7, 8, "Toreno", "Aji"].map((p) => (
+                          <SelectItem key={p} value={String(p)}>{isNaN(Number(p)) ? p : `Purok ${p}`}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -202,8 +202,8 @@ export default function HouseholdsPage() {
               <SelectTrigger className="w-40"><SelectValue placeholder="All Puroks" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Puroks</SelectItem>
-                {[1, 2, 3, 4, 5, 6, 7].map((p) => (
-                  <SelectItem key={p} value={String(p)}>Purok {p}</SelectItem>
+                {[1, 2, 3, 4, 5, 6, 7, 8, "Toreno", "Aji"].map((p) => (
+                  <SelectItem key={p} value={String(p)}>{isNaN(Number(p)) ? p : `Purok ${p}`}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

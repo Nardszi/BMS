@@ -46,6 +46,8 @@ const steps = [
 const inputClass = "w-full rounded-xl px-4 py-3.5 text-[15px] text-white placeholder:text-white/30 outline-none transition-all duration-300 border-0 focus:ring-2 focus:ring-amber-400/40";
 const inputBg = "bg-white/[0.07] hover:bg-white/[0.1] focus:bg-white/[0.12]";
 
+const PUROK_OPTIONS = ["1", "2", "3", "4", "5", "6", "7", "8", "Toreno", "Aji"];
+
 const STREET_SUGGESTIONS: Record<string, string[]> = {
   "1": ["Rizal Street", "Mabini Street", "Burgos Street", "Gomburza Street"],
   "2": ["Bonifacio Avenue", "Aguinaldo Drive", "Luna Street", "Del Pilar Street"],
@@ -54,6 +56,9 @@ const STREET_SUGGESTIONS: Record<string, string[]> = {
   "5": ["San Juan Street", "Castillejos Road", "P. Burgos Street", "Rajah Sulayman Street"],
   "6": ["General Luna Street", "Ibarra Street", "Aviles Street", "Fernando Street"],
   "7": ["Calle Real", "Insurgentes Street", "Derham Street", "Burgos Extension"],
+  "8": ["Valencia Street", "Quezon Avenue", "Banilad Road", "Victoria Street"],
+  "Toreno": ["Toreno Main Road", "Toreno Extension", "Toreno Purok Road"],
+  "Aji": ["Aji Street", "Aji Extension", "Aji Road"],
 };
 
 const AUTO_SAVE_KEY = "bms-register-draft";
@@ -480,8 +485,8 @@ export default function RegisterPage() {
                         <SelectValue placeholder="Select purok" />
                       </SelectTrigger>
                       <SelectContent className="border-white/10 bg-[#141a2e] text-white backdrop-blur-xl">
-                        {[1, 2, 3, 4, 5, 6, 7].map((p) => (
-                          <SelectItem key={p} value={String(p)}>Purok {p}</SelectItem>
+                        {[1, 2, 3, 4, 5, 6, 7, 8, "Toreno", "Aji"].map((p) => (
+                          <SelectItem key={p} value={String(p)}>{isNaN(Number(p)) ? p : `Purok ${p}`}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
