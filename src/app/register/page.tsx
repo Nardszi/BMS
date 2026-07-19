@@ -48,19 +48,6 @@ const inputBg = "bg-white/[0.07] hover:bg-white/[0.1] focus:bg-white/[0.12]";
 
 const PUROK_OPTIONS = ["1", "2", "3", "4", "5", "6", "7", "8", "Toreno", "Aji"];
 
-const STREET_SUGGESTIONS: Record<string, string[]> = {
-  "1": ["Rizal Street", "Mabini Street", "Burgos Street", "Gomburza Street"],
-  "2": ["Bonifacio Avenue", "Aguinaldo Drive", "Luna Street", "Del Pilar Street"],
-  "3": ["Quezon Boulevard", "Roxas Boulevard", "Magsaysay Street", "Osmeña Avenue"],
-  "4": ["Tandang Sora Street", "Katipunan Road", "Marcos Highway", "EDSA Extension"],
-  "5": ["San Juan Street", "Castillejos Road", "P. Burgos Street", "Rajah Sulayman Street"],
-  "6": ["General Luna Street", "Ibarra Street", "Aviles Street", "Fernando Street"],
-  "7": ["Calle Real", "Insurgentes Street", "Derham Street", "Burgos Extension"],
-  "8": ["Valencia Street", "Quezon Avenue", "Banilad Road", "Victoria Street"],
-  "Toreno": ["Toreno Main Road", "Toreno Extension", "Toreno Purok Road"],
-  "Aji": ["Aji Street", "Aji Extension", "Aji Road"],
-};
-
 const AUTO_SAVE_KEY = "bms-register-draft";
 
 export default function RegisterPage() {
@@ -72,8 +59,6 @@ export default function RegisterPage() {
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
-  const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -101,13 +86,11 @@ export default function RegisterPage() {
   }, [watch]);
 
   useEffect(() => {
-    const purok = formData.purok;
-    if (purok && STREET_SUGGESTIONS[purok]) {
-      setAddressSuggestions(STREET_SUGGESTIONS[purok]);
-    } else {
-      setAddressSuggestions([]);
+    if (formData.purok) {
+      const purokLabel = isNaN(Number(formData.purok)) ? formData.purok : `Purok ${formData.purok}`;
+      setValue("address", `${purokLabel}, Victorias City, Negros Occidental`, { shouldValidate: true });
     }
-  }, [formData.purok]);
+  }, [formData.purok, setValue]);
 
   useEffect(() => {
     const checkDuplicate = async () => {
@@ -199,7 +182,7 @@ export default function RegisterPage() {
   async function nextStep() {
     let fields: (keyof RegisterForm)[] = [];
     if (currentStep === 1) fields = ["firstName", "lastName", "birthDate", "gender", "civilStatus"];
-    else if (currentStep === 2) fields = ["address", "purok"];
+    else if (currentStep === 2) fields = ["purok"];
     else if (currentStep === 3) fields = ["contactNumber"];
     const isValid = await trigger(fields);
     if (isValid) setCurrentStep((p) => Math.min(p + 1, 4));
@@ -453,31 +436,6 @@ export default function RegisterPage() {
                     <h3 className="text-xl font-bold text-white">Address Information</h3>
                     <p className="mt-1 text-[13px] text-white/35">Where do you live?</p>
                   </div>
-                  <div className="space-y-1.5 relative">
-                    <Label className="text-[13px] font-medium text-white/50">Full Address *</Label>
-                    <Input
-                      {...register("address")}
-                      placeholder="e.g., 123 Rizal Street"
-                      className={`${inputClass} ${inputBg}`}
-                      onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
-                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    />
-                    {showSuggestions && addressSuggestions.length > 0 && (
-                      <div className="absolute z-10 mt-1 w-full rounded-xl border border-white/10 bg-[#141a2e] shadow-xl">
-                        {addressSuggestions.map((s) => (
-                          <button
-                            key={s}
-                            type="button"
-                            className="w-full px-4 py-2.5 text-left text-[13px] text-white/60 hover:bg-white/[0.06] hover:text-white transition-colors first:rounded-t-xl last:rounded-b-xl"
-                            onMouseDown={() => { setValue("address", `123 ${s}`, { shouldValidate: true }); setShowSuggestions(false); }}
-                          >
-                            123 {s}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    {errors.address && <p className="text-[11px] text-red-400/80">{errors.address.message}</p>}
-                  </div>
                   <div className="space-y-1.5">
                     <Label className="text-[13px] font-medium text-white/50">Purok / Zone *</Label>
                     <Select onValueChange={(v) => setValue("purok", v)}>
@@ -485,19 +443,25 @@ export default function RegisterPage() {
                         <SelectValue placeholder="Select purok" />
                       </SelectTrigger>
                       <SelectContent className="border-white/10 bg-[#141a2e] text-white backdrop-blur-xl">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, "Toreno", "Aji"].map((p) => (
+                        {PUROK_OPTIONS.map((p) => (
                           <SelectItem key={p} value={String(p)}>{isNaN(Number(p)) ? p : `Purok ${p}`}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                     {errors.purok && <p className="text-[11px] text-red-400/80">{errors.purok.message}</p>}
                   </div>
-                  <div className="rounded-xl bg-white/[0.03] border border-white/5 p-4">
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-white/20 mb-1">Preview Address</p>
-                    <p className="text-[14px] text-white/60">
-                      {formData.address || "123 Rizal Street"}, {formData.purok ? `Purok ${formData.purok}` : "Purok ___"}
-                    </p>
-                  </div>
+                  {formData.purok ? (
+                    <div className="rounded-xl bg-white/[0.03] border border-white/5 p-4">
+                      <p className="text-[10px] uppercase tracking-[0.15em] text-white/20 mb-1">Your Address</p>
+                      <p className="text-[14px] text-white/60">
+                        {formData.address || `${isNaN(Number(formData.purok)) ? formData.purok : `Purok ${formData.purok}`}, Victorias City, Negros Occidental`}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl bg-white/[0.03] border border-white/5 p-4">
+                      <p className="text-[13px] text-white/25">Select your purok to see your address</p>
+                    </div>
+                  )}
                 </div>
               )}
 
