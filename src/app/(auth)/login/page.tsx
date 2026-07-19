@@ -64,8 +64,8 @@ export default function LoginPage() {
       {/* Full-Screen Background Image */}
       <div className="absolute inset-0">
         <Image
-          src="/login-bg.jpg"
-          alt="Daan Banwa - Coastal Scenery"
+          src="/login-bg.png"
+          alt="Barangay IX - Daan Banwa, City of Victorias"
           fill
           className="object-cover"
           priority
