@@ -3,16 +3,16 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 const roleRoutes: Record<string, string[]> = {
-  ADMIN: ["/", "/residents", "/households", "/barangay-ids", "/certificates", "/blotter", "/permits", "/officials", "/announcements", "/reports", "/users"],
-  SECRETARY: ["/", "/residents", "/households", "/barangay-ids", "/certificates", "/blotter", "/announcements"],
+  ADMIN: ["/", "/residents", "/barangay-ids", "/certificates", "/blotter", "/permits", "/officials", "/announcements", "/reports", "/users"],
+  SECRETARY: ["/", "/residents", "/barangay-ids", "/certificates", "/blotter", "/announcements"],
   TREASURER: ["/", "/permits", "/residents"],
   KAGAWAD: ["/", "/blotter"],
   STAFF: ["/", "/residents", "/certificates"],
 };
 
 const apiRoleRoutes: Record<string, string[]> = {
-  ADMIN: ["/api/residents", "/api/barangay-ids", "/api/certificates", "/api/blotter", "/api/permits", "/api/officials", "/api/announcements", "/api/reports", "/api/users", "/api/dashboard", "/api/households", "/api/upload", "/api/notifications"],
-  SECRETARY: ["/api/residents", "/api/barangay-ids", "/api/certificates", "/api/blotter", "/api/announcements", "/api/reports", "/api/dashboard", "/api/upload", "/api/notifications", "/api/households"],
+  ADMIN: ["/api/residents", "/api/barangay-ids", "/api/certificates", "/api/blotter", "/api/permits", "/api/officials", "/api/announcements", "/api/reports", "/api/users", "/api/dashboard", "/api/upload", "/api/notifications"],
+  SECRETARY: ["/api/residents", "/api/barangay-ids", "/api/certificates", "/api/blotter", "/api/announcements", "/api/reports", "/api/dashboard", "/api/upload", "/api/notifications"],
   TREASURER: ["/api/permits", "/api/residents", "/api/reports", "/api/dashboard", "/api/notifications"],
   KAGAWAD: ["/api/blotter", "/api/residents", "/api/dashboard", "/api/notifications"],
   STAFF: ["/api/residents", "/api/certificates", "/api/dashboard", "/api/notifications"],

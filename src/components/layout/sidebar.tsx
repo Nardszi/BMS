@@ -36,7 +36,6 @@ interface NavItem {
 const allNavItems: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN", "SECRETARY", "TREASURER", "KAGAWAD", "STAFF"], group: "Overview" },
   { href: "/residents", label: "Residents", icon: Users, roles: ["ADMIN", "SECRETARY", "TREASURER", "KAGAWAD", "STAFF"], group: "Records" },
-  { href: "/households", label: "Households", icon: Users, roles: ["ADMIN", "SECRETARY"], group: "Records" },
   { href: "/barangay-ids", label: "Barangay IDs", icon: CreditCard, roles: ["ADMIN", "SECRETARY"], group: "Records" },
   { href: "/certificates", label: "Certificates", icon: FileText, roles: ["ADMIN", "SECRETARY", "STAFF"], group: "Services" },
   { href: "/blotter", label: "Blotter Reports", icon: AlertTriangle, roles: ["ADMIN", "SECRETARY", "KAGAWAD"], group: "Services" },
