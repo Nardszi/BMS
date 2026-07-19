@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
-import { Users, Home, Vote, FileText, Activity, Scale, Baby, Briefcase, Heart, Printer, TrendingUp, Award, AlertTriangle, Shield } from "lucide-react";
+import { Users, Vote, FileText, Activity, Baby, Briefcase, Heart, Printer, TrendingUp, Award, AlertTriangle, Shield } from "lucide-react";
 
 const COLORS = ["#1a56db", "#0e7c61", "#f59e0b", "#dc2626", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16"];
 const GENDER_COLORS = ["#3b82f6", "#ec4899", "#a855f7"];
@@ -102,15 +102,8 @@ export default function ReportsPage() {
 
       <div class="stats">
         <div class="stat"><div class="num">${data.totalResidents}</div><div class="label">Total Population</div></div>
-        <div class="stat"><div class="num">${data.totalHouseholds}</div><div class="label">Households</div></div>
         <div class="stat"><div class="num">${data.voterCount}</div><div class="label">Voters (${data.voterPercentage}%)</div></div>
-        <div class="stat"><div class="num">${data.householdStats.average}</div><div class="label">Avg. Household Size</div></div>
       </div>
-
-      <h2>Population by Purok</h2>
-      <table><thead><tr><th>Purok</th><th>Population</th><th>Households</th><th>Avg. Size</th></tr></thead><tbody>
-      ${data.purokDetails.map((p) => `<tr><td>${p.purok}</td><td>${p.population}</td><td>${p.households}</td><td>${p.avgSize}</td></tr>`).join("")}
-      </tbody></table>
 
       <h2>Demographics</h2>
       <table><thead><tr><th>Gender</th><th>Count</th><th>%</th></tr></thead><tbody>
@@ -186,20 +179,8 @@ export default function ReportsPage() {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700"><Home className="h-5 w-5" /></div>
-            <div><div className="text-2xl font-bold">{data.totalHouseholds}</div><div className="text-xs text-gray-500">Households</div></div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-amber-100 text-amber-700"><Vote className="h-5 w-5" /></div>
             <div><div className="text-2xl font-bold">{data.voterCount}</div><div className="text-xs text-gray-500">Voters ({data.voterPercentage}%)</div></div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple-100 text-purple-700"><Scale className="h-5 w-5" /></div>
-            <div><div className="text-2xl font-bold">{data.householdStats.average}</div><div className="text-xs text-gray-500">Avg. HH Size</div></div>
           </CardContent>
         </Card>
       </div>
@@ -322,37 +303,10 @@ export default function ReportsPage() {
         </CardContent>
       </Card>
 
-      {/* Purok Table + Permits/Blotters */}
+      {/* Permits & Blotters */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle className="text-sm">Purok Comparison</CardTitle></CardHeader>
-          <CardContent className="p-0">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-gray-50">
-                  <th className="text-left p-3 font-medium">Purok</th>
-                  <th className="text-right p-3 font-medium">Population</th>
-                  <th className="text-right p-3 font-medium">Households</th>
-                  <th className="text-right p-3 font-medium">Avg. Size</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.purokDetails.map((p) => (
-                  <tr key={p.purok} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="p-3 font-medium">{p.purok}</td>
-                    <td className="p-3 text-right">{p.population}</td>
-                    <td className="p-3 text-right">{p.households}</td>
-                    <td className="p-3 text-right">{p.avgSize}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader><CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4" /> Business Permits</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4" /> Business Permits</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
                 <div className="text-center p-3 bg-emerald-50 rounded-lg"><div className="text-xl font-bold text-emerald-700">{data.permitStats.active}</div><div className="text-xs text-gray-500">Active</div></div>
@@ -374,7 +328,6 @@ export default function ReportsPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
       </div>
 
       <div className="hidden"><div ref={printRef}></div></div>
