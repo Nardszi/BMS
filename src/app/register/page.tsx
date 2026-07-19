@@ -43,7 +43,7 @@ const steps = [
   { id: 4, title: "Other", icon: Briefcase },
 ];
 
-const inputClass = "w-full rounded-xl px-4 py-3.5 text-[15px] text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-300 border border-gray-200 focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400";
+const inputClass = "w-full rounded-xl px-4 py-3 text-[16px] text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-300 border border-gray-200 focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400";
 const inputBg = "bg-white hover:bg-gray-50 focus:bg-white";
 
 const PUROK_OPTIONS = ["1", "2", "3", "4", "5", "6", "7", "8", "Toreno", "Aji"];
@@ -185,51 +185,50 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-amber-50 via-white to-orange-50 flex items-center justify-center p-4">
+      <div className="relative min-h-[100dvh] overflow-hidden bg-gradient-to-br from-amber-50 via-white to-orange-50 flex items-center justify-center p-4 sm:p-6">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-1/4 -left-1/4 w-[600px] h-[600px] rounded-full bg-amber-200/40 blur-[120px] animate-pulse" />
           <div className="absolute -bottom-1/4 -right-1/4 w-[500px] h-[500px] rounded-full bg-orange-200/30 blur-[100px] animate-pulse" style={{ animationDelay: "1s" }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-amber-100/50 blur-[80px] animate-pulse" style={{ animationDelay: "2s" }} />
         </div>
 
         <div className="absolute inset-0 flex items-center justify-center opacity-[0.06] pointer-events-none">
-          <Image src="/barangay-seal.png" alt="" width={500} height={500} className="object-contain" />
+          <Image src="/barangay-seal.png" alt="" width={400} height={400} className="object-contain" />
         </div>
 
-        <div className={`relative z-10 w-full max-w-md transition-all duration-700 ${mounted ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}>
-          <div className="rounded-3xl border border-gray-200 bg-white/80 p-8 sm:p-10 shadow-2xl backdrop-blur-xl">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-300/40">
-              <CheckCircle2 className="h-10 w-10 text-gray-900" />
+        <div className={`relative z-10 w-full max-w-sm transition-all duration-700 ${mounted ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}>
+          <div className="rounded-2xl sm:rounded-3xl border border-gray-200 bg-white/90 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+            <div className="mx-auto mb-5 flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-300/40">
+              <CheckCircle2 className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 text-center">Registration Successful!</h2>
-            <p className="mt-3 text-sm text-gray-500 text-center">
-              Your information has been submitted. Our staff will review and verify your records.
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 text-center">Registration Successful!</h2>
+            <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-500 text-center">
+              Your information has been submitted for review.
             </p>
             {refNumber && (
-              <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
+              <div className="mt-4 sm:mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 sm:p-4 text-center">
                 <p className="text-[10px] uppercase tracking-[0.15em] text-amber-600 mb-1">Reference Number</p>
-                <p className="text-lg font-mono font-bold text-amber-700">{refNumber}</p>
+                <p className="text-base sm:text-lg font-mono font-bold text-amber-700 break-all">{refNumber}</p>
               </div>
             )}
-            <div className="mt-6 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="mt-5 sm:mt-6 space-y-2.5">
+              <div className="grid grid-cols-2 gap-2.5">
                 <Button variant="outline" onClick={printReference} className="h-11 rounded-xl border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 text-sm">
-                  <Printer className="mr-2 h-4 w-4" /> Print
+                  <Printer className="mr-1.5 h-4 w-4" /> <span className="hidden xs:inline">Print</span><span className="xs:hidden">Print</span>
                 </Button>
                 <Button variant="outline" onClick={() => {
                   const text = `Barangay IX Registration\nReference: ${refNumber}\nDate: ${new Date().toLocaleString()}`;
                   navigator.clipboard.writeText(text);
-                  toast({ title: "Copied", variant: "success" });
+                  toast({ title: "Copied!", variant: "success" });
                 }} className="h-11 rounded-xl border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 text-sm">
-                  <Download className="mr-2 h-4 w-4" /> Copy
+                  <Download className="mr-1.5 h-4 w-4" /> Copy
                 </Button>
               </div>
-              <Link href="/login">
-                <Button className="h-12 w-full rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-sm font-semibold text-gray-900 hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-400/30">
+              <Link href="/login" className="block">
+                <Button className="h-12 w-full rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-sm font-semibold text-white hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-400/30">
                   Go to Login
                 </Button>
               </Link>
-              <Button variant="ghost" className="h-12 w-full rounded-xl text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100" onClick={() => { setSuccess(false); setCurrentStep(1); setRefNumber(""); }}>
+              <Button variant="ghost" className="h-11 w-full rounded-xl text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100" onClick={() => { setSuccess(false); setCurrentStep(1); setRefNumber(""); }}>
                 Register Another
               </Button>
             </div>
@@ -240,58 +239,58 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-amber-50 via-white to-orange-50">
+    <div className="relative min-h-[100dvh] overflow-hidden bg-gradient-to-br from-amber-50 via-white to-orange-50">
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/4 -left-1/4 w-[700px] h-[700px] rounded-full bg-amber-200/30 blur-[120px] animate-pulse" />
-        <div className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] rounded-full bg-orange-200/20 blur-[100px] animate-pulse" style={{ animationDelay: "1.5s" }} />
-        <div className="absolute top-1/3 left-1/2 w-[500px] h-[500px] rounded-full bg-amber-100/40 blur-[90px] animate-pulse" style={{ animationDelay: "3s" }} />
+        <div className="absolute -top-1/4 -left-1/4 w-[500px] h-[500px] sm:w-[700px] sm:h-[700px] rounded-full bg-amber-200/30 blur-[100px] sm:blur-[120px] animate-pulse" />
+        <div className="absolute -bottom-1/4 -right-1/4 w-[400px] h-[400px] sm:w-[600px] sm:h-[600px] rounded-full bg-orange-200/20 blur-[80px] sm:blur-[100px] animate-pulse" style={{ animationDelay: "1.5s" }} />
       </div>
 
-      <div className="relative z-10 flex min-h-screen flex-col">
-        <div className="sticky top-0 z-20 border-b border-gray-200/60 bg-white/60 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-3">
-              <Link href="/login" className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-              <div className="relative h-9 w-9 flex-shrink-0 rounded-xl bg-white border border-gray-200 p-1 shadow-sm">
-                <Image src="/barangay-seal.png" alt="Barangay Seal" fill className="object-contain p-0.5" />
-              </div>
-              <div>
-                <h1 className="text-sm font-bold text-gray-900">Barangay IX</h1>
-                <p className="text-[10px] text-gray-500">Resident Registration</p>
-              </div>
+      <div className="relative z-10 flex min-h-[100dvh] flex-col">
+        {/* Header */}
+        <div className="sticky top-0 z-20 border-b border-gray-200/60 bg-white/70 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-lg items-center gap-3 px-4 py-2.5 sm:py-3">
+            <Link href="/login" className="rounded-lg p-1.5 sm:p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors -ml-1.5 sm:-ml-2">
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+            <div className="relative h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 rounded-lg sm:rounded-xl bg-white border border-gray-200 p-0.5 sm:p-1 shadow-sm">
+              <Image src="/barangay-seal.png" alt="Barangay Seal" fill className="object-contain p-0.5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-sm font-bold text-gray-900 truncate">Barangay IX</h1>
+              <p className="text-[10px] text-gray-500">Resident Registration</p>
             </div>
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-4xl flex-1 px-4 pb-32 pt-6">
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
+        {/* Main Content */}
+        <div className="mx-auto w-full max-w-lg flex-1 px-4 pb-28 pt-4 sm:pt-6">
+          {/* Step Progress */}
+          <div className="mb-5 sm:mb-8">
+            <div className="flex items-center">
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center flex-1 last:flex-none">
                   <div className="flex flex-col items-center">
                     <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-500 ${
+                      className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full transition-all duration-500 ${
                         currentStep > step.id
-                          ? "bg-gradient-to-br from-amber-500 to-orange-500 text-gray-900 shadow-lg shadow-amber-300/40"
+                          ? "bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-300/40"
                           : currentStep === step.id
                           ? "bg-white border-2 border-amber-400 text-amber-600 shadow-lg shadow-amber-200/40"
                           : "bg-gray-100 border border-gray-200 text-gray-400"
                       }`}
                     >
                       {currentStep > step.id ? (
-                        <CheckCircle2 className="h-5 w-5" />
+                        <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
                       ) : (
-                        <step.icon className="h-4 w-4" />
+                        <step.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       )}
                     </div>
-                    <p className={`mt-2 text-[11px] font-medium ${currentStep >= step.id ? "text-gray-700" : "text-gray-400"}`}>
+                    <p className={`mt-1.5 text-[10px] sm:text-[11px] font-medium ${currentStep >= step.id ? "text-gray-700" : "text-gray-400"}`}>
                       {step.title}
                     </p>
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={`mx-2 h-px flex-1 transition-colors duration-500 ${
+                    <div className={`mx-1 sm:mx-2 h-0.5 flex-1 rounded-full transition-colors duration-500 ${
                       currentStep > step.id ? "bg-gradient-to-r from-amber-400 to-orange-400" : "bg-gray-200"
                     }`} />
                   )}
@@ -300,46 +299,48 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <div className={`rounded-3xl border border-gray-200 bg-white/80 p-5 sm:p-8 shadow-2xl backdrop-blur-xl transition-all duration-700 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
+          {/* Form Card */}
+          <div className={`rounded-2xl sm:rounded-3xl border border-gray-200 bg-white/90 p-4 sm:p-6 md:p-8 shadow-xl sm:shadow-2xl backdrop-blur-xl transition-all duration-700 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
             <form onSubmit={handleSubmit(onSubmit)}>
+              {/* Step 1: Personal */}
               {currentStep === 1 && (
-                <div className="space-y-5">
+                <div className="space-y-4 sm:space-y-5">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Personal Information</h3>
-                    <p className="mt-1 text-[13px] text-gray-500">Tell us about yourself</p>
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900">Personal Information</h3>
+                    <p className="mt-0.5 sm:mt-1 text-xs sm:text-[13px] text-gray-500">Tell us about yourself</p>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="space-y-1.5">
-                      <Label className="text-[13px] font-medium text-gray-600">First Name *</Label>
-                      <Input {...register("firstName")} placeholder="Juan" className={`${inputClass} ${inputBg}`} />
+                      <Label className="text-xs sm:text-[13px] font-medium text-gray-600">First Name *</Label>
+                      <Input {...register("firstName")} placeholder="Juan" className={inputClass} />
                       {errors.firstName && <p className="text-[11px] text-red-500">{errors.firstName.message}</p>}
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[13px] font-medium text-gray-600">Last Name *</Label>
-                      <Input {...register("lastName")} placeholder="dela Cruz" className={`${inputClass} ${inputBg}`} />
+                      <Label className="text-xs sm:text-[13px] font-medium text-gray-600">Last Name *</Label>
+                      <Input {...register("lastName")} placeholder="dela Cruz" className={inputClass} />
                       {errors.lastName && <p className="text-[11px] text-red-500">{errors.lastName.message}</p>}
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[13px] font-medium text-gray-600">Middle Name</Label>
-                    <Input {...register("middleName")} placeholder="Optional" className={`${inputClass} ${inputBg}`} />
+                    <Label className="text-xs sm:text-[13px] font-medium text-gray-600">Middle Name</Label>
+                    <Input {...register("middleName")} placeholder="Optional" className={inputClass} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[13px] font-medium text-gray-600">Birth Date *</Label>
-                    <Input type="date" {...register("birthDate")} max={new Date().toISOString().split("T")[0]} className={`${inputClass} ${inputBg}`} />
+                    <Label className="text-xs sm:text-[13px] font-medium text-gray-600">Birth Date *</Label>
+                    <Input type="date" {...register("birthDate")} max={new Date().toISOString().split("T")[0]} className={inputClass} />
                     {errors.birthDate && <p className="text-[11px] text-red-500">{errors.birthDate.message}</p>}
                     {formData.birthDate && getAge(formData.birthDate) < 10 && (
                       <p className="text-[11px] text-amber-600 flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" /> You must be at least 10 years old to register
+                        <AlertTriangle className="h-3 w-3 shrink-0" /> You must be at least 10 years old
                       </p>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label className="text-[13px] font-medium text-gray-600">Gender *</Label>
+                      <Label className="text-xs sm:text-[13px] font-medium text-gray-600">Gender *</Label>
                       <Select onValueChange={(v) => setValue("gender", v)}>
-                        <SelectTrigger className={`${inputClass} ${inputBg} focus:ring-2 focus:ring-amber-400/60`}>
+                        <SelectTrigger className={inputClass}>
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent className="border-gray-200 bg-white text-gray-900 shadow-lg">
@@ -350,9 +351,9 @@ export default function RegisterPage() {
                       {errors.gender && <p className="text-[11px] text-red-500">{errors.gender.message}</p>}
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[13px] font-medium text-gray-600">Civil Status *</Label>
+                      <Label className="text-xs sm:text-[13px] font-medium text-gray-600">Civil Status *</Label>
                       <Select onValueChange={(v) => setValue("civilStatus", v)}>
-                        <SelectTrigger className={`${inputClass} ${inputBg} focus:ring-2 focus:ring-amber-400/60`}>
+                        <SelectTrigger className={inputClass}>
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent className="border-gray-200 bg-white text-gray-900 shadow-lg">
@@ -369,22 +370,23 @@ export default function RegisterPage() {
                   {duplicateWarning && (
                     <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 flex items-start gap-2">
                       <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                      <p className="text-[12px] text-amber-700">{duplicateWarning}</p>
+                      <p className="text-xs text-amber-700">{duplicateWarning}</p>
                     </div>
                   )}
                 </div>
               )}
 
+              {/* Step 2: Address */}
               {currentStep === 2 && (
-                <div className="space-y-5">
+                <div className="space-y-4 sm:space-y-5">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Address Information</h3>
-                    <p className="mt-1 text-[13px] text-gray-500">Where do you live?</p>
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900">Address Information</h3>
+                    <p className="mt-0.5 sm:mt-1 text-xs sm:text-[13px] text-gray-500">Where do you live?</p>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[13px] font-medium text-gray-600">Purok / Zone *</Label>
+                    <Label className="text-xs sm:text-[13px] font-medium text-gray-600">Purok / Zone *</Label>
                     <Select onValueChange={(v) => setValue("purok", v)}>
-                      <SelectTrigger className={`${inputClass} ${inputBg} focus:ring-2 focus:ring-amber-400/60`}>
+                      <SelectTrigger className={inputClass}>
                         <SelectValue placeholder="Select purok" />
                       </SelectTrigger>
                       <SelectContent className="border-gray-200 bg-white text-gray-900 shadow-lg">
@@ -396,91 +398,94 @@ export default function RegisterPage() {
                     {errors.purok && <p className="text-[11px] text-red-500">{errors.purok.message}</p>}
                   </div>
                   {formData.purok ? (
-                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 sm:p-4">
                       <p className="text-[10px] uppercase tracking-[0.15em] text-gray-500 mb-1">Your Address</p>
-                      <p className="text-[14px] text-gray-700">
+                      <p className="text-sm sm:text-[14px] text-gray-700">
                         {formData.address || `${isNaN(Number(formData.purok)) ? formData.purok : `Purok ${formData.purok}`}, Victorias City, Negros Occidental`}
                       </p>
                     </div>
                   ) : (
-                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                      <p className="text-[13px] text-gray-400">Select your purok to see your address</p>
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 sm:p-4">
+                      <p className="text-xs sm:text-[13px] text-gray-400">Select your purok to see your address</p>
                     </div>
                   )}
                 </div>
               )}
 
+              {/* Step 3: Contact */}
               {currentStep === 3 && (
-                <div className="space-y-5">
+                <div className="space-y-4 sm:space-y-5">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Contact Information</h3>
-                    <p className="mt-1 text-[13px] text-gray-500">How can we reach you?</p>
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900">Contact Information</h3>
+                    <p className="mt-0.5 sm:mt-1 text-xs sm:text-[13px] text-gray-500">How can we reach you?</p>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[13px] font-medium text-gray-600">Contact Number *</Label>
-                    <Input {...register("contactNumber")} placeholder="09XXXXXXXXX" type="tel" inputMode="numeric" maxLength={11} className={`${inputClass} ${inputBg}`} />
+                    <Label className="text-xs sm:text-[13px] font-medium text-gray-600">Contact Number *</Label>
+                    <Input {...register("contactNumber")} placeholder="09XXXXXXXXX" type="tel" inputMode="numeric" maxLength={11} className={inputClass} />
                     {errors.contactNumber && <p className="text-[11px] text-red-500">{errors.contactNumber.message}</p>}
                     <p className="text-[11px] text-gray-400">Format: 09XXXXXXXXX or +639XXXXXXXXX</p>
                   </div>
-                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                    <p className="text-[13px] text-gray-500">Used for barangay notifications and emergency contact.</p>
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 sm:p-4">
+                    <p className="text-xs sm:text-[13px] text-gray-500">Used for barangay notifications and emergency contact.</p>
                   </div>
                 </div>
               )}
 
+              {/* Step 4: Additional */}
               {currentStep === 4 && (
-                <div className="space-y-5">
+                <div className="space-y-4 sm:space-y-5">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Additional Information</h3>
-                    <p className="mt-1 text-[13px] text-gray-500">Optional details</p>
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900">Additional Information</h3>
+                    <p className="mt-0.5 sm:mt-1 text-xs sm:text-[13px] text-gray-500">Optional details</p>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[13px] font-medium text-gray-600">Occupation</Label>
-                    <Input {...register("occupation")} placeholder="e.g., Teacher, Engineer, Student" className={`${inputClass} ${inputBg}`} />
+                    <Label className="text-xs sm:text-[13px] font-medium text-gray-600">Occupation</Label>
+                    <Input {...register("occupation")} placeholder="e.g., Teacher, Engineer, Student" className={inputClass} />
                   </div>
-                  <label className="flex items-center gap-3 cursor-pointer py-2">
-                    <input type="checkbox" id="voter" {...register("isRegisteredVoter")} className="h-[18px] w-[18px] rounded-md border border-gray-300 bg-white text-amber-500 focus:ring-0 focus:ring-offset-0" />
+                  <label className="flex items-center gap-3 cursor-pointer py-2 -ml-1">
+                    <input type="checkbox" id="voter" {...register("isRegisteredVoter")} className="h-5 w-5 rounded-md border border-gray-300 bg-white text-amber-500 focus:ring-0 focus:ring-offset-0" />
                     <div>
-                      <span className="text-[14px] text-gray-700">Registered Voter</span>
-                      <span className="text-[12px] text-gray-400 ml-2">— in this barangay</span>
+                      <span className="text-sm text-gray-700">Registered Voter</span>
+                      <span className="text-xs text-gray-400 ml-1.5">— in this barangay</span>
                     </div>
                   </label>
                   <div className="space-y-3">
                     <div className="space-y-1.5">
-                      <Label className="text-[13px] font-medium text-gray-600">Emergency Contact Name</Label>
-                      <Input {...register("emergencyContact")} placeholder="Contact person" className={`${inputClass} ${inputBg}`} />
+                      <Label className="text-xs sm:text-[13px] font-medium text-gray-600">Emergency Contact Name</Label>
+                      <Input {...register("emergencyContact")} placeholder="Contact person" className={inputClass} />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[13px] font-medium text-gray-600">Emergency Contact Number</Label>
-                      <Input {...register("emergencyPhone")} placeholder="09XXXXXXXXX" type="tel" inputMode="numeric" maxLength={11} className={`${inputClass} ${inputBg}`} />
+                      <Label className="text-xs sm:text-[13px] font-medium text-gray-600">Emergency Contact Number</Label>
+                      <Input {...register("emergencyPhone")} placeholder="09XXXXXXXXX" type="tel" inputMode="numeric" maxLength={11} className={inputClass} />
                     </div>
                   </div>
-                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                    <p className="text-[13px] text-gray-500">By submitting, your information will be recorded in the barangay database.</p>
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 sm:p-4">
+                    <p className="text-xs sm:text-[13px] text-gray-500">By submitting, your information will be recorded in the barangay database.</p>
                   </div>
                 </div>
               )}
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-[12px] text-gray-400">{currentStep} of {steps.length}</p>
+            <div className="mt-4 sm:mt-6 text-center">
+              <p className="text-[11px] sm:text-[12px] text-gray-400">Step {currentStep} of {steps.length}</p>
             </div>
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-gray-200/60 bg-white/80 backdrop-blur-xl safe-area-bottom">
-          <div className="mx-auto flex max-w-4xl gap-3 p-4">
+        {/* Bottom Navigation */}
+        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-gray-200/60 bg-white/90 backdrop-blur-xl safe-area-bottom">
+          <div className="mx-auto flex max-w-lg gap-3 p-3 sm:p-4">
             {currentStep > 1 && (
-              <Button type="button" variant="ghost" onClick={prevStep} className="h-12 flex-1 rounded-xl text-[14px] font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all">
+              <Button type="button" variant="ghost" onClick={prevStep} className="h-12 flex-1 rounded-xl text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all">
                 <ChevronLeft className="mr-1 h-4 w-4" /> Back
               </Button>
             )}
             {currentStep < 4 ? (
-              <Button type="button" onClick={nextStep} className="h-12 flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-[14px] font-semibold text-white hover:from-amber-600 hover:to-orange-600 active:scale-[0.98] shadow-lg shadow-amber-400/30 transition-all">
+              <Button type="button" onClick={nextStep} className="h-12 flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-sm font-semibold text-white hover:from-amber-600 hover:to-orange-600 active:scale-[0.98] shadow-lg shadow-amber-400/30 transition-all">
                 Continue <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             ) : (
-              <Button type="submit" onClick={handleSubmit(onSubmit)} className="h-12 flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-[14px] font-semibold text-white hover:from-amber-600 hover:to-orange-600 active:scale-[0.98] shadow-lg shadow-amber-400/30 transition-all" disabled={loading}>
+              <Button type="submit" onClick={handleSubmit(onSubmit)} className="h-12 flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-sm font-semibold text-white hover:from-amber-600 hover:to-orange-600 active:scale-[0.98] shadow-lg shadow-amber-400/30 transition-all" disabled={loading}>
                 {loading ? (
                   <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Submitting...</div>
                 ) : (
