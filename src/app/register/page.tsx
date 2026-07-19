@@ -262,9 +262,6 @@ export default function RegisterPage() {
                 <p className="text-[10px] text-gray-500">Resident Registration</p>
               </div>
             </div>
-            <Link href="/login" className="text-xs font-medium text-amber-600 hover:text-amber-700 transition-colors">
-              Sign In
-            </Link>
           </div>
         </div>
 
