@@ -73,7 +73,8 @@ export default function PermitsPage() {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<StatusTab>("ALL");
   const [stats, setStats] = useState({ total: 0, active: 0, expiring: 0, expired: 0 });
-  const role = (session?.user as any)?.role;
+  const [loading, setLoading] = useState(true);
+  const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "TREASURER"].includes(role);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<PermitForm>({
@@ -117,6 +118,7 @@ export default function PermitsPage() {
       });
     }
     setPermits(filtered);
+    setLoading(false);
   };
 
   const fetchResidents = async () => {
@@ -206,6 +208,10 @@ export default function PermitsPage() {
     { key: "EXPIRING", label: "Expiring Soon", icon: <Clock className="h-4 w-4" />, color: "text-amber-600 bg-amber-50" },
     { key: "EXPIRED", label: "Expired", icon: <XCircle className="h-4 w-4" />, color: "text-red-600 bg-red-50" },
   ];
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading permits...</p></div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -394,16 +400,16 @@ export default function PermitsPage() {
                       {canManage && (
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => setViewPermit(p)} title="View Details">
+                            <Button variant="ghost" size="sm" onClick={() => setViewPermit(p)} title="View Details" aria-label="View details">
                               <Eye className="h-4 w-4" />
                             </Button>
                             {p.status === "ACTIVE" && (
-                              <Button variant="ghost" size="sm" onClick={() => revokePermit(p.id)} title="Revoke">
+                              <Button variant="ghost" size="sm" onClick={() => revokePermit(p.id)} title="Revoke" aria-label="Revoke">
                                 <XCircle className="h-4 w-4 text-red-500" />
                               </Button>
                             )}
                             {(p.status === "EXPIRED" || (p.status === "ACTIVE" && daysLeft <= 30)) && (
-                              <Button variant="ghost" size="sm" onClick={() => renewPermit(p)} title="Renew">
+                              <Button variant="ghost" size="sm" onClick={() => renewPermit(p)} title="Renew" aria-label="Renew">
                                 <RotateCcw className="h-4 w-4 text-blue-500" />
                               </Button>
                             )}

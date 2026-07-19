@@ -77,7 +77,8 @@ export default function BarangayIDsPage() {
   const [downloadID, setDownloadID] = useState<BarangayIDData | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const role = (session?.user as any)?.role;
+  const [loading, setLoading] = useState(true);
+  const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "SECRETARY"].includes(role);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<IDForm>({
@@ -93,6 +94,7 @@ export default function BarangayIDsPage() {
     const res = await fetch(`/api/barangay-ids?${params}`);
     const data = await res.json();
     setIds(data || []);
+    setLoading(false);
   };
 
   const fetchResidents = async () => {
@@ -161,6 +163,10 @@ export default function BarangayIDsPage() {
     REVOKED: "bg-red-100 text-red-800",
     LOST: "bg-gray-100 text-gray-800",
   };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading barangay IDs...</p></div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -286,22 +292,22 @@ export default function BarangayIDsPage() {
                       <StatusBadge status={id.status} />
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => setPreviewID(id)}>
+                      <Button variant="ghost" size="sm" onClick={() => setPreviewID(id)} aria-label="Preview ID">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => { setDownloadID(id); setTimeout(() => downloadAsPDF(`dl-${id.id}`, id.resident.lastName), 100); }} title="Save as PDF">
+                      <Button variant="ghost" size="sm" onClick={() => { setDownloadID(id); setTimeout(() => downloadAsPDF(`dl-${id.id}`, id.resident.lastName), 100); }} title="Save as PDF" aria-label="Download PDF">
                         <FileDown className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => setPrintID(id)}>
+                      <Button variant="ghost" size="sm" onClick={() => setPrintID(id)} aria-label="Print">
                         <Printer className="h-4 w-4" />
                       </Button>
                       {canManage && id.status === "ACTIVE" && (
-                        <Button variant="ghost" size="sm" onClick={() => revokeID(id.id)}>
+                        <Button variant="ghost" size="sm" onClick={() => revokeID(id.id)} aria-label="Revoke">
                           <Ban className="h-4 w-4 text-amber-500" />
                         </Button>
                       )}
                       {role === "ADMIN" && (
-                        <Button variant="ghost" size="sm" onClick={() => deleteID(id.id)}>
+                        <Button variant="ghost" size="sm" onClick={() => deleteID(id.id)} aria-label="Delete">
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       )}

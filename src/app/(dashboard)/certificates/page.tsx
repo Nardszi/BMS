@@ -63,7 +63,8 @@ export default function CertificatesPage() {
   const [residents, setResidents] = useState<Resident[]>([]);
   const [open, setOpen] = useState(false);
   const [previewCert, setPreviewCert] = useState<Certificate | null>(null);
-  const role = (session?.user as any)?.role;
+  const [loading, setLoading] = useState(true);
+  const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "SECRETARY"].includes(role);
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<CertForm>({
@@ -74,6 +75,7 @@ export default function CertificatesPage() {
     const res = await fetch("/api/certificates");
     const data = await res.json();
     setCertificates(data || []);
+    setLoading(false);
   };
 
   const fetchResidents = async () => {
@@ -219,6 +221,10 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
     BUSINESS_PERMIT: "Business Permit",
   };
 
+  if (loading) {
+    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading certificates...</p></div>;
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader title="Certificates" subtitle="Manage certificate requests">
@@ -249,7 +255,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
               </div>
               <div className="space-y-2">
                 <Label>Certificate Type</Label>
-                <Select onValueChange={(v) => setValue("type", v as any)}>
+                <Select onValueChange={(v) => setValue("type", v as "CLEARANCE" | "RESIDENCY" | "INDIGENCY" | "BUSINESS_PERMIT")}>
                   <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="CLEARANCE">Barangay Clearance</SelectItem>
@@ -307,25 +313,25 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                       <TableCell className="text-right">
                         {c.status === "PENDING" && (
                           <>
-                            <Button variant="ghost" size="sm" onClick={() => updateStatus(c.id, "APPROVED")}>
+                            <Button variant="ghost" size="sm" onClick={() => updateStatus(c.id, "APPROVED")} aria-label="Approve">
                               <Check className="h-4 w-4 text-emerald-600" />
                             </Button>
-                            <Button variant="ghost" size="sm" onClick={() => updateStatus(c.id, "DENIED")}>
+                            <Button variant="ghost" size="sm" onClick={() => updateStatus(c.id, "DENIED")} aria-label="Deny">
                               <X className="h-4 w-4 text-red-500" />
                             </Button>
                           </>
                         )}
                         {c.status === "APPROVED" && (
-                          <Button variant="ghost" size="sm" onClick={() => updateStatus(c.id, "RELEASED")}>
+                          <Button variant="ghost" size="sm" onClick={() => updateStatus(c.id, "RELEASED")} aria-label="Release">
                             <FileText className="h-4 w-4 text-blue-500" />
                           </Button>
                         )}
                         {c.status === "DENIED" && (
-                          <Button variant="ghost" size="sm" onClick={() => updateStatus(c.id, "PENDING")} title="Revert to Pending">
+                          <Button variant="ghost" size="sm" onClick={() => updateStatus(c.id, "PENDING")} title="Revert to Pending" aria-label="Revert to pending">
                             <RotateCcw className="h-4 w-4 text-amber-500" />
                           </Button>
                         )}
-                        <Button variant="ghost" size="sm" onClick={() => setPreviewCert(c)}>
+                        <Button variant="ghost" size="sm" onClick={() => setPreviewCert(c)} aria-label="View certificate">
                           <Eye className="h-4 w-4" />
                         </Button>
                       </TableCell>

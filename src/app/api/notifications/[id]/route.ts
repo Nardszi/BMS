@@ -11,7 +11,7 @@ export async function PATCH(
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
 
     const notification = await prisma.notification.findUnique({ where: { id: params.id } });
     if (!notification || notification.userId !== userId) {
@@ -38,7 +38,7 @@ export async function DELETE(
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
 
     const notification = await prisma.notification.findUnique({ where: { id: params.id } });
     if (!notification || notification.userId !== userId) {

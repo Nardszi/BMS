@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { residentSchema } from "@/lib/validations";
 
 export async function GET(request: Request) {
   try {
@@ -56,23 +57,17 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const role = (session.user as any).role;
+    const role = session.user.role;
     if (!["ADMIN", "SECRETARY", "STAFF"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
-    const { firstName, lastName, birthDate, gender, civilStatus, address, purok, occupation, contactNumber, emergencyContact, emergencyPhone, isRegisteredVoter, middleName } = body;
-
-    if (!firstName || !lastName || !birthDate || !gender || !civilStatus || !address || !purok) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    const parsed = residentSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
     }
-    if (!["MALE", "FEMALE"].includes(gender)) {
-      return NextResponse.json({ error: "Invalid gender" }, { status: 400 });
-    }
-    if (!["SINGLE", "MARRIED", "WIDOWED", "SEPARATED", "DIVORCED"].includes(civilStatus)) {
-      return NextResponse.json({ error: "Invalid civil status" }, { status: 400 });
-    }
+    const { firstName, lastName, birthDate, gender, civilStatus, address, purok, occupation, contactNumber, emergencyContact, emergencyPhone, isRegisteredVoter, middleName } = parsed.data;
 
     let household = await prisma.household.findFirst({
       where: { address, purok },

@@ -21,6 +21,7 @@ import jsPDF from "jspdf";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { BARANGAY_FULL_NAME, BARANGAY_CITY, BARANGAY_PROVINCE } from "@/lib/constants";
 
 const blotterSchema = z.object({
   complainantName: z.string().min(1, "Complainant name is required"),
@@ -75,7 +76,7 @@ export default function BlotterPage() {
   const [resolveNotes, setResolveNotes] = useState("");
   const [resolveTarget, setResolveTarget] = useState<string | null>(null);
   const [counts, setCounts] = useState({ totalCount: 0, openCount: 0, resolvedCount: 0, escalatedCount: 0 });
-  const role = (session?.user as any)?.role;
+  const role = session?.user?.role ?? "";
   const canCreate = ["ADMIN", "SECRETARY", "KAGAWAD"].includes(role);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<BlotterForm>({
@@ -137,8 +138,8 @@ export default function BlotterPage() {
         <div style="text-align:center;margin-bottom:24px">
           <img src="${seal}" style="width:70px;height:70px;object-fit:contain" />
           <p style="font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:4px 0 0">Republic of the Philippines</p>
-          <p style="font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:0">City of Victorias, Negros Occidental</p>
-          <p style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:8px 0 0">Office of the Barangay IX - Daan Banwa</p>
+          <p style="font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:0">${BARANGAY_CITY}, ${BARANGAY_PROVINCE}</p>
+          <p style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:8px 0 0">Office of the ${BARANGAY_FULL_NAME}</p>
         </div>
         <h2 style="text-align:center;font-size:18px;font-weight:700;text-transform:uppercase;text-decoration:underline;margin-bottom:20px">Blotter Report</h2>
         <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px">
@@ -163,7 +164,7 @@ export default function BlotterPage() {
         ${b.resolutionNotes ? `<div style="margin-bottom:20px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:12px"><p style="font-weight:700;font-size:13px;margin-bottom:4px">Resolution Notes:</p><p style="font-size:13px;line-height:1.6;margin:0">${b.resolutionNotes}</p></div>` : ""}
         <div style="border-top:1px solid #ccc;padding-top:12px;margin-top:40px;display:flex;justify-content:space-between;font-size:12px;color:#666">
           <span>Date Filed: ${new Date(b.createdAt).toLocaleDateString("en-PH")}</span>
-          <span>Barangay IX - Daan Banwa</span>
+          <span>${BARANGAY_FULL_NAME}</span>
         </div>
       </div>
     </div>`;
@@ -228,7 +229,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
     setResolveNotes("");
   }
 
-  const statusColors: Record<string, string> = {
+  const statusColors: Record<string, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
     OPEN: "destructive",
     RESOLVED: "success",
     ESCALATED: "warning",
@@ -379,13 +380,13 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                     <TableCell>{b.handledBy?.name || "-"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => setDetailBlotter(b)}>
+                        <Button variant="ghost" size="sm" onClick={() => setDetailBlotter(b)} aria-label="View details">
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => downloadBlotterPDF(b)}>
+                        <Button variant="ghost" size="sm" onClick={() => downloadBlotterPDF(b)} aria-label="Download PDF">
                           <Download className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => printBlotter(b)}>
+                        <Button variant="ghost" size="sm" onClick={() => printBlotter(b)} aria-label="Print">
                           <Printer className="h-4 w-4" />
                         </Button>
                         {canCreate && b.status === "OPEN" && (
@@ -426,7 +427,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div><span className="font-semibold text-gray-500">Location:</span><p>{detailBlotter.location || "N/A"}</p></div>
-                <div><span className="font-semibold text-gray-500">Status:</span><p><Badge variant={statusColors[detailBlotter.status] as any}>{detailBlotter.status}</Badge></p></div>
+                <div><span className="font-semibold text-gray-500">Status:</span><p><Badge variant={statusColors[detailBlotter.status]}>{detailBlotter.status}</Badge></p></div>
               </div>
               {detailBlotter.witnesses && (
                 <div><span className="font-semibold text-gray-500">Witnesses:</span><p>{detailBlotter.witnesses}</p></div>

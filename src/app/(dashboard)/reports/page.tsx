@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
 import { Users, Vote, FileText, Activity, Baby, Briefcase, Heart, Printer, TrendingUp, Award, AlertTriangle, Shield } from "lucide-react";
+import { BARANGAY_ADDRESS } from "@/lib/constants";
 
 const COLORS = ["#1a56db", "#0e7c61", "#f59e0b", "#dc2626", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16"];
 const GENDER_COLORS = ["#3b82f6", "#ec4899", "#a855f7"];
@@ -98,7 +99,7 @@ export default function ReportsPage() {
     <div class="wm"><img src="${sealUrl}" alt=""></div>
     <div class="content">
       <h1>Barangay Report ${year}</h1>
-      <div class="subtitle">Barangay IX - Daan Banwa, City of Victorias, Negros Occidental</div>
+      <div class="subtitle">${BARANGAY_ADDRESS}</div>
 
       <div class="stats">
         <div class="stat"><div class="num">${data.totalResidents}</div><div class="label">Total Population</div></div>

@@ -15,6 +15,7 @@ import {
   ArrowLeft, CheckCircle2, ChevronRight, ChevronLeft, User, MapPin,
   Phone, Briefcase, Loader2, Printer, Download, AlertTriangle,
 } from "lucide-react";
+import { PUROK_OPTIONS, BARANGAY_CITY, BARANGAY_PROVINCE } from "@/lib/constants";
 
 const phoneRegex = /^(09|\+639)\d{9}$/;
 
@@ -45,8 +46,6 @@ const steps = [
 
 const inputClass = "w-full rounded-xl px-4 py-3 text-[16px] text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-300 border border-gray-200 focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400";
 const inputBg = "bg-white hover:bg-gray-50 focus:bg-white";
-
-const PUROK_OPTIONS = ["1", "2", "3", "4", "5", "6", "7", "8", "Toreno", "Aji"];
 
 const AUTO_SAVE_KEY = "bms-register-draft";
 
@@ -86,7 +85,7 @@ export default function RegisterPage() {
   useEffect(() => {
     if (formData.purok) {
       const purokLabel = isNaN(Number(formData.purok)) ? formData.purok : `Purok ${formData.purok}`;
-      setValue("address", `${purokLabel}, Victorias City, Negros Occidental`, { shouldValidate: true });
+      setValue("address", `${purokLabel}, ${BARANGAY_CITY}, ${BARANGAY_PROVINCE}`, { shouldValidate: true });
     }
   }, [formData.purok, setValue]);
 

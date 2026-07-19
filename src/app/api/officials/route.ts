@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { officialSchema } from "@/lib/validations";
 
 export async function GET() {
   try {
@@ -24,17 +25,17 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const role = (session.user as any).role;
+    const role = session.user.role;
     if (role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
-    const { userId, position, termStart, termEnd } = body;
-
-    if (!userId || !position || !termStart || !termEnd) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    const parsed = officialSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
     }
+    const { userId, position, termStart, termEnd } = parsed.data;
 
     const userExists = await prisma.user.findUnique({ where: { id: userId } });
     if (!userExists) {

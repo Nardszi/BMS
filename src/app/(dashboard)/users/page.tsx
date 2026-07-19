@@ -34,7 +34,7 @@ interface User {
 
 export default function UsersPage() {
   const { data: session } = useSession();
-  const role = (session?.user as any)?.role;
+  const role = session?.user?.role ?? "";
   const [users, setUsers] = useState<User[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<User | null>(null);
@@ -43,12 +43,14 @@ export default function UsersPage() {
   const [password, setPassword] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
     const res = await fetch("/api/users");
     if (res.ok) {
       const data = await res.json();
       setUsers(data || []);
+      setLoading(false);
     }
   };
 
@@ -116,6 +118,10 @@ export default function UsersPage() {
     }
   }
 
+  if (loading) {
+    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading users...</p></div>;
+  }
+
   if (role !== "ADMIN") {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -166,10 +172,10 @@ export default function UsersPage() {
                     <TableCell>{new Date(u.createdAt).toLocaleDateString("en-PH")}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(u)}>
+                        <Button variant="ghost" size="sm" onClick={() => openEdit(u)} aria-label="Edit">
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setDeletingId(u.id)}>
+                        <Button variant="ghost" size="sm" onClick={() => setDeletingId(u.id)} aria-label="Delete">
                           <Trash2 className="h-3.5 w-3.5 text-red-500" />
                         </Button>
                       </div>

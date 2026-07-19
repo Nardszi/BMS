@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
 import { Plus, Trash2, Pencil, Search, Printer, Shield } from "lucide-react";
+import { BARANGAY_ADDRESS } from "@/lib/constants";
 
 const POSITIONS = [
   { value: "Barangay Captain", rank: 1 },
@@ -88,8 +89,9 @@ export default function OfficialsPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Official | null>(null);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
   const printRef = useRef<HTMLDivElement>(null);
-  const role = (session?.user as any)?.role;
+  const role = session?.user?.role ?? "";
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<OfficialForm>({
     resolver: zodResolver(officialSchema),
@@ -101,6 +103,7 @@ export default function OfficialsPage() {
     const res = await fetch("/api/officials");
     const data = await res.json();
     setOfficials(data || []);
+    setLoading(false);
   };
 
   const fetchUsers = async () => {
@@ -190,7 +193,7 @@ export default function OfficialsPage() {
     <div class="wm"><img src="${sealUrl}" alt=""></div>
     <div class="content">
       <h1>Barangay Officials</h1>
-      <div class="subtitle">Barangay IX - Daan Banwa, City of Victorias, Negros Occidental</div>
+      <div class="subtitle">${BARANGAY_ADDRESS}</div>
       <table>
         <thead><tr><th>#</th><th>Name</th><th>Position</th><th>Term Start</th><th>Term End</th><th>Status</th></tr></thead>
         <tbody>
@@ -206,6 +209,10 @@ export default function OfficialsPage() {
     w.document.close();
     w.onload = () => { w.focus(); w.print(); };
   };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading officials...</p></div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -293,8 +300,8 @@ export default function OfficialsPage() {
                       <h3 className="font-semibold text-gray-900 truncate">{o.user.name}</h3>
                       {role === "ADMIN" && (
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => openEdit(o)}><Pencil className="h-3.5 w-3.5" /></Button>
-                          <Button variant="ghost" size="sm" onClick={() => removeOfficial(o.id)}><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
+                           <Button variant="ghost" size="sm" onClick={() => openEdit(o)} aria-label="Edit"><Pencil className="h-3.5 w-3.5" /></Button>
+                           <Button variant="ghost" size="sm" onClick={() => removeOfficial(o.id)} aria-label="Remove"><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
                         </div>
                       )}
                     </div>

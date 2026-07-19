@@ -22,6 +22,7 @@ import {
   Activity,
   BarChart3,
 } from "lucide-react";
+import { BARANGAY_ADDRESS } from "@/lib/constants";
 
 interface DashboardStats {
   totalResidents: number;
@@ -51,7 +52,7 @@ export default function DashboardPage() {
   const { data: session } = useSession();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const role = (session?.user as any)?.role;
+  const role = session?.user?.role ?? "";
 
   useEffect(() => {
     fetch("/api/dashboard")
@@ -120,7 +121,7 @@ export default function DashboardPage() {
                 {getGreeting()}, {session?.user?.name?.split(" ")[0]}
               </h1>
               <p className="text-blue-100">
-                Barangay IX - Daan Banwa, City of Victorias, Negros Occidental
+                {BARANGAY_ADDRESS}
               </p>
               <div className="mt-1 flex items-center gap-2">
                 <Badge className="bg-white/20 text-white hover:bg-white/30">{role}</Badge>

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notifyUsersByRole } from "@/lib/notify";
+import { blotterSchema } from "@/lib/validations";
 
 export async function GET(request: Request) {
   try {
@@ -49,17 +50,17 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const role = (session.user as any).role;
+    const role = session.user.role;
     if (!["ADMIN", "SECRETARY", "KAGAWAD"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
-    const { complainantName, respondentName, incidentDate, incidentType, location, witnesses, narrative } = body;
-
-    if (!complainantName || !respondentName || !incidentDate || !incidentType || !narrative) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    const parsed = blotterSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
     }
+    const { complainantName, respondentName, incidentDate, incidentType, location, witnesses, narrative } = parsed.data;
 
     const year = new Date().getFullYear();
     const blotter = await prisma.$transaction(async (tx) => {
@@ -77,7 +78,7 @@ export async function POST(request: Request) {
           incidentDate: new Date(incidentDate),
           incidentType, location: location || null,
           witnesses: witnesses || null, narrative,
-          handledById: (session.user as any).id,
+          handledById: session.user.id,
         },
       });
     });

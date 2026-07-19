@@ -199,6 +199,7 @@ model BlotterReport {
   @@index([status])
   @@index([caseNumber])
   @@index([incidentType])
+  @@index([createdAt])
 }
 
 model BusinessPermit {

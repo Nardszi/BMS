@@ -11,7 +11,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const role = (session.user as any).role;
+    const role = session.user.role;
     if (role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -52,12 +52,12 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const role = (session.user as any).role;
+    const role = session.user.role;
     if (role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const currentUserId = (session.user as any).id;
+    const currentUserId = session.user.id;
     if (currentUserId === params.id) {
       return NextResponse.json({ error: "Cannot delete your own account" }, { status: 400 });
     }

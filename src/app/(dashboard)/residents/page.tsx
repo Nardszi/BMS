@@ -18,6 +18,7 @@ import { Plus, Search, Pencil, Trash2, CheckCircle2, XCircle, Eye, Users, Clock,
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { PUROK_OPTIONS } from "@/lib/constants";
 
 const residentSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -74,7 +75,7 @@ export default function ResidentsPage() {
   const [approvedCount, setApprovedCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
 
-  const role = (session?.user as any)?.role;
+  const role = session?.user?.role ?? "";
   const canEdit = ["ADMIN", "SECRETARY", "STAFF"].includes(role);
   const canDelete = ["ADMIN", "SECRETARY"].includes(role);
   const canApprove = ["ADMIN", "SECRETARY", "KAGAWAD"].includes(role);
@@ -208,8 +209,8 @@ export default function ResidentsPage() {
     setValue("lastName", resident.lastName);
     setValue("middleName", resident.middleName || "");
     setValue("birthDate", resident.birthDate.split("T")[0]);
-    setValue("gender", resident.gender as any);
-    setValue("civilStatus", resident.civilStatus as any);
+    setValue("gender", resident.gender as "MALE" | "FEMALE");
+    setValue("civilStatus", resident.civilStatus as "SINGLE" | "MARRIED" | "WIDOWED" | "SEPARATED" | "DIVORCED");
     setValue("address", resident.household.address);
     setValue("purok", resident.household.purok);
     setValue("occupation", resident.occupation || "");
@@ -271,7 +272,7 @@ export default function ResidentsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Gender *</Label>
-                    <Select onValueChange={(v) => setValue("gender", v as any)} defaultValue={editing?.gender}>
+                    <Select onValueChange={(v) => setValue("gender", v as "MALE" | "FEMALE")} defaultValue={editing?.gender}>
                       <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="MALE">Male</SelectItem>
@@ -283,7 +284,7 @@ export default function ResidentsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Civil Status *</Label>
-                    <Select onValueChange={(v) => setValue("civilStatus", v as any)} defaultValue={editing?.civilStatus}>
+                    <Select onValueChange={(v) => setValue("civilStatus", v as "SINGLE" | "MARRIED" | "WIDOWED" | "SEPARATED" | "DIVORCED")} defaultValue={editing?.civilStatus}>
                       <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="SINGLE">Single</SelectItem>
@@ -314,7 +315,7 @@ export default function ResidentsPage() {
                       <Select onValueChange={(v) => setValue("purok", v)} defaultValue={editing?.household?.purok}>
                         <SelectTrigger><SelectValue placeholder="Select purok" /></SelectTrigger>
                         <SelectContent>
-                          {[1, 2, 3, 4, 5, 6, 7, 8, "Toreno", "Aji"].map((p) => (
+                          {PUROK_OPTIONS.map((p) => (
                             <SelectItem key={p} value={String(p)}>{isNaN(Number(p)) ? p : `Purok ${p}`}</SelectItem>
                           ))}
                         </SelectContent>
@@ -413,7 +414,7 @@ export default function ResidentsPage() {
               <SelectTrigger className="w-40"><SelectValue placeholder="All Puroks" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Puroks</SelectItem>
-                {[1, 2, 3, 4, 5, 6, 7, 8, "Toreno", "Aji"].map((p) => (
+                {PUROK_OPTIONS.map((p) => (
                   <SelectItem key={p} value={String(p)}>{isNaN(Number(p)) ? p : `Purok ${p}`}</SelectItem>
                 ))}
               </SelectContent>
@@ -433,6 +434,7 @@ export default function ResidentsPage() {
                 size="sm"
                 onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
                 className="px-2"
+                aria-label={`Sort ${sortOrder === "asc" ? "ascending" : "descending"}`}
               >
                 {sortOrder === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
               </Button>
@@ -473,16 +475,16 @@ export default function ResidentsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => { setDetailResident(r); setShowDetail(true); }}>
+                      <Button variant="ghost" size="sm" onClick={() => { setDetailResident(r); setShowDetail(true); }} aria-label="View details">
                         <Eye className="h-4 w-4" />
                       </Button>
                       {canEdit && (
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(r)}>
+                        <Button variant="ghost" size="sm" onClick={() => openEdit(r)} aria-label="Edit">
                           <Pencil className="h-4 w-4" />
                         </Button>
                       )}
                       {canDelete && (
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(r.id)}>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(r.id)} aria-label="Delete">
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       )}

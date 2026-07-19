@@ -13,6 +13,7 @@ import { toast } from "@/components/ui/toast";
 import Image from "next/image";
 import Link from "next/link";
 import { Eye, EyeOff, ArrowRight, Loader2, Lock, Mail, Shield, MapPin, Phone } from "lucide-react";
+import { BARANGAY_FULL_NAME, BARANGAY_ADDRESS, BARANGAY_PHONE } from "@/lib/constants";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -65,7 +66,7 @@ export default function LoginPage() {
       <div className="absolute inset-0">
         <Image
           src="/login-bg.png"
-          alt="Barangay IX - Daan Banwa, City of Victorias"
+          alt={BARANGAY_ADDRESS}
           fill
           className="object-cover"
           priority
@@ -106,7 +107,7 @@ export default function LoginPage() {
             </div>
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-amber-400/60" />
-              <span>(034) 123-4567</span>
+              <span>{BARANGAY_PHONE}</span>
             </div>
           </div>
         </div>
@@ -239,7 +240,7 @@ export default function LoginPage() {
 
             {/* Footer */}
             <p className="mt-6 text-center text-xs text-amber-200/30">
-              &copy; 2026 Barangay IX - Daan Banwa. All rights reserved.
+              &copy; 2026 {BARANGAY_FULL_NAME}. All rights reserved.
             </p>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notifyUsersByRole } from "@/lib/notify";
+import { permitSchema } from "@/lib/validations";
 
 function generatePermitNumber(): string {
   const year = new Date().getFullYear();
@@ -67,17 +68,17 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const role = (session.user as any).role;
+    const role = session.user.role;
     if (!["ADMIN", "TREASURER"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
-    const { businessName, ownerResidentId, businessType, address, issueDate, expiryDate } = body;
-
-    if (!businessName || !ownerResidentId || !businessType || !address || !issueDate || !expiryDate) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    const parsed = permitSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
     }
+    const { businessName, ownerResidentId, businessType, address, issueDate, expiryDate } = parsed.data;
 
     const ownerExists = await prisma.resident.findUnique({ where: { id: ownerResidentId } });
     if (!ownerExists) {

@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const rateCheck = checkRateLimit(`change-password:${userId}`, { maxRequests: 5, windowMs: 15 * 60 * 1000 });
     if (!rateCheck.allowed) {
       return NextResponse.json({ error: "Too many attempts. Please try again in 15 minutes." }, { status: 429 });

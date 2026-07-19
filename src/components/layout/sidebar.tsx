@@ -60,7 +60,7 @@ export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const userRole = (session?.user as any)?.role;
+  const userRole = session?.user?.role ?? "";
 
   const navItems = allNavItems.filter((item) => item.roles.includes(userRole));
 

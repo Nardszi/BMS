@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { ShieldCheck, ShieldX, Clock, CreditCard } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { BARANGAY_FULL_NAME, BARANGAY_CITY } from "@/lib/constants";
 
 interface VerifyResult {
   idNumber: string;
@@ -57,7 +58,7 @@ export default function VerifyPage() {
             <Image src="/barangay-seal.png" alt="Barangay Seal" fill className="object-contain" />
           </div>
           <CardTitle className="text-lg text-blue-900">Barangay ID Verification</CardTitle>
-          <p className="text-sm text-gray-500">Barangay IX - Daan Banwa</p>
+          <p className="text-sm text-gray-500">{BARANGAY_FULL_NAME}</p>
         </CardHeader>
         <CardContent className="space-y-4">
           {error ? (
@@ -100,7 +101,7 @@ export default function VerifyPage() {
               </div>
 
               <p className="text-center text-xs text-gray-400">
-                This is an official verification page of Barangay IX - Daan Banwa, City of Victorias.
+                This is an official verification page of {BARANGAY_FULL_NAME}, {BARANGAY_CITY}.
               </p>
             </>
           )}

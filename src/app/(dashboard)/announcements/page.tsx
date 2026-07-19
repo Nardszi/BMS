@@ -83,7 +83,8 @@ export default function AnnouncementsPage() {
   const [filterPriority, setFilterPriority] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const role = (session?.user as any)?.role;
+  const [loading, setLoading] = useState(true);
+  const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "SECRETARY"].includes(role);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<AnnouncementForm>({
@@ -102,6 +103,7 @@ export default function AnnouncementsPage() {
     const res = await fetch(`/api/announcements?${params.toString()}`);
     const data = await res.json();
     setAnnouncements(data || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchAnnouncements(); }, [search, filterPriority, filterCategory]);
@@ -181,6 +183,10 @@ export default function AnnouncementsPage() {
   }
 
   const isLong = (content: string) => content.length > 200;
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading announcements...</p></div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -306,11 +312,11 @@ export default function AnnouncementsPage() {
                         </div>
                         {canManage && (
                           <div className="flex gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => togglePin(ann)} title={ann.pinned ? "Unpin" : "Pin"}>
+                            <Button variant="ghost" size="sm" onClick={() => togglePin(ann)} title={ann.pinned ? "Unpin" : "Pin"} aria-label={ann.pinned ? "Unpin" : "Pin"}>
                               <Pin className={`h-3.5 w-3.5 ${ann.pinned ? "text-violet-500" : "text-gray-400"}`} />
                             </Button>
-                            <Button variant="ghost" size="sm" onClick={() => openEdit(ann)}><Pencil className="h-3.5 w-3.5" /></Button>
-                            <Button variant="ghost" size="sm" onClick={() => handleDelete(ann.id)}><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
+                            <Button variant="ghost" size="sm" onClick={() => openEdit(ann)} aria-label="Edit"><Pencil className="h-3.5 w-3.5" /></Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleDelete(ann.id)} aria-label="Delete"><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
                           </div>
                         )}
                       </div>

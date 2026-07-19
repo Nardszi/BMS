@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { Prisma } from "@prisma/client";
 
 interface NotifyOptions {
   userId: string;
@@ -21,7 +22,7 @@ export async function createNotification({ userId, title, message, type, link }:
 export async function notifyUsersByRole(role: string, title: string, message: string, type: string, link?: string) {
   try {
     const users = await prisma.user.findMany({
-      where: { role: role as any },
+      where: { role: role as Prisma.EnumRoleFilter["equals"] },
       select: { id: true },
     });
     for (const user of users) {

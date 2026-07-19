@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const { searchParams } = new URL(request.url);
     const unreadOnly = searchParams.get("unread") === "true";
 
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
 
     const notification = await prisma.notification.create({
       data: { userId, title, message, type, link: link || null },
@@ -59,7 +59,7 @@ export async function PATCH(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const { action } = await request.json();
 
     if (action === "read-all") {
@@ -82,7 +82,7 @@ export async function DELETE(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const { searchParams } = new URL(request.url);
     const olderThan = searchParams.get("olderThan");
 

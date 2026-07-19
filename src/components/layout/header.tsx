@@ -5,6 +5,7 @@ import { Bell, Check, Trash2, FileText, AlertTriangle, Building2, Users, Megapho
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
+import { BARANGAY_FULL_NAME, BARANGAY_CITY } from "@/lib/constants";
 
 interface Notification {
   id: string;
@@ -36,7 +37,7 @@ const typeColors: Record<string, string> = {
 
 export function Header() {
   const { data: session } = useSession();
-  const role = (session?.user as any)?.role;
+  const role = session?.user?.role ?? "";
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
@@ -110,7 +111,7 @@ export function Header() {
       <div className="flex items-center gap-4">
         <div className="hidden md:block">
           <h1 className="text-lg font-semibold text-gray-900">Barangay Management System</h1>
-          <p className="text-xs text-gray-500">Barangay IX - Daan Banwa, City of Victorias</p>
+          <p className="text-xs text-gray-500">{BARANGAY_FULL_NAME}, {BARANGAY_CITY}</p>
         </div>
       </div>
 

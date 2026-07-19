@@ -11,7 +11,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const role = (session.user as any).role;
+    const role = session.user.role;
     if (!["ADMIN", "SECRETARY"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -59,7 +59,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 
     if (body.pinned !== undefined) {
-      const role = (session.user as any).role;
+      const role = session.user.role;
       if (!["ADMIN", "SECRETARY"].includes(role)) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
@@ -81,7 +81,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const role = (session.user as any).role;
+    const role = session.user.role;
     if (!["ADMIN", "SECRETARY"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

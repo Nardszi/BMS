@@ -3,12 +3,13 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/providers";
 import { Toaster } from "@/components/ui/toast";
+import { BARANGAY_FULL_NAME, BARANGAY_ADDRESS } from "@/lib/constants";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Barangay IX - Daan Banwa | BMS",
-  description: "Barangay Management System for Barangay IX - Daan Banwa, City of Victorias, Negros Occidental",
+  title: `${BARANGAY_FULL_NAME} | BMS`,
+  description: `Barangay Management System for ${BARANGAY_ADDRESS}`,
   icons: {
     icon: "/favicon.ico",
   },

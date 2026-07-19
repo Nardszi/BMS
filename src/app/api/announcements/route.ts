@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { announcementSchema } from "@/lib/validations";
 
 export async function GET(request: Request) {
   try {
@@ -41,22 +42,22 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const role = (session.user as any).role;
+    const role = session.user.role;
     if (!["ADMIN", "SECRETARY"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
-    const { title, content, expiresAt, priority, category, pinned, imageUrl } = body;
-
-    if (!title || !content) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    const parsed = announcementSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
     }
+    const { title, content, expiresAt, priority, category, pinned, imageUrl } = parsed.data;
 
     const announcement = await prisma.announcement.create({
       data: {
         title, content,
-        postedById: (session.user as any).id,
+        postedById: session.user.id,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
         priority: priority || "GENERAL",
         category: category || "GENERAL",
