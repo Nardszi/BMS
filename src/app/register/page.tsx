@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,7 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft, CheckCircle2, ChevronRight, ChevronLeft, User, MapPin,
-  Phone, Briefcase, Loader2, Camera, X, Printer, Download, AlertTriangle,
+  Phone, Briefcase, Loader2, Printer, Download, AlertTriangle,
 } from "lucide-react";
 
 const phoneRegex = /^(09|\+639)\d{9}$/;
@@ -56,8 +56,6 @@ export default function RegisterPage() {
   const [refNumber, setRefNumber] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const [mounted, setMounted] = useState(false);
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
@@ -119,29 +117,6 @@ export default function RegisterPage() {
     return () => clearTimeout(timer);
   }, [formData.firstName, formData.lastName, formData.birthDate]);
 
-  const handlePhotoChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "Photo too large", description: "Maximum size is 5MB", variant: "error" });
-      return;
-    }
-    setPhoto(file);
-    const reader = new FileReader();
-    reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
-  }, []);
-
-  const uploadPhoto = async (): Promise<string | null> => {
-    if (!photo) return null;
-    const fd = new FormData();
-    fd.append("photo", photo);
-    const res = await fetch("/api/upload/photo", { method: "POST", body: fd });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.url;
-  };
-
   function getAge(birthDate: string): number {
     const today = new Date();
     const birth = new Date(birthDate);
@@ -158,12 +133,10 @@ export default function RegisterPage() {
     }
     setLoading(true);
     try {
-      const photoUrl = await uploadPhoto();
-      const payload = { ...data, photoUrl };
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(data),
       });
       if (res.ok) {
         const d = await res.json();
@@ -256,7 +229,7 @@ export default function RegisterPage() {
                   Go to Login
                 </Button>
               </Link>
-              <Button variant="ghost" className="h-12 w-full rounded-xl text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100" onClick={() => { setSuccess(false); setCurrentStep(1); setRefNumber(""); setPhoto(null); setPhotoPreview(null); }}>
+              <Button variant="ghost" className="h-12 w-full rounded-xl text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100" onClick={() => { setSuccess(false); setCurrentStep(1); setRefNumber(""); }}>
                 Register Another
               </Button>
             </div>
@@ -337,31 +310,6 @@ export default function RegisterPage() {
                   <div>
                     <h3 className="text-xl font-bold text-gray-900">Personal Information</h3>
                     <p className="mt-1 text-[13px] text-gray-500">Tell us about yourself</p>
-                  </div>
-
-                  <div className="flex justify-center">
-                    <div className="relative group">
-                      <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-full border-2 border-dashed border-gray-300 bg-gray-50 transition-all hover:border-amber-400 hover:bg-amber-50">
-                        {photoPreview ? (
-                          <>
-                            <img src={photoPreview} alt="Preview" className="h-full w-full rounded-full object-cover" />
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); setPhoto(null); setPhotoPreview(null); }}
-                              className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <Camera className="h-6 w-6 text-gray-400" />
-                            <span className="mt-1 text-[10px] text-gray-400">Photo</span>
-                          </>
-                        )}
-                      </label>
-                      <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
-                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
