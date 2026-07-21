@@ -40,7 +40,7 @@ export function CertificatePDF({ certificate }: CertificateProps) {
   const [qrUrl, setQrUrl] = useState("");
   useEffect(() => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    QRCode.toDataURL(`${origin}/verify/${c.id}`, { width: 80, margin: 1 }).then(setQrUrl);
+    QRCode.toDataURL(`${origin}/verify/${c.id}`, { width: 80, margin: 1 }).then(setQrUrl).catch(() => {});
   }, [c.id]);
 
   return (

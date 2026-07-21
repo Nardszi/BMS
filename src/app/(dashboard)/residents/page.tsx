@@ -530,7 +530,7 @@ export default function ResidentsPage() {
                   </Button>
                 </>
               )}
-              {selectedIds.length > 0 && (
+              {selectedIds.length > 0 && canDelete && (
                 <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
                   <Trash2 className="mr-2 h-4 w-4" /> Delete Selected ({selectedIds.length})
                 </Button>
