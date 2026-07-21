@@ -320,12 +320,12 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               statusFilter === tab.key
                 ? "bg-blue-900 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                : "bg-muted text-foreground/70 hover:bg-muted/80"
             }`}
           >
             {tab.label}
             <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
-              statusFilter === tab.key ? "bg-blue-700 text-blue-100" : "bg-gray-200 text-gray-500"
+              statusFilter === tab.key ? "bg-blue-700 text-blue-100" : "bg-muted text-muted-foreground"
             }`}>
               {tab.count}
             </span>
@@ -335,7 +335,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
 
       {/* Search */}
       <div className="relative max-w-md">
-        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
         <Input
           placeholder="Search by case #, name, or type..."
           value={search}
@@ -418,22 +418,22 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             </DialogHeader>
             <div className="space-y-4 text-sm">
               <div className="grid grid-cols-2 gap-4">
-                <div><span className="font-semibold text-gray-500">Complainant:</span><p>{detailBlotter.complainantName}</p></div>
-                <div><span className="font-semibold text-gray-500">Respondent:</span><p>{detailBlotter.respondentName}</p></div>
+                <div><span className="font-semibold text-muted-foreground">Complainant:</span><p>{detailBlotter.complainantName}</p></div>
+                <div><span className="font-semibold text-muted-foreground">Respondent:</span><p>{detailBlotter.respondentName}</p></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><span className="font-semibold text-gray-500">Date of Incident:</span><p>{new Date(detailBlotter.incidentDate).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}</p></div>
-                <div><span className="font-semibold text-gray-500">Type:</span><p>{detailBlotter.incidentType}</p></div>
+                <div><span className="font-semibold text-muted-foreground">Date of Incident:</span><p>{new Date(detailBlotter.incidentDate).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}</p></div>
+                <div><span className="font-semibold text-muted-foreground">Type:</span><p>{detailBlotter.incidentType}</p></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><span className="font-semibold text-gray-500">Location:</span><p>{detailBlotter.location || "N/A"}</p></div>
-                <div><span className="font-semibold text-gray-500">Status:</span><p><Badge variant={statusColors[detailBlotter.status]}>{detailBlotter.status}</Badge></p></div>
+                <div><span className="font-semibold text-muted-foreground">Location:</span><p>{detailBlotter.location || "N/A"}</p></div>
+                <div><span className="font-semibold text-muted-foreground">Status:</span><p><Badge variant={statusColors[detailBlotter.status]}>{detailBlotter.status}</Badge></p></div>
               </div>
               {detailBlotter.witnesses && (
-                <div><span className="font-semibold text-gray-500">Witnesses:</span><p>{detailBlotter.witnesses}</p></div>
+                <div><span className="font-semibold text-muted-foreground">Witnesses:</span><p>{detailBlotter.witnesses}</p></div>
               )}
               <div>
-                <span className="font-semibold text-gray-500">Narrative:</span>
+                <span className="font-semibold text-muted-foreground">Narrative:</span>
                 <p className="mt-1 leading-relaxed text-justify">{detailBlotter.narrative}</p>
               </div>
               {detailBlotter.resolutionNotes && (
@@ -442,7 +442,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                   <p className="mt-1 text-emerald-900">{detailBlotter.resolutionNotes}</p>
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4 border-t pt-3 text-xs text-gray-500">
+              <div className="grid grid-cols-2 gap-4 border-t pt-3 text-xs text-muted-foreground">
                 <div>Handled by: {detailBlotter.handledBy?.name || "N/A"}</div>
                 <div>Date Filed: {new Date(detailBlotter.createdAt).toLocaleDateString("en-PH")}</div>
               </div>
@@ -466,7 +466,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             <DialogTitle>Resolve Case</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">Provide resolution notes for this case.</p>
+            <p className="text-sm text-foreground/70">Provide resolution notes for this case.</p>
             <Textarea
               rows={4}
               placeholder="Describe how the case was resolved..."

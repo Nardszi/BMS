@@ -204,22 +204,22 @@ export default function PermitsPage() {
   };
 
   const tabs: { key: StatusTab; label: string; icon: React.ReactNode; color: string }[] = [
-    { key: "ALL", label: "All", icon: <FileText className="h-4 w-4" />, color: "text-gray-600 bg-gray-100" },
+    { key: "ALL", label: "All", icon: <FileText className="h-4 w-4" />, color: "text-foreground/70 bg-muted" },
     { key: "ACTIVE", label: "Active", icon: <CheckCircle className="h-4 w-4" />, color: "text-emerald-600 bg-emerald-50" },
     { key: "EXPIRING", label: "Expiring Soon", icon: <Clock className="h-4 w-4" />, color: "text-amber-600 bg-amber-50" },
     { key: "EXPIRED", label: "Expired", icon: <XCircle className="h-4 w-4" />, color: "text-red-600 bg-red-50" },
   ];
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading permits...</p></div>;
+    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading permits...</p></div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Business Permits</h2>
-          <p className="text-sm text-gray-500">Track and manage business permits</p>
+          <h2 className="text-2xl font-bold text-foreground">Business Permits</h2>
+          <p className="text-sm text-muted-foreground">Track and manage business permits</p>
         </div>
         {canManage && (
           <Dialog open={open} onOpenChange={setOpen}>
@@ -330,15 +330,15 @@ export default function PermitsPage() {
 
       {/* Search + Tabs */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+        <div className="flex gap-1 bg-muted p-1 rounded-lg">
           {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => setActiveTab(t.key)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                 activeTab === t.key
-                  ? "bg-white shadow-sm text-gray-900"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "bg-white shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground/80"
               }`}
             >
               {t.icon}
@@ -347,7 +347,7 @@ export default function PermitsPage() {
           ))}
         </div>
         <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
           <Input
             placeholder="Search business, permit #, owner..."
             value={search}
@@ -375,7 +375,7 @@ export default function PermitsPage() {
             </TableHeader>
             <TableBody>
               {permits.length === 0 ? (
-                <TableRow><TableCell colSpan={canManage ? 8 : 7} className="text-center text-gray-500 py-8">No permits found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={canManage ? 8 : 7} className="text-center text-muted-foreground py-8">No permits found</TableCell></TableRow>
               ) : (
                 permits.map((p) => {
                   const daysLeft = getDaysUntilExpiry(p.expiryDate);
@@ -437,13 +437,13 @@ export default function PermitsPage() {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+              <div className="bg-muted/50 rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">Permit Number</span>
+                  <span className="text-sm text-muted-foreground">Permit Number</span>
                   <span className="font-mono font-bold text-lg">{viewPermit.permitNumber}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-500">Status</span>
+                  <span className="text-sm text-muted-foreground">Status</span>
                   <Badge variant={viewPermit.status === "ACTIVE" ? "success" : viewPermit.status === "EXPIRED" ? "destructive" : "secondary"}>
                     {viewPermit.status}
                   </Badge>
@@ -451,27 +451,27 @@ export default function PermitsPage() {
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-500">Business Name</span>
+                  <span className="text-muted-foreground">Business Name</span>
                   <p className="font-medium">{viewPermit.businessName}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500">Business Type</span>
+                  <span className="text-muted-foreground">Business Type</span>
                   <p className="font-medium">{viewPermit.businessType}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500">Owner</span>
+                  <span className="text-muted-foreground">Owner</span>
                   <p className="font-medium">{viewPermit.owner.lastName}, {viewPermit.owner.firstName}{viewPermit.owner.middleName ? ` ${viewPermit.owner.middleName}` : ""}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500">Address</span>
+                  <span className="text-muted-foreground">Address</span>
                   <p className="font-medium">{viewPermit.address}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500">Issue Date</span>
+                  <span className="text-muted-foreground">Issue Date</span>
                   <p className="font-medium">{new Date(viewPermit.issueDate).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500">Expiry Date</span>
+                  <span className="text-muted-foreground">Expiry Date</span>
                   <p className="font-medium">{new Date(viewPermit.expiryDate).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}</p>
                 </div>
               </div>

@@ -27,8 +27,8 @@ const CATEGORY_CONFIG: Record<string, string> = {
   SAFETY: "bg-red-50 text-red-700",
   EVENT: "bg-purple-50 text-purple-700",
   MEETING: "bg-indigo-50 text-indigo-700",
-  GENERAL: "bg-gray-50 text-gray-700",
-  OTHERS: "bg-slate-50 text-slate-700",
+  GENERAL: "bg-muted/50 text-foreground/80",
+  OTHERS: "bg-slate-50 text-foreground/80",
 };
 
 const announcementSchema = z.object({
@@ -70,7 +70,7 @@ function timeAgo(date: string): string {
 
 function getAnnouncementStatus(ann: Announcement) {
   if (ann.pinned) return { label: "Pinned", color: "bg-violet-100 text-violet-700" };
-  if (ann.expiresAt && new Date(ann.expiresAt) < new Date()) return { label: "Expired", color: "bg-gray-100 text-gray-500" };
+  if (ann.expiresAt && new Date(ann.expiresAt) < new Date()) return { label: "Expired", color: "bg-muted text-muted-foreground" };
   return { label: "Active", color: "bg-emerald-100 text-emerald-700" };
 }
 
@@ -185,15 +185,15 @@ export default function AnnouncementsPage() {
   const isLong = (content: string) => content.length > 200;
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading announcements...</p></div>;
+    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading announcements...</p></div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Announcements</h2>
-          <p className="text-sm text-gray-500">Post and manage barangay announcements</p>
+          <h2 className="text-2xl font-bold text-foreground">Announcements</h2>
+          <p className="text-sm text-muted-foreground">Post and manage barangay announcements</p>
         </div>
         {canManage && (
           <Dialog open={open} onOpenChange={setOpen}>
@@ -257,7 +257,7 @@ export default function AnnouncementsPage() {
       {/* Search & Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
           <Input placeholder="Search announcements..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Select value={filterPriority} onValueChange={setFilterPriority}>
@@ -281,7 +281,7 @@ export default function AnnouncementsPage() {
       {/* Announcements List */}
       <div className="space-y-4">
         {announcements.length === 0 ? (
-          <Card><CardContent className="py-8 text-center text-gray-500">No announcements found.</CardContent></Card>
+          <Card><CardContent className="py-8 text-center text-muted-foreground">No announcements found.</CardContent></Card>
         ) : (
           announcements.map((ann) => {
             const status = getAnnouncementStatus(ann);
@@ -302,7 +302,7 @@ export default function AnnouncementsPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             {ann.pinned && <Pin className="h-3.5 w-3.5 text-violet-500" />}
-                            <h3 className="font-semibold text-gray-900">{ann.title}</h3>
+                            <h3 className="font-semibold text-foreground">{ann.title}</h3>
                           </div>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${pc.color}`}>{pc.label}</span>
@@ -313,7 +313,7 @@ export default function AnnouncementsPage() {
                         {canManage && (
                           <div className="flex gap-1">
                             <Button variant="ghost" size="sm" onClick={() => togglePin(ann)} title={ann.pinned ? "Unpin" : "Pin"} aria-label={ann.pinned ? "Unpin" : "Pin"}>
-                              <Pin className={`h-3.5 w-3.5 ${ann.pinned ? "text-violet-500" : "text-gray-400"}`} />
+                              <Pin className={`h-3.5 w-3.5 ${ann.pinned ? "text-violet-500" : "text-muted-foreground/70"}`} />
                             </Button>
                             <Button variant="ghost" size="sm" onClick={() => openEdit(ann)} aria-label="Edit"><Pencil className="h-3.5 w-3.5" /></Button>
                             <Button variant="ghost" size="sm" onClick={() => handleDelete(ann.id)} aria-label="Delete"><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
@@ -330,7 +330,7 @@ export default function AnnouncementsPage() {
                   )}
 
                   <div className="mt-3 ml-11">
-                    <p className={`text-sm text-gray-700 whitespace-pre-wrap ${!expanded && showExpand ? "line-clamp-3" : ""}`}>
+                    <p className={`text-sm text-foreground/80 whitespace-pre-wrap ${!expanded && showExpand ? "line-clamp-3" : ""}`}>
                       {ann.content}
                     </p>
                     {showExpand && (
@@ -340,7 +340,7 @@ export default function AnnouncementsPage() {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3 mt-3 ml-11 text-xs text-gray-500">
+                  <div className="flex items-center gap-3 mt-3 ml-11 text-xs text-muted-foreground">
                     <span>Posted by <b>{ann.postedBy.name}</b></span>
                     <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" /> {timeAgo(ann.createdAt)}</span>
                     <span className="flex items-center gap-0.5"><Eye className="h-3 w-3" /> {ann.viewCount}</span>

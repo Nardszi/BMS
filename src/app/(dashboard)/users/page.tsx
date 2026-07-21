@@ -21,7 +21,7 @@ const ROLE_COLORS: Record<string, string> = {
   SECRETARY: "bg-blue-100 text-blue-800",
   TREASURER: "bg-emerald-100 text-emerald-800",
   KAGAWAD: "bg-amber-100 text-amber-800",
-  STAFF: "bg-gray-100 text-gray-800",
+  STAFF: "bg-muted text-foreground/80",
 };
 
 interface User {
@@ -120,15 +120,15 @@ export default function UsersPage() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading users...</p></div>;
+    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading users...</p></div>;
   }
 
   if (role !== "ADMIN") {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <Shield className="h-12 w-12 text-red-400 mb-3" />
-        <p className="text-gray-500 font-medium">Access Denied</p>
-        <p className="text-sm text-gray-400 mt-1">Only administrators can manage users.</p>
+        <p className="text-muted-foreground font-medium">Access Denied</p>
+        <p className="text-sm text-muted-foreground/70 mt-1">Only administrators can manage users.</p>
       </div>
     );
   }
@@ -167,7 +167,7 @@ export default function UsersPage() {
                     <TableCell className="font-medium">{u.name}</TableCell>
                     <TableCell>{u.email}</TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${ROLE_COLORS[u.role] || "bg-gray-100 text-gray-800"}`}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${ROLE_COLORS[u.role] || "bg-muted text-foreground/80"}`}>
                         {u.role}
                       </span>
                     </TableCell>
@@ -175,7 +175,7 @@ export default function UsersPage() {
                     <TableCell>
                       {u.lastLoginAt
                         ? new Date(u.lastLoginAt).toLocaleString("en-PH", { dateStyle: "medium", timeStyle: "short" })
-                        : <span className="text-gray-400 italic">Never</span>
+                        : <span className="text-muted-foreground/70 italic">Never</span>
                       }
                     </TableCell>
                     <TableCell className="text-right">
@@ -211,7 +211,7 @@ export default function UsersPage() {
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="user@example.com" />
             </div>
             <div className="space-y-2">
-              <Label>Password {editing && <span className="text-gray-400 font-normal">(leave blank to keep current)</span>}</Label>
+              <Label>Password {editing && <span className="text-muted-foreground/70 font-normal">(leave blank to keep current)</span>}</Label>
               <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={editing ? "••••••••" : "Password"} />
             </div>
             <div className="space-y-2">
@@ -237,7 +237,7 @@ export default function UsersPage() {
           <DialogHeader>
             <DialogTitle>Delete User</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-gray-500">Are you sure you want to delete this user? This action cannot be undone.</p>
+          <p className="text-sm text-muted-foreground">Are you sure you want to delete this user? This action cannot be undone.</p>
           <div className="flex justify-end gap-2 mt-4">
             <Button variant="outline" onClick={() => setDeletingId(null)}>Cancel</Button>
             <Button variant="destructive" onClick={() => deletingId && deleteUser(deletingId)}>Delete</Button>

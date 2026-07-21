@@ -223,7 +223,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading certificates...</p></div>;
+    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading certificates...</p></div>;
   }
 
   const sortedCertificates = [...certificates].sort((a, b) => {
@@ -297,7 +297,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
         <CardContent className="p-0">
           <div className="flex items-center gap-4 border-b p-4">
             <div className="flex items-center gap-2 ml-auto">
-              <ArrowUpDown className="h-4 w-4 text-gray-400" />
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground/70" />
               <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
                 <SelectTrigger className="w-40"><SelectValue placeholder="Sort by" /></SelectTrigger>
                 <SelectContent>
@@ -380,7 +380,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             <DialogHeader>
               <DialogTitle>Certificate Preview</DialogTitle>
             </DialogHeader>
-            <div className="flex justify-center overflow-hidden rounded border bg-gray-50" style={{ height: "700px" }}>
+            <div className="flex justify-center overflow-hidden rounded border bg-muted/50" style={{ height: "700px" }}>
               <div style={{ width: "8.5in", transform: "scale(0.55)", transformOrigin: "top center" }}>
                 <CertificatePDF certificate={previewCert} />
               </div>

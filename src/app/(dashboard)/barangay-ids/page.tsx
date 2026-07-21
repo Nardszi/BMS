@@ -173,11 +173,11 @@ export default function BarangayIDsPage() {
     ACTIVE: "bg-emerald-100 text-emerald-800",
     EXPIRED: "bg-amber-100 text-amber-800",
     REVOKED: "bg-red-100 text-red-800",
-    LOST: "bg-gray-100 text-gray-800",
+    LOST: "bg-muted text-foreground/80",
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading barangay IDs...</p></div>;
+    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading barangay IDs...</p></div>;
   }
 
   return (
@@ -218,10 +218,10 @@ export default function BarangayIDsPage() {
                           {selectedResident.firstName[0]}{selectedResident.lastName[0]}
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">
+                          <p className="font-semibold text-foreground">
                             {selectedResident.lastName}, {selectedResident.firstName} {selectedResident.middleName}
                           </p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-foreground/70">
                             {selectedResident.gender} &middot; {formatDate(selectedResident.birthDate)} &middot; Purok {selectedResident.household.purok}
                           </p>
                         </div>
@@ -241,7 +241,7 @@ export default function BarangayIDsPage() {
                   <Input {...register("contactNumber")} placeholder="Optional" />
                 </div>
 
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   ID will be valid for 3 years. ID number will be auto-generated.
                 </p>
 
@@ -258,7 +258,7 @@ export default function BarangayIDsPage() {
         <CardContent className="p-0">
           <div className="flex items-center gap-4 border-b p-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/70" />
               <Input placeholder="Search by ID number or name..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}>
@@ -306,7 +306,7 @@ export default function BarangayIDsPage() {
                           {copiedId === id.id ? (
                             <Check className="h-3 w-3 text-emerald-600" />
                           ) : (
-                            <Copy className="h-3 w-3 text-gray-400 hover:text-gray-600" />
+                            <Copy className="h-3 w-3 text-muted-foreground/70 hover:text-foreground/70" />
                           )}
                         </Button>
                       </div>
@@ -314,7 +314,7 @@ export default function BarangayIDsPage() {
                     <TableCell className="font-medium">
                       {id.resident.lastName}, {id.resident.firstName}
                     </TableCell>
-                    <TableCell className="text-sm text-gray-600">{id.address}</TableCell>
+                    <TableCell className="text-sm text-foreground/70">{id.address}</TableCell>
                     <TableCell className="text-sm">{formatDate(id.issueDate)}</TableCell>
                     <TableCell className="text-sm">{formatDate(id.expiryDate)}</TableCell>
                     <TableCell>

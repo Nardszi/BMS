@@ -392,7 +392,7 @@ export default function ResidentsPage() {
                 </div>
 
                 <div className="border-t border-gray-100 pt-4">
-                  <p className="mb-3 text-sm font-medium text-gray-700">Address Information</p>
+                  <p className="mb-3 text-sm font-medium text-foreground/80">Address Information</p>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Full Address *</Label>
@@ -447,7 +447,7 @@ export default function ResidentsPage() {
           variant={statusFilter === "" ? "default" : "outline"}
           size="sm"
           onClick={() => { setStatusFilter(""); setPage(1); }}
-          className={statusFilter === "" ? "bg-blue-900 hover:bg-blue-800 text-white" : "border-gray-300 text-gray-700 hover:bg-gray-100"}
+          className={statusFilter === "" ? "bg-blue-900 hover:bg-blue-800 text-white" : "border-gray-300 text-foreground/80 hover:bg-muted"}
         >
           <Users className="mr-2 h-4 w-4" /> All
         </Button>
@@ -455,7 +455,7 @@ export default function ResidentsPage() {
           variant={statusFilter === "PENDING" ? "default" : "outline"}
           size="sm"
           onClick={() => { setStatusFilter("PENDING"); setPage(1); }}
-          className={statusFilter === "PENDING" ? "bg-amber-600 hover:bg-amber-700 text-white" : "border-gray-300 text-gray-700 hover:bg-gray-100"}
+          className={statusFilter === "PENDING" ? "bg-amber-600 hover:bg-amber-700 text-white" : "border-gray-300 text-foreground/80 hover:bg-muted"}
         >
           <Clock className="mr-2 h-4 w-4" /> Pending
           {pendingCount > 0 && (
@@ -468,7 +468,7 @@ export default function ResidentsPage() {
           variant={statusFilter === "APPROVED" ? "default" : "outline"}
           size="sm"
           onClick={() => { setStatusFilter("APPROVED"); setPage(1); }}
-          className={statusFilter === "APPROVED" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "border-gray-300 text-gray-700 hover:bg-gray-100"}
+          className={statusFilter === "APPROVED" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "border-gray-300 text-foreground/80 hover:bg-muted"}
         >
           <CheckCircle2 className="mr-2 h-4 w-4" /> Approved
           {approvedCount > 0 && (
@@ -481,7 +481,7 @@ export default function ResidentsPage() {
           variant={statusFilter === "REJECTED" ? "default" : "outline"}
           size="sm"
           onClick={() => { setStatusFilter("REJECTED"); setPage(1); }}
-          className={statusFilter === "REJECTED" ? "bg-red-600 hover:bg-red-700 text-white" : "border-gray-300 text-gray-700 hover:bg-gray-100"}
+          className={statusFilter === "REJECTED" ? "bg-red-600 hover:bg-red-700 text-white" : "border-gray-300 text-foreground/80 hover:bg-muted"}
         >
           <XCircle className="mr-2 h-4 w-4" /> Rejected
           {rejectedCount > 0 && (
@@ -496,7 +496,7 @@ export default function ResidentsPage() {
         <CardContent className="p-0">
           <div className="flex items-center gap-4 border-b p-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/70" />
               <Input placeholder="Search residents..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="pl-9" />
             </div>
             <Select value={purokFilter} onValueChange={(v) => { setPurokFilter(v === "all" ? "" : v); setPage(1); }}>
@@ -627,7 +627,7 @@ export default function ResidentsPage() {
             </TableBody>
           </Table>
           <div className="flex items-center justify-between border-t p-4">
-            <p className="text-sm text-gray-500">Page {page} of {totalPages}</p>
+            <p className="text-sm text-muted-foreground">Page {page} of {totalPages}</p>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button>
               <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</Button>
@@ -646,54 +646,54 @@ export default function ResidentsPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Full Name</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs font-medium text-muted-foreground">Full Name</p>
+                  <p className="text-sm font-medium text-foreground">
                     {detailResident.lastName}, {detailResident.firstName} {detailResident.middleName || ""}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Birth Date</p>
-                  <p className="text-sm text-gray-900">
+                  <p className="text-xs font-medium text-muted-foreground">Birth Date</p>
+                  <p className="text-sm text-foreground">
                     {new Date(detailResident.birthDate).toLocaleDateString()}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Gender</p>
-                  <p className="text-sm text-gray-900">{detailResident.gender}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Gender</p>
+                  <p className="text-sm text-foreground">{detailResident.gender}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Civil Status</p>
-                  <p className="text-sm text-gray-900">{detailResident.civilStatus}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Civil Status</p>
+                  <p className="text-sm text-foreground">{detailResident.civilStatus}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Address</p>
-                  <p className="text-sm text-gray-900">
+                  <p className="text-xs font-medium text-muted-foreground">Address</p>
+                  <p className="text-sm text-foreground">
                     {detailResident.household.address}, Purok {detailResident.household.purok}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Contact</p>
-                  <p className="text-sm text-gray-900">{detailResident.contactNumber || "-"}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Contact</p>
+                  <p className="text-sm text-foreground">{detailResident.contactNumber || "-"}</p>
                 </div>
                 {detailResident.occupation && (
                   <div>
-                    <p className="text-xs font-medium text-gray-500">Occupation</p>
-                    <p className="text-sm text-gray-900">{detailResident.occupation}</p>
+                    <p className="text-xs font-medium text-muted-foreground">Occupation</p>
+                    <p className="text-sm text-foreground">{detailResident.occupation}</p>
                   </div>
                 )}
                 {detailResident.emergencyContact && (
                   <div>
-                    <p className="text-xs font-medium text-gray-500">Emergency Contact</p>
-                    <p className="text-sm text-gray-900">{detailResident.emergencyContact}</p>
+                    <p className="text-xs font-medium text-muted-foreground">Emergency Contact</p>
+                    <p className="text-sm text-foreground">{detailResident.emergencyContact}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Status</p>
+                  <p className="text-xs font-medium text-muted-foreground">Status</p>
                   <StatusBadge status={detailResident.status} />
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Registered Voter</p>
-                  <Badge className={detailResident.isRegisteredVoter ? "bg-emerald-100 text-emerald-800" : "bg-gray-100 text-gray-600"}>
+                  <p className="text-xs font-medium text-muted-foreground">Registered Voter</p>
+                  <Badge className={detailResident.isRegisteredVoter ? "bg-emerald-100 text-emerald-800" : "bg-muted text-foreground/70"}>
                     {detailResident.isRegisteredVoter ? "Yes" : "No"}
                   </Badge>
                 </div>

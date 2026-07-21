@@ -62,11 +62,11 @@ export default function ReportsPage() {
   }, [year]);
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading reports...</p></div>;
+    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading reports...</p></div>;
   }
 
   if (error || !data) {
-    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Failed to load reports. Please try again later.</p></div>;
+    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Failed to load reports. Please try again later.</p></div>;
   }
 
   const handlePrint = () => {
@@ -147,7 +147,7 @@ export default function ReportsPage() {
   };
 
   if (!data) {
-    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading reports...</p></div>;
+    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading reports...</p></div>;
   }
 
   function exportPopulationCSV() {
@@ -170,8 +170,8 @@ export default function ReportsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Reports & Analytics</h2>
-          <p className="text-sm text-gray-500">Barangay statistics and data overview</p>
+          <h2 className="text-2xl font-bold text-foreground">Reports & Analytics</h2>
+          <p className="text-sm text-muted-foreground">Barangay statistics and data overview</p>
         </div>
         <div className="flex gap-2">
           <Select value={year} onValueChange={setYear}>
@@ -190,13 +190,13 @@ export default function ReportsPage() {
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-blue-100 text-blue-700"><Users className="h-5 w-5" /></div>
-            <div><div className="text-2xl font-bold">{data.totalResidents}</div><div className="text-xs text-gray-500">Population</div></div>
+            <div><div className="text-2xl font-bold">{data.totalResidents}</div><div className="text-xs text-muted-foreground">Population</div></div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-amber-100 text-amber-700"><Vote className="h-5 w-5" /></div>
-            <div><div className="text-2xl font-bold">{data.voterCount}</div><div className="text-xs text-gray-500">Voters ({data.voterPercentage}%)</div></div>
+            <div><div className="text-2xl font-bold">{data.voterCount}</div><div className="text-xs text-muted-foreground">Voters ({data.voterPercentage}%)</div></div>
           </CardContent>
         </Card>
       </div>
@@ -206,25 +206,25 @@ export default function ReportsPage() {
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-cyan-100 text-cyan-700"><Activity className="h-5 w-5" /></div>
-            <div><div className="text-2xl font-bold">{data.sexRatio}</div><div className="text-xs text-gray-500">Sex Ratio (M/F)</div></div>
+            <div><div className="text-2xl font-bold">{data.sexRatio}</div><div className="text-xs text-muted-foreground">Sex Ratio (M/F)</div></div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700"><FileText className="h-5 w-5" /></div>
-            <div><div className="text-2xl font-bold">{data.permitStats.active}</div><div className="text-xs text-gray-500">Active Permits</div></div>
+            <div><div className="text-2xl font-bold">{data.permitStats.active}</div><div className="text-xs text-muted-foreground">Active Permits</div></div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-red-100 text-red-700"><AlertTriangle className="h-5 w-5" /></div>
-            <div><div className="text-2xl font-bold">{data.blotterStats.open}</div><div className="text-xs text-gray-500">Open Blotters</div></div>
+            <div><div className="text-2xl font-bold">{data.blotterStats.open}</div><div className="text-xs text-muted-foreground">Open Blotters</div></div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-violet-100 text-violet-700"><Award className="h-5 w-5" /></div>
-            <div><div className="text-2xl font-bold text-sm">{data.topPurok?.purok || "-"}</div><div className="text-xs text-gray-500">Most Populated</div></div>
+            <div><div className="text-2xl font-bold text-sm">{data.topPurok?.purok || "-"}</div><div className="text-xs text-muted-foreground">Most Populated</div></div>
           </CardContent>
         </Card>
       </div>
@@ -325,10 +325,10 @@ export default function ReportsPage() {
           <CardHeader><CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4" /> Business Permits</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
-                <div className="text-center p-3 bg-emerald-50 rounded-lg"><div className="text-xl font-bold text-emerald-700">{data.permitStats.active}</div><div className="text-xs text-gray-500">Active</div></div>
-                <div className="text-center p-3 bg-red-50 rounded-lg"><div className="text-xl font-bold text-red-700">{data.permitStats.expired}</div><div className="text-xs text-gray-500">Expired</div></div>
-                <div className="text-center p-3 bg-amber-50 rounded-lg"><div className="text-xl font-bold text-amber-700">{data.permitStats.revoked}</div><div className="text-xs text-gray-500">Revoked</div></div>
-                <div className="text-center p-3 bg-blue-50 rounded-lg"><div className="text-xl font-bold text-blue-700">{data.permitStats.total}</div><div className="text-xs text-gray-500">Total</div></div>
+                <div className="text-center p-3 bg-emerald-50 rounded-lg"><div className="text-xl font-bold text-emerald-700">{data.permitStats.active}</div><div className="text-xs text-muted-foreground">Active</div></div>
+                <div className="text-center p-3 bg-red-50 rounded-lg"><div className="text-xl font-bold text-red-700">{data.permitStats.expired}</div><div className="text-xs text-muted-foreground">Expired</div></div>
+                <div className="text-center p-3 bg-amber-50 rounded-lg"><div className="text-xl font-bold text-amber-700">{data.permitStats.revoked}</div><div className="text-xs text-muted-foreground">Revoked</div></div>
+                <div className="text-center p-3 bg-blue-50 rounded-lg"><div className="text-xl font-bold text-blue-700">{data.permitStats.total}</div><div className="text-xs text-muted-foreground">Total</div></div>
               </div>
             </CardContent>
           </Card>
@@ -337,10 +337,10 @@ export default function ReportsPage() {
             <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Shield className="h-4 w-4" /> Blotter Reports</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
-                <div className="text-center p-3 bg-amber-50 rounded-lg"><div className="text-xl font-bold text-amber-700">{data.blotterStats.open}</div><div className="text-xs text-gray-500">Open</div></div>
-                <div className="text-center p-3 bg-emerald-50 rounded-lg"><div className="text-xl font-bold text-emerald-700">{data.blotterStats.resolved}</div><div className="text-xs text-gray-500">Resolved</div></div>
-                <div className="text-center p-3 bg-red-50 rounded-lg"><div className="text-xl font-bold text-red-700">{data.blotterStats.escalated}</div><div className="text-xs text-gray-500">Escalated</div></div>
-                <div className="text-center p-3 bg-blue-50 rounded-lg"><div className="text-xl font-bold text-blue-700">{data.blotterStats.total}</div><div className="text-xs text-gray-500">Total</div></div>
+                <div className="text-center p-3 bg-amber-50 rounded-lg"><div className="text-xl font-bold text-amber-700">{data.blotterStats.open}</div><div className="text-xs text-muted-foreground">Open</div></div>
+                <div className="text-center p-3 bg-emerald-50 rounded-lg"><div className="text-xl font-bold text-emerald-700">{data.blotterStats.resolved}</div><div className="text-xs text-muted-foreground">Resolved</div></div>
+                <div className="text-center p-3 bg-red-50 rounded-lg"><div className="text-xl font-bold text-red-700">{data.blotterStats.escalated}</div><div className="text-xs text-muted-foreground">Escalated</div></div>
+                <div className="text-center p-3 bg-blue-50 rounded-lg"><div className="text-xl font-bold text-blue-700">{data.blotterStats.total}</div><div className="text-xs text-muted-foreground">Total</div></div>
               </div>
             </CardContent>
           </Card>

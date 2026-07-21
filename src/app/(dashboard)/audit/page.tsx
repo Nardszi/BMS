@@ -84,7 +84,7 @@ export default function AuditPage() {
 
           {loading ? (
             <div className="flex items-center justify-center h-64">
-              <p className="text-gray-500">Loading audit logs...</p>
+              <p className="text-muted-foreground">Loading audit logs...</p>
             </div>
           ) : (
             <>
@@ -123,10 +123,10 @@ export default function AuditPage() {
                           <Badge variant="secondary">{log.action}</Badge>
                         </TableCell>
                         <TableCell>{log.entity}</TableCell>
-                        <TableCell className="max-w-[200px] truncate text-sm text-gray-500">
+                        <TableCell className="max-w-[200px] truncate text-sm text-muted-foreground">
                           {log.details ? JSON.stringify(log.details) : "-"}
                         </TableCell>
-                        <TableCell className="text-sm text-gray-500">
+                        <TableCell className="text-sm text-muted-foreground">
                           {log.ipAddress || "-"}
                         </TableCell>
                       </TableRow>
@@ -136,7 +136,7 @@ export default function AuditPage() {
               </Table>
 
               <div className="flex items-center justify-between border-t p-4">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Page {page} of {totalPages}
                 </p>
                 <div className="flex gap-2">

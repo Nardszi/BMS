@@ -54,7 +54,7 @@ const roleColors: Record<string, string> = {
   SECRETARY: "bg-blue-100 text-blue-700",
   TREASURER: "bg-emerald-100 text-emerald-700",
   KAGAWAD: "bg-amber-100 text-amber-700",
-  STAFF: "bg-gray-100 text-gray-700",
+  STAFF: "bg-muted text-foreground/80",
 };
 
 export function Sidebar() {
@@ -189,7 +189,7 @@ export function Sidebar() {
               <p className="truncate text-sm font-semibold text-white">{session?.user?.name}</p>
               <span className={cn(
                 "mt-0.5 inline-block rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-                roleColors[userRole] || "bg-gray-100 text-gray-700"
+                roleColors[userRole] || "bg-muted text-foreground/80"
               )}>
                 {userRole}
               </span>
@@ -229,7 +229,7 @@ export function Sidebar() {
       {/* Mobile menu button */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed left-4 top-4 z-50 rounded-xl bg-white p-2.5 text-gray-600 shadow-lg md:hidden"
+        className="fixed left-4 top-4 z-50 rounded-xl bg-background p-2.5 text-foreground/70 shadow-lg md:hidden"
       >
         <Menu className="h-5 w-5" />
       </button>
