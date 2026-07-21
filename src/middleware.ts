@@ -3,11 +3,11 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 const roleRoutes: Record<string, string[]> = {
-  ADMIN: ["/", "/residents", "/barangay-ids", "/certificates", "/blotter", "/permits", "/officials", "/announcements", "/reports", "/users", "/audit"],
-  SECRETARY: ["/", "/residents", "/barangay-ids", "/certificates", "/blotter", "/announcements", "/audit"],
-  TREASURER: ["/", "/permits", "/residents"],
-  KAGAWAD: ["/", "/blotter"],
-  STAFF: ["/", "/residents", "/certificates"],
+  ADMIN: ["/", "/residents", "/barangay-ids", "/certificates", "/blotter", "/permits", "/officials", "/announcements", "/reports", "/users", "/audit", "/profile"],
+  SECRETARY: ["/", "/residents", "/barangay-ids", "/certificates", "/blotter", "/announcements", "/audit", "/profile"],
+  TREASURER: ["/", "/permits", "/residents", "/profile"],
+  KAGAWAD: ["/", "/blotter", "/profile"],
+  STAFF: ["/", "/residents", "/certificates", "/profile"],
 };
 
 const apiRoleRoutes: Record<string, string[]> = {

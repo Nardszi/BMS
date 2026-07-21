@@ -154,6 +154,7 @@ export default function PermitsPage() {
   }
 
   async function revokePermit(id: string) {
+    if (!window.confirm("Are you sure you want to revoke this permit? This action cannot be undone.")) return;
     const res = await fetch(`/api/permits/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },

@@ -53,8 +53,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Resident not found" }, { status: 404 });
     }
 
+    const year = new Date().getFullYear();
+    const count = await prisma.certificateRequest.count({
+      where: { requestDate: { gte: new Date(`${year}-01-01`) } },
+    });
+    const referenceNumber = `IX-${year}-${String(count + 1).padStart(3, "0")}`;
+
     const certificate = await prisma.certificateRequest.create({
-      data: { residentId, type, purpose },
+      data: { residentId, type, purpose, referenceNumber },
       include: { resident: true },
     });
 

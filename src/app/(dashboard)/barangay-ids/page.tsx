@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/toast";
 import { IDCardPDF } from "@/components/id-card-pdf";
 import { downloadAsPDF } from "@/lib/export-pdf";
-import { Plus, CreditCard, Printer, Search, Trash2, Eye, Ban, FileDown } from "lucide-react";
+import { Plus, CreditCard, Printer, Search, Trash2, Eye, Ban, FileDown, Copy, Check } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
@@ -78,6 +78,7 @@ export default function BarangayIDsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [loading, setLoading] = useState(true);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "SECRETARY"].includes(role);
 
@@ -144,6 +145,17 @@ export default function BarangayIDsPage() {
     if (res.ok) {
       toast({ title: "ID Deleted", variant: "success" });
       fetchIDs();
+    }
+  }
+
+  async function copyIDNumber(idNumber: string, id: string) {
+    try {
+      await navigator.clipboard.writeText(idNumber);
+      setCopiedId(id);
+      toast({ title: "Copied!", description: `ID number ${idNumber} copied to clipboard`, variant: "success" });
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      toast({ title: "Error", description: "Failed to copy to clipboard", variant: "error" });
     }
   }
 
@@ -281,7 +293,24 @@ export default function BarangayIDsPage() {
               ) : (
                 ids.map((id) => (
                   <TableRow key={id.id}>
-                    <TableCell className="font-mono font-bold text-blue-700">{id.idNumber}</TableCell>
+                    <TableCell className="font-mono font-bold text-blue-700">
+                      <div className="flex items-center gap-2">
+                        {id.idNumber}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={() => copyIDNumber(id.idNumber, id.id)}
+                          aria-label="Copy ID number"
+                        >
+                          {copiedId === id.id ? (
+                            <Check className="h-3 w-3 text-emerald-600" />
+                          ) : (
+                            <Copy className="h-3 w-3 text-gray-400 hover:text-gray-600" />
+                          )}
+                        </Button>
+                      </div>
+                    </TableCell>
                     <TableCell className="font-medium">
                       {id.resident.lastName}, {id.resident.firstName}
                     </TableCell>

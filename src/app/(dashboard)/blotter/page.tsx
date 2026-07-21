@@ -446,6 +446,14 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                 <div>Handled by: {detailBlotter.handledBy?.name || "N/A"}</div>
                 <div>Date Filed: {new Date(detailBlotter.createdAt).toLocaleDateString("en-PH")}</div>
               </div>
+              <div className="flex justify-end gap-2 border-t pt-3">
+                <Button variant="outline" size="sm" onClick={() => printBlotter(detailBlotter)}>
+                  <Printer className="mr-2 h-4 w-4" /> Print Report
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => downloadBlotterPDF(detailBlotter)}>
+                  <Download className="mr-2 h-4 w-4" /> Download PDF
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>

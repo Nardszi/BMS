@@ -160,16 +160,17 @@ model Official {
 }
 
 model CertificateRequest {
-  id           String            @id @default(cuid())
-  residentId   String
-  type         CertificateType
-  purpose      String
-  status       CertificateStatus @default(PENDING)
-  requestDate  DateTime          @default(now())
-  releaseDate  DateTime?
-  issuedById   String?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id              String            @id @default(cuid())
+  residentId      String
+  type            CertificateType
+  purpose         String
+  referenceNumber String?           @unique
+  status          CertificateStatus @default(PENDING)
+  requestDate     DateTime          @default(now())
+  releaseDate     DateTime?
+  issuedById      String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
   resident Resident @relation(fields: [residentId], references: [id], onDelete: Cascade)
   issuedBy User?    @relation("IssuedBy", fields: [issuedById], references: [id], onDelete: SetNull)
@@ -177,6 +178,7 @@ model CertificateRequest {
   @@index([status])
   @@index([type])
   @@index([residentId])
+  @@index([referenceNumber])
 }
 
 model BlotterReport {

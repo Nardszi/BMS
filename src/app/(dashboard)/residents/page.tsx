@@ -20,6 +20,13 @@ import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { PUROK_OPTIONS } from "@/lib/constants";
 
+function formatPhone(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 4) return digits;
+  if (digits.length <= 7) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+  return `${digits.slice(0, 4)}-${digits.slice(4, 7)}-${digits.slice(7)}`;
+}
+
 const residentSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
@@ -379,7 +386,7 @@ export default function ResidentsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Contact Number *</Label>
-                    <Input {...register("contactNumber")} placeholder="09XXXXXXXXX" />
+                    <Input {...register("contactNumber")} placeholder="09XX-XXX-XXXX" onChange={(e) => { const formatted = formatPhone(e.target.value); setValue("contactNumber", formatted, { shouldValidate: true }); }} />
                     {errors.contactNumber && <p className="text-sm text-red-500">{errors.contactNumber.message}</p>}
                   </div>
                 </div>

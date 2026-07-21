@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
-import { Plus, FileText, Check, X, Eye, Download, Printer, RotateCcw } from "lucide-react";
+import { Plus, FileText, Check, X, Eye, Download, Printer, RotateCcw, ArrowUpDown } from "lucide-react";
 import { CertificatePDF } from "@/components/certificate-pdf";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
@@ -64,6 +64,7 @@ export default function CertificatesPage() {
   const [open, setOpen] = useState(false);
   const [previewCert, setPreviewCert] = useState<Certificate | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "type" | "status">("newest");
   const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "SECRETARY"].includes(role);
 
@@ -225,6 +226,21 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
     return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading certificates...</p></div>;
   }
 
+  const sortedCertificates = [...certificates].sort((a, b) => {
+    switch (sortBy) {
+      case "newest":
+        return new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime();
+      case "oldest":
+        return new Date(a.requestDate).getTime() - new Date(b.requestDate).getTime();
+      case "type":
+        return a.type.localeCompare(b.type);
+      case "status":
+        return a.status.localeCompare(b.status);
+      default:
+        return 0;
+    }
+  });
+
   return (
     <div className="space-y-6">
       <PageHeader title="Certificates" subtitle="Manage certificate requests">
@@ -279,6 +295,20 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
 
       <Card>
         <CardContent className="p-0">
+          <div className="flex items-center gap-4 border-b p-4">
+            <div className="flex items-center gap-2 ml-auto">
+              <ArrowUpDown className="h-4 w-4 text-gray-400" />
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                <SelectTrigger className="w-40"><SelectValue placeholder="Sort by" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="type">By Type</SelectItem>
+                  <SelectItem value="status">By Status</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -291,14 +321,14 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
               </TableRow>
             </TableHeader>
             <TableBody>
-              {certificates.length === 0 ? (
+              {sortedCertificates.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6}>
                     <EmptyState icon={FileText} title="No certificate requests" />
                   </TableCell>
                 </TableRow>
               ) : (
-                certificates.map((c) => (
+                sortedCertificates.map((c) => (
                   <TableRow key={c.id}>
                     <TableCell className="font-medium">
                       {c.resident.lastName}, {c.resident.firstName}

@@ -32,6 +32,7 @@ interface DashboardStats {
   expiringSoonPermits: number;
   totalHouseholds: number;
   totalOfficials: number;
+  purokCounts: Array<{ purok: string; count: number }>;
   announcements: Array<{
     id: string;
     title: string;
@@ -393,6 +394,42 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Purok Breakdown */}
+      {stats.purokCounts && stats.purokCounts.length > 0 && (
+        <Card className="border-0 shadow-md">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <BarChart3 className="h-5 w-5 text-blue-600" />
+              Residents per Purok
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {stats.purokCounts.map((item) => {
+                const maxCount = Math.max(...stats.purokCounts.map((p) => p.count), 1);
+                const percentage = (item.count / maxCount) * 100;
+                return (
+                  <div key={item.purok} className="rounded-lg border p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">
+                        Purok {item.purok}
+                      </span>
+                      <span className="text-lg font-bold text-blue-900">{item.count}</span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

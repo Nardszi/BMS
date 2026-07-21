@@ -47,6 +47,13 @@ const steps = [
 const inputClass = "w-full rounded-xl px-4 py-3 text-[16px] text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-300 border border-gray-200 focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400";
 const inputBg = "bg-white hover:bg-gray-50 focus:bg-white";
 
+function formatPhone(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 4) return digits;
+  if (digits.length <= 7) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+  return `${digits.slice(0, 4)}-${digits.slice(4, 7)}-${digits.slice(7)}`;
+}
+
 const AUTO_SAVE_KEY = "bms-register-draft";
 
 export default function RegisterPage() {
@@ -204,22 +211,23 @@ export default function RegisterPage() {
               Your information has been submitted for review.
             </p>
             {refNumber && (
-              <div className="mt-4 sm:mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 sm:p-4 text-center">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-amber-600 mb-1">Reference Number</p>
-                <p className="text-base sm:text-lg font-mono font-bold text-amber-700 break-all">{refNumber}</p>
+              <div className="mt-4 sm:mt-5 rounded-xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-5 text-center shadow-lg shadow-amber-200/30">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-amber-600 mb-2">Your Reference Number</p>
+                <p className="text-2xl sm:text-3xl font-mono font-extrabold text-amber-700 break-all tracking-wider">{refNumber}</p>
+                <p className="mt-2 text-xs sm:text-sm font-medium text-amber-600">Save this reference number for your records</p>
               </div>
             )}
             <div className="mt-5 sm:mt-6 space-y-2.5">
               <div className="grid grid-cols-2 gap-2.5">
-                <Button variant="outline" onClick={printReference} className="h-11 rounded-xl border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 text-sm">
-                  <Printer className="mr-1.5 h-4 w-4" /> <span className="hidden xs:inline">Print</span><span className="xs:hidden">Print</span>
+                <Button variant="outline" onClick={printReference} className="h-12 rounded-xl border-2 border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 text-sm font-medium shadow-sm">
+                  <Printer className="mr-2 h-4 w-4" /> Print
                 </Button>
                 <Button variant="outline" onClick={() => {
                   const text = `Barangay IX Registration\nReference: ${refNumber}\nDate: ${new Date().toLocaleString()}`;
                   navigator.clipboard.writeText(text);
                   toast({ title: "Copied!", variant: "success" });
-                }} className="h-11 rounded-xl border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 text-sm">
-                  <Download className="mr-1.5 h-4 w-4" /> Copy
+                }} className="h-12 rounded-xl border-2 border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 text-sm font-medium shadow-sm">
+                  <Download className="mr-2 h-4 w-4" /> Copy
                 </Button>
               </div>
               <Link href="/login" className="block">
@@ -420,9 +428,9 @@ export default function RegisterPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs sm:text-[13px] font-medium text-gray-600">Contact Number *</Label>
-                    <Input {...register("contactNumber")} placeholder="09XXXXXXXXX" type="tel" inputMode="numeric" maxLength={11} className={inputClass} />
+                    <Input {...register("contactNumber")} placeholder="09XX-XXX-XXXX" type="tel" inputMode="numeric" maxLength={13} className={inputClass} onChange={(e) => { const formatted = formatPhone(e.target.value); setValue("contactNumber", formatted, { shouldValidate: true }); }} />
                     {errors.contactNumber && <p className="text-[11px] text-red-500">{errors.contactNumber.message}</p>}
-                    <p className="text-[11px] text-gray-400">Format: 09XXXXXXXXX or +639XXXXXXXXX</p>
+                    <p className="text-[11px] text-gray-400">Format: 09XX-XXX-XXXX</p>
                   </div>
                   <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 sm:p-4">
                     <p className="text-xs sm:text-[13px] text-gray-500">Used for barangay notifications and emergency contact.</p>

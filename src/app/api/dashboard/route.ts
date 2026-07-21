@@ -11,6 +11,7 @@ export async function GET() {
     const [
       totalResidents, pendingCertificates, openBlotterCases, activePermits,
       expiringSoonPermits, totalHouseholds, totalOfficials, announcements, recentCertificates,
+      purokCounts,
     ] = await Promise.all([
       prisma.resident.count(),
       prisma.certificateRequest.count({ where: { status: "PENDING" } }),
@@ -30,11 +31,19 @@ export async function GET() {
         orderBy: { createdAt: "desc" }, take: 5,
         include: { resident: { select: { firstName: true, lastName: true } } },
       }),
+      prisma.$queryRaw<{ purok: string; count: number }[]>`
+        SELECT h.purok, COUNT(r.id)::int as count
+        FROM "Household" h
+        LEFT JOIN "Resident" r ON r."householdId" = h.id AND r.status = 'APPROVED'
+        GROUP BY h.purok
+        ORDER BY h.purok
+      `,
     ]);
 
     return NextResponse.json({
       totalResidents, pendingCertificates, openBlotterCases, activePermits,
       expiringSoonPermits, totalHouseholds, totalOfficials, announcements, recentCertificates,
+      purokCounts,
     });
   } catch (error) {
     console.error("GET /api/dashboard error:", error);

@@ -21,6 +21,7 @@ import {
   Bell,
   Settings,
   History,
+  User,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -195,6 +196,18 @@ export function Sidebar() {
             </div>
           )}
         </div>
+
+        <Link
+          href="/profile"
+          className={cn(
+            "mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+            "text-slate-400 hover:bg-white/5 hover:text-white",
+            collapsed && "justify-center px-2"
+          )}
+        >
+          <User className="h-4 w-4" />
+          {!collapsed && <span>Profile</span>}
+        </Link>
 
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
