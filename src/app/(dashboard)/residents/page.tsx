@@ -447,7 +447,7 @@ export default function ResidentsPage() {
           variant={statusFilter === "" ? "default" : "outline"}
           size="sm"
           onClick={() => { setStatusFilter(""); setPage(1); }}
-          className={statusFilter === "" ? "bg-blue-900 hover:bg-blue-800" : ""}
+          className={statusFilter === "" ? "bg-blue-900 hover:bg-blue-800 text-white" : "border-gray-300 text-gray-700 hover:bg-gray-100"}
         >
           <Users className="mr-2 h-4 w-4" /> All
         </Button>
@@ -455,7 +455,7 @@ export default function ResidentsPage() {
           variant={statusFilter === "PENDING" ? "default" : "outline"}
           size="sm"
           onClick={() => { setStatusFilter("PENDING"); setPage(1); }}
-          className={statusFilter === "PENDING" ? "bg-amber-600 hover:bg-amber-700" : ""}
+          className={statusFilter === "PENDING" ? "bg-amber-600 hover:bg-amber-700 text-white" : "border-gray-300 text-gray-700 hover:bg-gray-100"}
         >
           <Clock className="mr-2 h-4 w-4" /> Pending
           {pendingCount > 0 && (
@@ -468,7 +468,7 @@ export default function ResidentsPage() {
           variant={statusFilter === "APPROVED" ? "default" : "outline"}
           size="sm"
           onClick={() => { setStatusFilter("APPROVED"); setPage(1); }}
-          className={statusFilter === "APPROVED" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+          className={statusFilter === "APPROVED" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "border-gray-300 text-gray-700 hover:bg-gray-100"}
         >
           <CheckCircle2 className="mr-2 h-4 w-4" /> Approved
           {approvedCount > 0 && (
@@ -481,7 +481,7 @@ export default function ResidentsPage() {
           variant={statusFilter === "REJECTED" ? "default" : "outline"}
           size="sm"
           onClick={() => { setStatusFilter("REJECTED"); setPage(1); }}
-          className={statusFilter === "REJECTED" ? "bg-red-600 hover:bg-red-700" : ""}
+          className={statusFilter === "REJECTED" ? "bg-red-600 hover:bg-red-700 text-white" : "border-gray-300 text-gray-700 hover:bg-gray-100"}
         >
           <XCircle className="mr-2 h-4 w-4" /> Rejected
           {rejectedCount > 0 && (
