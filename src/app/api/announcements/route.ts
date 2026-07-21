@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { announcementSchema } from "@/lib/validations";
+import { logAudit } from "@/lib/audit";
 
 export async function GET(request: Request) {
   try {
@@ -66,6 +67,8 @@ export async function POST(request: Request) {
       },
       include: { postedBy: { select: { name: true } } },
     });
+
+    logAudit({ userId: session.user.id, action: "CREATE", entity: "Announcement", entityId: announcement.id, details: { title } });
 
     return NextResponse.json(announcement, { status: 201 });
   } catch (error) {

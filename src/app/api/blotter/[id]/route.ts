@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/audit";
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -26,6 +27,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     });
 
+    logAudit({ userId: session.user.id, action: "UPDATE", entity: "Blotter", entityId: params.id, details: { caseNumber: blotter.caseNumber, newStatus: body.status } });
+
     return NextResponse.json(blotter);
   } catch (error) {
     console.error("PUT /api/blotter/[id] error:", error);
@@ -44,6 +47,9 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     await prisma.blotterReport.delete({ where: { id: params.id } });
+
+    logAudit({ userId: session.user.id, action: "DELETE", entity: "Blotter", entityId: params.id });
+
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
     console.error("DELETE /api/blotter/[id] error:", error);

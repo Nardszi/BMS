@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { hash } from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/audit";
 
 const VALID_ROLES = ["ADMIN", "SECRETARY", "TREASURER", "KAGAWAD", "STAFF"] as const;
 
@@ -54,6 +55,8 @@ export async function POST(request: Request) {
       data: { name, email, password: hashedPassword, role: newRole },
       select: { id: true, name: true, email: true, role: true, createdAt: true, lastLoginAt: true },
     });
+
+    logAudit({ userId: session.user.id, action: "CREATE", entity: "User", entityId: user.id, details: { name, email, role: newRole } });
 
     return NextResponse.json(user, { status: 201 });
   } catch (error: any) {

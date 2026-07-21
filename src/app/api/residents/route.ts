@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { residentSchema } from "@/lib/validations";
+import { logAudit } from "@/lib/audit";
 
 export async function GET(request: Request) {
   try {
@@ -92,6 +93,8 @@ export async function POST(request: Request) {
       },
     });
 
+    logAudit({ userId: session.user.id, action: "CREATE", entity: "Resident", entityId: resident.id, details: { name: `${firstName} ${lastName}`, purok } });
+
     return NextResponse.json(resident, { status: 201 });
   } catch (error) {
     console.error("POST /api/residents error:", error);
@@ -116,6 +119,8 @@ export async function DELETE(request: Request) {
     }
 
     await prisma.resident.deleteMany({ where: { id: { in: ids } } });
+
+    logAudit({ userId: session.user.id, action: "DELETE", entity: "Resident", entityId: ids.join(","), details: { count: ids.length } });
 
     return NextResponse.json({ success: true, deleted: ids.length });
   } catch (error) {

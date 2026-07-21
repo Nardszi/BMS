@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { barangayIdSchema } from "@/lib/validations";
+import { logAudit } from "@/lib/audit";
 
 export async function GET(request: Request) {
   try {
@@ -78,6 +79,8 @@ export async function POST(request: Request) {
       },
       include: { resident: { include: { household: true } }, issuedBy: true },
     });
+
+    logAudit({ userId: session.user.id, action: "CREATE", entity: "BarangayId", entityId: barangayId.id, details: { idNumber } });
 
     return NextResponse.json(barangayId, { status: 201 });
   } catch (error) {

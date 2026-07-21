@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { hash } from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/audit";
 
 const VALID_ROLES = ["ADMIN", "SECRETARY", "TREASURER", "KAGAWAD", "STAFF"] as const;
 
@@ -38,6 +39,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       select: { id: true, name: true, email: true, role: true, createdAt: true, lastLoginAt: true },
     });
 
+    logAudit({ userId: session.user.id, action: "UPDATE", entity: "User", entityId: params.id, details: { name, email, role: newRole } });
+
     return NextResponse.json(user);
   } catch (error: any) {
     if (error?.code === "P2002") {
@@ -63,6 +66,9 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     await prisma.user.delete({ where: { id: params.id } });
+
+    logAudit({ userId: session.user.id, action: "DELETE", entity: "User", entityId: params.id });
+
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

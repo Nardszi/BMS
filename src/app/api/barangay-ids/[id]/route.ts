@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/audit";
 
 const VALID_STATUSES = ["ACTIVE", "EXPIRED", "REVOKED"] as const;
 
@@ -26,6 +27,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       include: { resident: { include: { household: true } }, issuedBy: true },
     });
 
+    logAudit({ userId: session.user.id, action: "UPDATE", entity: "BarangayId", entityId: params.id, details: { idNumber: id.idNumber, newStatus: body.status } });
+
     return NextResponse.json(id);
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -43,6 +46,9 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     await prisma.barangayID.delete({ where: { id: params.id } });
+
+    logAudit({ userId: session.user.id, action: "DELETE", entity: "BarangayId", entityId: params.id });
+
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

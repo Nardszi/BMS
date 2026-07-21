@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/audit";
 
 const VALID_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
 
@@ -66,6 +67,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     });
 
+    logAudit({ userId: session.user.id, action: "UPDATE", entity: "Resident", entityId: params.id, details: { name: `${resident.firstName} ${resident.lastName}` } });
+
     return NextResponse.json(resident);
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -83,6 +86,9 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     await prisma.resident.delete({ where: { id: params.id } });
+
+    logAudit({ userId: session.user.id, action: "DELETE", entity: "Resident", entityId: params.id });
+
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -108,6 +114,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       where: { id: params.id },
       data: { status: body.status },
     });
+
+    logAudit({ userId: session.user.id, action: "STATUS_CHANGE", entity: "Resident", entityId: params.id, details: { newStatus: body.status } });
 
     return NextResponse.json(resident);
   } catch (error) {

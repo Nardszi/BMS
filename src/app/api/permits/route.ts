@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notifyUsersByRole } from "@/lib/notify";
 import { permitSchema } from "@/lib/validations";
+import { logAudit } from "@/lib/audit";
 
 function generatePermitNumber(): string {
   const year = new Date().getFullYear();
@@ -101,6 +102,8 @@ export async function POST(request: Request) {
     });
 
     notifyUsersByRole("TREASURER", "New Business Permit", `${businessName} (${permitNumber}) has been registered.`, "permit", "/permits");
+
+    logAudit({ userId: session.user.id, action: "CREATE", entity: "Permit", entityId: permit.id, details: { businessName, permitNumber } });
 
     return NextResponse.json(permit, { status: 201 });
   } catch (error) {

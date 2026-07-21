@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notifyUsersByRole } from "@/lib/notify";
+import { logAudit } from "@/lib/audit";
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -37,6 +38,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       notifyUsersByRole("SECRETARY", "Certificate Denied", `${certificate.type} request for ${certificate.resident.firstName} ${certificate.resident.lastName} has been denied.`, "certificate", "/certificates");
     }
 
+    logAudit({ userId: session.user.id, action: `STATUS_${status}`, entity: "Certificate", entityId: params.id, details: { type: certificate.type, residentName: `${certificate.resident.firstName} ${certificate.resident.lastName}` } });
+
     return NextResponse.json(certificate);
   } catch (error) {
     console.error("PUT /api/certificates/[id] error:", error);
@@ -55,6 +58,9 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     await prisma.certificateRequest.delete({ where: { id: params.id } });
+
+    logAudit({ userId: session.user.id, action: "DELETE", entity: "Certificate", entityId: params.id });
+
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
     console.error("DELETE /api/certificates/[id] error:", error);

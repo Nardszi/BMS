@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/audit";
 
 const VALID_PRIORITIES = ["URGENT", "IMPORTANT", "GENERAL"] as const;
 const VALID_CATEGORIES = ["HEALTH", "SAFETY", "EVENT", "MEETING", "GENERAL", "OTHERS"] as const;
@@ -36,6 +37,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         imageUrl: body.imageUrl || null,
       },
     });
+
+    logAudit({ userId: session.user.id, action: "UPDATE", entity: "Announcement", entityId: params.id, details: { title: body.title } });
 
     return NextResponse.json(announcement);
   } catch (error) {
@@ -87,6 +90,9 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     await prisma.announcement.delete({ where: { id: params.id } });
+
+    logAudit({ userId: session.user.id, action: "DELETE", entity: "Announcement", entityId: params.id });
+
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

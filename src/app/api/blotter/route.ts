@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notifyUsersByRole } from "@/lib/notify";
 import { blotterSchema } from "@/lib/validations";
+import { logAudit } from "@/lib/audit";
 
 export async function GET(request: Request) {
   try {
@@ -84,6 +85,8 @@ export async function POST(request: Request) {
     });
 
     notifyUsersByRole("KAGAWAD", "New Blotter Report", `Case ${blotter.caseNumber}: ${incidentType} reported by ${complainantName} vs ${respondentName}.`, "blotter", "/blotter");
+
+    logAudit({ userId: session.user.id, action: "CREATE", entity: "Blotter", entityId: blotter.id, details: { caseNumber: blotter.caseNumber, incidentType, complainantName, respondentName } });
 
     return NextResponse.json(blotter, { status: 201 });
   } catch (error) {

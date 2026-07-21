@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notifyUsersByRole } from "@/lib/notify";
+import { logAudit } from "@/lib/audit";
 
 export async function GET(request: Request) {
   try {
@@ -65,6 +66,8 @@ export async function POST(request: Request) {
     });
 
     notifyUsersByRole("SECRETARY", "New Certificate Request", `A new ${type} request has been submitted for ${residentExists.firstName} ${residentExists.lastName}.`, "certificate", "/certificates");
+
+    logAudit({ userId: session.user.id, action: "CREATE", entity: "Certificate", entityId: certificate.id, details: { type, residentName: `${residentExists.firstName} ${residentExists.lastName}`, referenceNumber } });
 
     return NextResponse.json(certificate, { status: 201 });
   } catch (error) {

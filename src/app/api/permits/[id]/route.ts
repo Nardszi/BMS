@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/audit";
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -27,6 +28,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     });
 
+    logAudit({ userId: session.user.id, action: "UPDATE", entity: "Permit", entityId: params.id, details: { permitNumber: permit.permitNumber, newStatus: body.status } });
+
     return NextResponse.json(permit);
   } catch (error) {
     console.error("PUT /api/permits/[id] error:", error);
@@ -45,6 +48,9 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     await prisma.businessPermit.delete({ where: { id: params.id } });
+
+    logAudit({ userId: session.user.id, action: "DELETE", entity: "Permit", entityId: params.id });
+
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
     console.error("DELETE /api/permits/[id] error:", error);
