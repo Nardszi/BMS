@@ -236,8 +236,9 @@ export default function StaticTileMap({
               style={{ left: m.screenX, top: m.screenY, transform: "translate(-50%, -100%)" }}
             >
               <MapPin className="h-7 w-7 drop-shadow-lg transition-transform group-hover:scale-125" style={{ color: m.color || "#ef4444" }} fill={m.color || "#ef4444"} strokeWidth={0} />
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30">
-                <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-medium">
+              {/* Always-visible label */}
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0.5 pointer-events-none z-30">
+                <div className="bg-black/80 backdrop-blur-sm text-white text-[10px] px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap font-bold border border-white/20">
                   {m.label}
                 </div>
               </div>
