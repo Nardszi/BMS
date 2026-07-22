@@ -4,17 +4,19 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 // Geocoordinates for Puroks in Barangay IX - Daan Banwa, Victorias City, Negros Occidental
+// Official barangay center: 10.9042, 123.0611 (PhilAtlas/Victorias City)
+// Land area: 23.24 hectares (~480m x 480m)
 const PUROK_COORDINATES: Record<string, [number, number]> = {
-  "1": [10.8986, 123.0786],
-  "2": [10.8998, 123.0801],
-  "3": [10.8972, 123.0792],
-  "4": [10.8961, 123.0775],
-  "5": [10.8950, 123.0760],
-  "6": [10.8965, 123.0745],
-  "7": [10.8980, 123.0735],
-  "8": [10.8995, 123.0750],
-  "9": [10.9010, 123.0768],
-  "10": [10.9022, 123.0785],
+  "1": [10.9055, 123.0600],  // Northwest
+  "2": [10.9055, 123.0615],  // North-center
+  "3": [10.9055, 123.0630],  // Northeast
+  "4": [10.9042, 123.0595],  // West-center
+  "5": [10.9042, 123.0611],  // Center
+  "6": [10.9042, 123.0627],  // East-center
+  "7": [10.9029, 123.0600],  // Southwest
+  "8": [10.9029, 123.0615],  // South-center
+  "9": [10.9029, 123.0630],  // Southeast
+  "10": [10.9065, 123.0615], // Far north
 };
 
 // Deterministic pseudo-random offset for placing markers within a purok area
@@ -107,7 +109,7 @@ export async function GET() {
     households.forEach((h) => {
       householdPurokMap[h.id] = h.purok;
       if (!purokStats[h.purok]) {
-        const defaultCenter: [number, number] = [10.8986, 123.0786];
+        const defaultCenter: [number, number] = [10.9042, 123.0611];
         purokStats[h.purok] = {
           purok: h.purok,
           center: PUROK_COORDINATES[h.purok] || defaultCenter,
@@ -136,7 +138,7 @@ export async function GET() {
     // Map permits with coordinates
     const permitMarkers = permits.map((p) => {
       const purok = p.owner?.household?.purok || "1";
-      const baseCenter = PUROK_COORDINATES[purok] || [10.8986, 123.0786];
+      const baseCenter = PUROK_COORDINATES[purok] || [10.9042, 123.0611];
       if (purokStats[purok]) purokStats[purok].businessCount += 1;
       const coords = getOffsetCoords(baseCenter[0], baseCenter[1], p.id);
       return {
@@ -167,7 +169,7 @@ export async function GET() {
 
       if (purokStats[purok]) purokStats[purok].blotterCount += 1;
 
-      const baseCenter = PUROK_COORDINATES[purok] || [10.8986, 123.0786];
+      const baseCenter = PUROK_COORDINATES[purok] || [10.9042, 123.0611];
       const coords = getOffsetCoords(baseCenter[0], baseCenter[1], b.id);
 
       return {
@@ -189,7 +191,7 @@ export async function GET() {
       puroks: Object.values(purokStats),
       permits: permitMarkers,
       blotters: blotterMarkers,
-      center: [10.8986, 123.0786], // Barangay IX center
+      center: [10.9042, 123.0611], // Barangay IX center (official)
     });
   } catch (error) {
     console.error("GET /api/gis error:", error);
