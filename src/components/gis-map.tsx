@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Building2, ShieldAlert, Home, MapPin, ExternalLink, ArrowUpRight, Navigation, Target, X, Check } from "lucide-react";
+import { Users, Building2, ShieldAlert, Home, MapPin, ExternalLink, ArrowUpRight, Navigation } from "lucide-react";
 import StaticTileMap from "@/components/static-tile-map";
 
 interface PurokData {
@@ -54,16 +54,16 @@ interface GISMapProps {
 }
 
 const DEFAULT_COORDS: Record<string, [number, number]> = {
-  "1": [10.9065, 123.0585],
-  "2": [10.9055, 123.0600],
-  "3": [10.9048, 123.0620],
-  "4": [10.9038, 123.0635],
-  "5": [10.9030, 123.0615],
-  "6": [10.9025, 123.0595],
-  "7": [10.9035, 123.0575],
-  "8": [10.9050, 123.0560],
-  Toreno: [10.9070, 123.0625],
-  Aji: [10.9018, 123.0630],
+  "1": [10.9038, 123.0592],
+  "2": [10.9025, 123.0598],
+  "3": [10.9048, 123.0605],
+  "4": [10.9058, 123.0608],
+  "5": [10.9055, 123.0593],
+  "6": [10.9050, 123.0568],
+  "7": [10.9052, 123.0640],
+  "8": [10.9038, 123.0622],
+  "Toreno": [10.9015, 123.0628],
+  "Aji": [10.9052, 123.0665],
 };
 
 export default function GISMap({
@@ -73,8 +73,7 @@ export default function GISMap({
   onSelectPurok,
 }: GISMapProps) {
   const [hoveredZone, setHoveredZone] = useState<string | null>(null);
-  const [placingPurok, setPlacingPurok] = useState<string | null>(null);
-  const [coords, setCoords] = useState<Record<string, [number, number]>>(DEFAULT_COORDS);
+  const [coords] = useState<Record<string, [number, number]>>(DEFAULT_COORDS);
   const maxPop = Math.max(...puroks.map((p) => p.population), 1);
 
   const mapMarkers = useMemo(() => {
@@ -96,75 +95,20 @@ export default function GISMap({
       }));
   }, [puroks, maxPop, coords]);
 
-  const handleMapClick = useCallback((lat: number, lng: number) => {
-    if (!placingPurok) return;
-    setCoords((prev) => ({ ...prev, [placingPurok]: [lat, lng] }));
-    setPlacingPurok(null);
-  }, [placingPurok]);
-
   return (
     <div className="space-y-6">
-      {/* Map Card with placement toolbar */}
+      {/* Map Card */}
       <Card className="border-0 shadow-xl overflow-hidden rounded-2xl">
-        <CardContent className="p-0 relative">
-          {/* Purok placement selector */}
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 flex-wrap justify-center">
-            {placingPurok && (
-              <div className="bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl flex items-center gap-2">
-                <Target className="h-3.5 w-3.5 animate-pulse" />
-                Placing: {isNaN(Number(placingPurok)) ? placingPurok : `Purok ${placingPurok}`} — click the map
-                <button onClick={() => setPlacingPurok(null)} className="ml-1 hover:text-green-200">
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            )}
-          </div>
-
+        <CardContent className="p-0">
           <StaticTileMap
             center={[10.9042, 123.0611]}
             zoom={16}
             height={500}
             markers={mapMarkers}
-            onMapClick={placingPurok ? handleMapClick : undefined}
-            placing={!!placingPurok}
             className="w-full"
           />
         </CardContent>
       </Card>
-
-      {/* Purok placement bar */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-2xl p-4 border border-blue-800/30">
-        <div className="flex items-center gap-2 mb-3">
-          <Target className="h-4 w-4 text-blue-400" />
-          <h4 className="text-sm font-bold text-white">Place Purok Markers</h4>
-          <span className="text-[10px] text-blue-300 bg-blue-900/50 px-2 py-0.5 rounded-full">Click a purok, then click the map</span>
-        </div>
-        <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
-          {puroks.map((p) => {
-            const isPlacing = placingPurok === p.purok;
-            const hasCoord = !!coords[p.purok];
-            return (
-              <button
-                key={p.purok}
-                onClick={() => setPlacingPurok(isPlacing ? null : p.purok)}
-                className={`text-xs font-bold px-2 py-2 rounded-lg transition-all ${
-                  isPlacing
-                    ? "bg-green-500 text-white shadow-lg shadow-green-500/30 scale-110"
-                    : hasCoord
-                    ? "bg-blue-800/80 text-blue-200 hover:bg-blue-700/80 border border-blue-600/30"
-                    : "bg-gray-800 text-gray-400 hover:bg-gray-700 border border-gray-700"
-                }`}
-              >
-                {isNaN(Number(p.purok)) ? p.purok : `P${p.purok}`}
-                {hasCoord && !isPlacing && <Check className="h-3 w-3 inline ml-0.5 text-green-400" />}
-              </button>
-            );
-          })}
-        </div>
-        <div className="mt-2 text-[10px] text-blue-300/60">
-          Coordinates auto-saved per purok. Drag the satellite map to navigate, zoom in for precision.
-        </div>
-      </div>
 
       {/* External Map Links */}
       <div className="flex flex-wrap gap-3">
