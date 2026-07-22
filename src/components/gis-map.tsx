@@ -115,10 +115,17 @@ export default function GISMap({
       }));
   }, [puroks, maxPop, coords]);
 
-  // Generate polygon boundaries (using saved or auto-generated)
+  // Generate polygon boundaries — only user-drawn ones
   const mapPolygons = useMemo(() => {
-    return [];
-  }, []);
+    return puroks
+      .filter((p) => polygons[p.purok] && polygons[p.purok].length >= 3)
+      .map((p) => {
+        const ratio = p.population / maxPop;
+        const color = ratio > 0.7 ? "#ef4444" : ratio > 0.4 ? "#f59e0b" : "#3b82f6";
+        const label = isNaN(Number(p.purok)) ? p.purok : `P${p.purok}`;
+        return { id: p.purok, label, color, fillColor: color, points: polygons[p.purok] };
+      });
+  }, [puroks, maxPop, polygons]);
 
   const handlePolygonComplete = useCallback((id: string, points: [number, number][]) => {
     setDrawingPolygon(null);
