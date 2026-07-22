@@ -14,7 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
-import { Plus, FileText, Check, X, Eye, Download, Printer, RotateCcw, ArrowUpDown } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Plus, FileText, Check, X, Eye, Download, Printer, RotateCcw, ArrowUpDown, Search } from "lucide-react";
 import { CertificatePDF } from "@/components/certificate-pdf";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
@@ -65,6 +66,7 @@ export default function CertificatesPage() {
   const [previewCert, setPreviewCert] = useState<Certificate | null>(null);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "type" | "status">("newest");
+  const [search, setSearch] = useState("");
   const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "SECRETARY"].includes(role);
 
@@ -226,7 +228,15 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
     return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading certificates...</p></div>;
   }
 
-  const sortedCertificates = [...certificates].sort((a, b) => {
+  const filteredCertificates = certificates.filter((cert) => {
+    const q = search.toLowerCase();
+    const fullName = `${cert.resident.firstName} ${cert.resident.lastName}`.toLowerCase();
+    const typeLabel = (typeLabels[cert.type] || cert.type).toLowerCase();
+    const purpose = cert.purpose.toLowerCase();
+    return fullName.includes(q) || typeLabel.includes(q) || purpose.includes(q) || cert.status.toLowerCase().includes(q);
+  });
+
+  const sortedCertificates = [...filteredCertificates].sort((a, b) => {
     switch (sortBy) {
       case "newest":
         return new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime();
@@ -292,6 +302,17 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
           </DialogContent>
         </Dialog>
       </PageHeader>
+
+      {/* Search Bar */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
+        <Input
+          placeholder="Search by resident name, type, or purpose..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-10"
+        />
+      </div>
 
       <Card>
         <CardContent className="p-0">
