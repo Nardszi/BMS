@@ -63,12 +63,28 @@ export default function StaticTileMap({
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(800);
   const [zoom, setZoom] = useState(initialZoom);
-  const [style, setStyle] = useState<TileStyle>("satellite");
+  const [style, setStyle] = useState<TileStyle>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const s = localStorage.getItem("bms-map-style");
+        if (s === "satellite" || s === "street") return s;
+      } catch {}
+    }
+    return "satellite";
+  });
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
 
   // Pan state
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [offset, setOffset] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("bms-map-offset");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return { x: 0, y: 0 };
+  });
   const dragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const offsetStart = useRef({ x: 0, y: 0 });
@@ -157,7 +173,8 @@ export default function StaticTileMap({
 
   const onPointerUp = useCallback(() => {
     dragging.current = false;
-  }, []);
+    localStorage.setItem("bms-map-offset", JSON.stringify(offset));
+  }, [offset]);
 
   // --- Click handler (for placing markers) ---
   const onContainerClick = useCallback((e: React.MouseEvent) => {
@@ -185,9 +202,20 @@ export default function StaticTileMap({
   const handleZoomOut = () => {
     setZoom((z) => Math.max(10, z - 1));
     setOffset({ x: 0, y: 0 });
+    localStorage.setItem("bms-map-offset", JSON.stringify({ x: 0, y: 0 }));
   };
-  const handleReset = () => { setZoom(initialZoom); setOffset({ x: 0, y: 0 }); };
-  const toggleStyle = () => setStyle((s) => s === "satellite" ? "street" : "satellite");
+  const handleReset = () => {
+    setZoom(initialZoom);
+    setOffset({ x: 0, y: 0 });
+    localStorage.setItem("bms-map-offset", JSON.stringify({ x: 0, y: 0 }));
+  };
+  const toggleStyle = () => {
+    setStyle((s) => {
+      const next = s === "satellite" ? "street" : "satellite";
+      localStorage.setItem("bms-map-style", next);
+      return next;
+    });
+  };
 
   return (
     <div

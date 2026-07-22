@@ -54,16 +54,16 @@ interface GISMapProps {
 }
 
 const DEFAULT_COORDS: Record<string, [number, number]> = {
-  "1": [10.9018, 123.0608],
-  "2": [10.9010, 123.0612],
-  "3": [10.9025, 123.0620],
-  "4": [10.9032, 123.0622],
-  "5": [10.9035, 123.0610],
-  "6": [10.9028, 123.0588],
-  "7": [10.9030, 123.0648],
-  "8": [10.9015, 123.0635],
-  "Toreno": [10.8995, 123.0645],
-  "Aji": [10.9030, 123.0672],
+  "1": [10.903217341701733, 123.05972335556828],
+  "2": [10.902595766605971, 123.06036708573185],
+  "3": [10.903986407395275, 123.06132195214116],
+  "4": [10.904692260459727, 123.06092498520695],
+  "5": [10.905071524100972, 123.06042072991215],
+  "6": [10.90436567193665, 123.05897233704411],
+  "7": [10.90461851469554, 123.06273815850102],
+  "8": [10.903312158127584, 123.06179402092778],
+  "Toreno": [10.901795091687132, 123.06329605797612],
+  "Aji": [10.904681725351677, 123.06444404343449],
 };
 
 export default function GISMap({
@@ -148,8 +148,8 @@ export default function GISMap({
           )}
 
           <StaticTileMap
-            center={[10.9042, 123.0611]}
-            zoom={16}
+            center={mapCenter}
+            zoom={17}
             height={500}
             markers={mapMarkers}
             onMapClick={placingPurok ? handleMapClick : undefined}
@@ -188,7 +188,15 @@ export default function GISMap({
             {puroks.map((p) => {
               const isPlacing = placingPurok === p.purok;
               const hasCoord = !!coords[p.purok];
-              return (
+  // Auto-calculate center from purok positions
+  const mapCenter = useMemo<[number, number]>(() => {
+    const values = Object.values(coords);
+    const avgLat = values.reduce((s, c) => s + c[0], 0) / values.length;
+    const avgLng = values.reduce((s, c) => s + c[1], 0) / values.length;
+    return [avgLat, avgLng];
+  }, [coords]);
+
+  return (
                 <button
                   key={p.purok}
                   onClick={() => setPlacingPurok(isPlacing ? null : p.purok)}
