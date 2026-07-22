@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Users, Building2, ShieldAlert, Home, MapPin, ExternalLink, ArrowUpRight } from "lucide-react";
 
 interface PurokData {
@@ -55,45 +54,70 @@ interface GISMapProps {
 
 export default function GISMap({
   puroks,
-  permits,
-  blotters,
   activeLayer,
   selectedPurok,
   onSelectPurok,
 }: GISMapProps) {
   const [hoveredZone, setHoveredZone] = useState<string | null>(null);
-
   const maxPop = Math.max(...puroks.map((p) => p.population), 1);
 
   return (
-    <div className="space-y-4">
-      {/* Interactive Vector Master Plan Map Container */}
-      <div className="relative w-full h-[620px] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 shadow-2xl p-6 flex flex-col justify-between">
+    <div className="space-y-6">
+      {/* Live Google Map Embed for Barangay IX, Victorias City */}
+      <Card className="border-0 shadow-xl overflow-hidden rounded-2xl dark:bg-gray-900">
+        <CardHeader className="bg-gradient-to-r from-blue-900 to-slate-900 text-white pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-blue-400" />
+              <span>Live Google Map View: Barangay IX (Daan Banwa), Victorias City</span>
+            </CardTitle>
+            <a
+              href="https://www.google.com/maps/search/Barangay+IX+Daan+Banwa+Victorias+City+Negros+Occidental+Philippines"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-blue-200 hover:text-white transition-colors"
+            >
+              <span>Open Fullscreen</span> <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="w-full h-[400px] relative bg-muted">
+            <iframe
+              title="Barangay IX Live Google Map"
+              src="https://maps.google.com/maps?q=Barangay+IX+Daan+Banwa+Victorias+City+Negros+Occidental+Philippines&t=&z=16&ie=UTF8&iwloc=&output=embed"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen={false}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full h-full"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Interactive Vector Master Plan Zoning Grid */}
+      <div className="relative w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 shadow-2xl p-6 flex flex-col justify-between">
         
-        {/* Map Header & Landmarks Overlay */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 z-10 bg-black/40 backdrop-blur-md p-4 rounded-xl border border-white/10 text-white">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 z-10 bg-black/40 backdrop-blur-md p-4 rounded-xl border border-white/10 text-white mb-6">
           <div>
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <h3 className="font-black text-base tracking-wide">Barangay IX (Daan Banwa) Master Plan Map</h3>
+              <h3 className="font-black text-base tracking-wide">Barangay IX Zone Directory & Demographics</h3>
             </div>
             <p className="text-xs text-blue-200/80 mt-0.5">
-              Interactive Vector Zoning — Victorias City, Negros Occidental (Malijao River & Western Nautical Hwy boundaries)
+              Click any zone card below to inspect detailed household, resident, business, and incident reports.
             </p>
           </div>
-          <a
-            href="https://www.google.com/maps/search/Barangay+IX+Daan+Banwa+Victorias+City+Negros+Occidental+Philippines"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <button className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow transition-colors">
-              <MapPin className="h-3.5 w-3.5" /> Open Google Maps <ExternalLink className="h-3 w-3 ml-0.5" />
-            </button>
-          </a>
+          <span className="text-xs font-bold bg-blue-600/80 text-white px-3 py-1.5 rounded-lg">
+            10 Active Zones (Puroks 1-8, Toreno, Aji)
+          </span>
         </div>
 
-        {/* Visual Barangay Layout Grid representing Puroks 1-8, Toreno, Aji */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5 z-10 my-auto">
+        {/* Visual Barangay Layout Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5 z-10">
           {puroks.map((p) => {
             const isSelected = selectedPurok === p.purok;
             const ratio = p.population / maxPop;
@@ -156,7 +180,7 @@ export default function GISMap({
         </div>
 
         {/* Map Footer Legend & Instructions */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 z-10 bg-black/40 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 text-xs text-blue-200">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 z-10 bg-black/40 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 text-xs text-blue-200 mt-6">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-red-500" /> High Density</span>
             <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-amber-500" /> Medium Density</span>
