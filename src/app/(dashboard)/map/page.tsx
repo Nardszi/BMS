@@ -1,24 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "@/components/page-header";
-import { Users, AlertTriangle, Building2, MapPin, Layers, RefreshCw, Eye, Flame } from "lucide-react";
-import { PUROK_OPTIONS } from "@/lib/constants";
-
-// Dynamically import GIS Map component to disable SSR for Leaflet
-const GISMap = dynamic(() => import("@/components/gis-map"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex flex-col items-center justify-center h-[620px] rounded-2xl border border-gray-200 dark:border-gray-800 bg-card p-8">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent mb-3" />
-      <p className="text-sm text-muted-foreground font-medium">Initializing Interactive GIS Map...</p>
-    </div>
-  ),
-});
+import { Users, Building2, MapPin, ShieldAlert, Home, Award, RefreshCw, Layers, FileCheck, CheckCircle } from "lucide-react";
 
 interface PurokData {
   purok: string;
@@ -32,249 +18,199 @@ interface PurokData {
   blotterCount: number;
 }
 
-interface PermitMarker {
-  id: string;
-  businessName: string;
-  businessType: string;
-  status: string;
-  permitNumber: string;
-  address: string;
-  ownerName: string;
-  purok: string;
-  coordinates: [number, number];
-}
-
-interface BlotterMarker {
-  id: string;
-  caseNumber: string;
-  incidentType: string;
-  incidentDate: string;
-  status: string;
-  complainantName: string;
-  respondentName: string;
-  location: string;
-  narrative: string;
-  purok: string;
-  coordinates: [number, number];
-}
-
 interface GISData {
   puroks: PurokData[];
-  permits: PermitMarker[];
-  blotters: BlotterMarker[];
+  permits: any[];
+  blotters: any[];
   center: [number, number];
 }
 
-export default function MapPage() {
+export default function BarangayOverviewPage() {
   const [data, setData] = useState<GISData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeLayer, setActiveLayer] = useState<"population" | "blotters" | "permits" | "all">("all");
-  const [selectedPurok, setSelectedPurok] = useState<string>("all");
 
-  const fetchGISData = async () => {
+  const fetchOverviewData = async () => {
     setLoading(true);
     try {
       const res = await fetch("/api/gis");
       if (res.ok) {
-        const gisData = await res.json();
-        setData(gisData);
+        const json = await res.json();
+        setData(json);
       }
     } catch (err) {
-      console.error("Failed to load GIS data:", err);
+      console.error("Failed to load Barangay IX overview data:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchGISData();
+    fetchOverviewData();
   }, []);
 
   const totalPopulation = data?.puroks.reduce((acc, p) => acc + p.population, 0) || 0;
+  const totalHouseholds = data?.puroks.reduce((acc, p) => acc + p.households, 0) || 0;
+  const totalVoters = data?.puroks.reduce((acc, p) => acc + p.voters, 0) || 0;
   const totalBusinesses = data?.permits.length || 0;
   const totalIncidents = data?.blotters.length || 0;
-
-  const currentPurokData =
-    selectedPurok !== "all"
-      ? data?.puroks.find((p) => p.purok === selectedPurok)
-      : null;
+  const totalMales = data?.puroks.reduce((acc, p) => acc + p.males, 0) || 0;
+  const totalFemales = data?.puroks.reduce((acc, p) => acc + p.females, 0) || 0;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Interactive GIS Heatmaps"
-        subtitle="Geospatial visualization of population density, incident hotspots, and commercial establishments"
+        title="Barangay IX (Daan Banwa) Overview"
+        subtitle="Comprehensive administrative, demographic, and spatial overview of Barangay IX, Victorias City, Negros Occidental"
       >
-        <Button variant="outline" size="sm" onClick={fetchGISData} disabled={loading}>
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh GIS Data
+        <Button variant="outline" size="sm" onClick={fetchOverviewData} disabled={loading}>
+          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh Overview
         </Button>
       </PageHeader>
 
-      {/* Mode Filters & Purok Selector */}
-      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-card p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
-        <div className="flex flex-wrap gap-2">
-          <Button
-            size="sm"
-            variant={activeLayer === "all" ? "default" : "outline"}
-            onClick={() => setActiveLayer("all")}
-            className={activeLayer === "all" ? "bg-blue-900 hover:bg-blue-800 text-white" : ""}
-          >
-            <Layers className="mr-2 h-4 w-4" /> All Layers
-          </Button>
-          <Button
-            size="sm"
-            variant={activeLayer === "population" ? "default" : "outline"}
-            onClick={() => setActiveLayer("population")}
-            className={activeLayer === "population" ? "bg-blue-600 hover:bg-blue-700 text-white" : ""}
-          >
-            <Users className="mr-2 h-4 w-4" /> Population Density
-          </Button>
-          <Button
-            size="sm"
-            variant={activeLayer === "blotters" ? "default" : "outline"}
-            onClick={() => setActiveLayer("blotters")}
-            className={activeLayer === "blotters" ? "bg-red-600 hover:bg-red-700 text-white" : ""}
-          >
-            <Flame className="mr-2 h-4 w-4" /> Incident Hotspots ({totalIncidents})
-          </Button>
-          <Button
-            size="sm"
-            variant={activeLayer === "permits" ? "default" : "outline"}
-            onClick={() => setActiveLayer("permits")}
-            className={activeLayer === "permits" ? "bg-sky-600 hover:bg-sky-700 text-white" : ""}
-          >
-            <Building2 className="mr-2 h-4 w-4" /> Establishments ({totalBusinesses})
-          </Button>
-        </div>
+      {/* Barangay Profile Banner Card */}
+      <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-2xl overflow-hidden">
+        <CardContent className="p-8">
+          <div className="grid md:grid-cols-3 gap-6 items-center">
+            <div className="md:col-span-2 space-y-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-800/80 text-blue-200 text-xs font-semibold">
+                <MapPin className="h-3.5 w-3.5" /> Victorias City, Negros Occidental • Region VI (NIR)
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black tracking-tight">Barangay IX — Daan Banwa</h2>
+              <p className="text-blue-100/80 text-sm leading-relaxed max-w-xl">
+                Barangay IX (formerly known as Daan Banwa) has a total land area of 23.24 hectares and is politically subdivided into 10 active Puroks. This management overview aggregates resident demographics, commercial establishments, and community safety records.
+              </p>
+              <div className="flex flex-wrap gap-4 pt-2 text-xs font-medium text-blue-200">
+                <div className="flex items-center gap-1.5"><Home className="h-4 w-4 text-blue-400" /> Postal Code: 6119</div>
+                <div className="flex items-center gap-1.5"><Layers className="h-4 w-4 text-blue-400" /> Total Land Area: 23.24 Hectares</div>
+                <div className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-emerald-400" /> Active Governance Status</div>
+              </div>
+            </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Filter Purok:</span>
-          <Select value={selectedPurok} onValueChange={setSelectedPurok}>
-            <SelectTrigger className="w-full md:w-44">
-              <SelectValue placeholder="All Puroks" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Puroks</SelectItem>
-              {PUROK_OPTIONS.map((p) => (
-                <SelectItem key={p} value={String(p)}>
-                  {isNaN(Number(p)) ? p : `Purok ${p}`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            <div className="grid grid-cols-2 gap-3 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10">
+              <div className="text-center p-3 rounded-lg bg-black/20">
+                <p className="text-xs text-blue-200 font-medium">Puroks</p>
+                <p className="text-2xl font-black text-white mt-1">10</p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-black/20">
+                <p className="text-xs text-blue-200 font-medium">Households</p>
+                <p className="text-2xl font-black text-white mt-1">{totalHouseholds}</p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-black/20">
+                <p className="text-xs text-blue-200 font-medium">Voters</p>
+                <p className="text-2xl font-black text-white mt-1">{totalVoters}</p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-black/20">
+                <p className="text-xs text-blue-200 font-medium">Businesses</p>
+                <p className="text-2xl font-black text-white mt-1">{totalBusinesses}</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* KPI Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="border-0 shadow-md dark:bg-gray-900">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Population</CardTitle>
+            <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-foreground">{totalPopulation}</div>
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+              <span>Male: {totalMales}</span> • <span>Female: {totalFemales}</span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md dark:bg-gray-900">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Households</CardTitle>
+            <Home className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-foreground">{totalHouseholds}</div>
+            <p className="text-xs text-muted-foreground mt-1">Across 10 Puroks</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md dark:bg-gray-900">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Business Permits</CardTitle>
+            <Building2 className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-foreground">{totalBusinesses}</div>
+            <p className="text-xs text-muted-foreground mt-1">Registered commercial establishments</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md dark:bg-gray-900">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Blotter Cases</CardTitle>
+            <ShieldAlert className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-foreground">{totalIncidents}</div>
+            <p className="text-xs text-muted-foreground mt-1">Recorded community incident reports</p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Main Grid: GIS Map + Sidebar Stats */}
-      <div className="grid gap-6 lg:grid-cols-4">
-        <div className="lg:col-span-3">
-          {data ? (
-            <GISMap
-              puroks={data.puroks}
-              permits={data.permits}
-              blotters={data.blotters}
-              center={data.center}
-              activeLayer={activeLayer}
-              selectedPurok={selectedPurok}
-              onSelectPurok={setSelectedPurok}
-            />
-          ) : (
-            <div className="h-[620px] rounded-2xl border flex items-center justify-center text-muted-foreground">
-              Failed to load map layer data.
-            </div>
-          )}
+      {/* Purok Breakdown Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold tracking-tight">Purok Demographics & Statistics</h3>
+            <p className="text-xs text-muted-foreground">Detailed breakdown of residents, voters, and activity per purok in Barangay IX</p>
+          </div>
         </div>
 
-        {/* Side Info Cards */}
-        <div className="space-y-4">
-          <Card className="border-0 shadow-md dark:bg-gray-900">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <span>
-                  {currentPurokData
-                    ? `Purok ${currentPurokData.purok} Overview`
-                    : "Barangay IX Overview"}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3.5">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40">
-                <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Total Population</span>
-                <span className="text-lg font-black text-blue-900 dark:text-blue-100">
-                  {currentPurokData ? currentPurokData.population : totalPopulation}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/40">
-                <span className="text-xs font-medium text-sky-700 dark:text-sky-300">Active Businesses</span>
-                <span className="text-lg font-black text-sky-900 dark:text-sky-100">
-                  {currentPurokData ? currentPurokData.businessCount : totalBusinesses}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40">
-                <span className="text-xs font-medium text-red-700 dark:text-red-300">Blotter Incident Cases</span>
-                <span className="text-lg font-black text-red-900 dark:text-red-100">
-                  {currentPurokData ? currentPurokData.blotterCount : totalIncidents}
-                </span>
-              </div>
-
-              {currentPurokData && (
-                <div className="pt-2 border-t text-xs space-y-2 text-muted-foreground">
-                  <div className="flex justify-between">
-                    <span>Households:</span>
-                    <span className="font-semibold text-foreground">{currentPurokData.households}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Registered Voters:</span>
-                    <span className="font-semibold text-foreground">{currentPurokData.voters}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Male / Female:</span>
-                    <span className="font-semibold text-foreground">
-                      {currentPurokData.males} / {currentPurokData.females}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {data?.puroks.map((p) => (
+            <Card key={p.purok} className="border-0 shadow-md dark:bg-gray-900 hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-3 border-b dark:border-gray-800">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <span className="h-7 w-7 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 flex items-center justify-center text-xs font-black">
+                      {p.purok}
                     </span>
+                    <span>Purok {p.purok}</span>
+                  </CardTitle>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
+                    {p.households} Households
+                  </span>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4 space-y-3">
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100/50 dark:border-blue-900/30">
+                    <span className="text-muted-foreground block">Population</span>
+                    <span className="text-base font-black text-blue-900 dark:text-blue-100 mt-0.5 block">{p.population}</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100/50 dark:border-indigo-900/30">
+                    <span className="text-muted-foreground block">Registered Voters</span>
+                    <span className="text-base font-black text-indigo-900 dark:text-indigo-100 mt-0.5 block">{p.voters}</span>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
 
-          {/* Map Legend */}
-          <Card className="border-0 shadow-md dark:bg-gray-900">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Map Legend
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2.5 text-xs">
-              <div className="flex items-center gap-2.5">
-                <span className="h-3.5 w-3.5 rounded-full bg-red-500 border border-white shadow-sm flex-shrink-0" />
-                <span className="text-foreground font-medium">High Population Density (&gt;70%)</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <span className="h-3.5 w-3.5 rounded-full bg-amber-500 border border-white shadow-sm flex-shrink-0" />
-                <span className="text-foreground font-medium">Medium Density (40% - 70%)</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <span className="h-3.5 w-3.5 rounded-full bg-blue-500 border border-white shadow-sm flex-shrink-0" />
-                <span className="text-foreground font-medium">Normal Density (&lt;40%)</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <span className="h-4 w-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px] font-bold shadow-sm flex-shrink-0">
-                  ⚠️
-                </span>
-                <span className="text-foreground font-medium">Blotter Incident Spot</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <span className="h-4 w-4 rounded bg-sky-600 text-white flex items-center justify-center text-[9px] font-bold shadow-sm flex-shrink-0">
-                  🏢
-                </span>
-                <span className="text-foreground font-medium">Commercial Establishment</span>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="space-y-1.5 pt-1 text-xs">
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Gender Ratio:</span>
+                    <span className="font-semibold text-foreground">👨 {p.males} Male / 👩 {p.females} Female</span>
+                  </div>
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Active Businesses:</span>
+                    <span className="font-semibold text-sky-600 dark:text-sky-400">{p.businessCount} units</span>
+                  </div>
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Blotter Cases:</span>
+                    <span className="font-semibold text-amber-600 dark:text-amber-400">{p.blotterCount} cases</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </div>
