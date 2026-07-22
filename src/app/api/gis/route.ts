@@ -191,7 +191,7 @@ export async function GET() {
       puroks: Object.values(purokStats),
       permits: permitMarkers,
       blotters: blotterMarkers,
-      center: [10.9042, 123.0611], // Barangay IX center (official)
+      center: [10.9007, 123.0725], // Victorias City overview center
     });
   } catch (error) {
     console.error("GET /api/gis error:", error);
