@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "@/components/page-header";
-import { Users, Building2, MapPin, Layers, RefreshCw, Flame, Printer, X, ShieldAlert, FileText } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Users, Building2, MapPin, Layers, RefreshCw, Flame, Printer, X, ShieldAlert, FileText, Download } from "lucide-react";
 import { PUROK_OPTIONS } from "@/lib/constants";
 
 const GISMap = dynamic(() => import("@/components/gis-map"), {
@@ -109,15 +110,36 @@ export default function MapPage() {
     }
   };
 
+  const exportCSV = () => {
+    if (!data) return;
+    const headers = "Zone,Population,Households,Voters,Males,Females,Businesses,BlotterCases\n";
+    const rows = data.puroks.map(p => 
+      `"Purok ${p.purok}",${p.population},${p.households},${p.voters},${p.males},${p.females},${p.businessCount},${p.blotterCount}`
+    ).join("\n");
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "Barangay_IX_Zones_Demographics.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Barangay IX (Daan Banwa) Interactive GIS Map"
         subtitle="Precise spatial mapping based on official barangay layout (Elementary School, San Roque Church, Malijao River, Western Hwy)"
       >
-        <Button variant="outline" size="sm" onClick={fetchGISData} disabled={loading}>
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh Map
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={exportCSV} disabled={!data || loading}>
+            <Download className="mr-1.5 h-4 w-4" /> Export CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={fetchGISData} disabled={loading}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh Map
+          </Button>
+        </div>
       </PageHeader>
 
       {/* Layer Filters & Purok Selector */}
@@ -304,6 +326,50 @@ export default function MapPage() {
           </Card>
         </div>
       </div>
+
+      {/* Zone Comparison Summary Table */}
+      <Card className="border-0 shadow-md dark:bg-gray-900">
+        <CardHeader>
+          <CardTitle className="text-base font-bold">Barangay IX Zone Comparison Matrix</CardTitle>
+          <CardDescription className="text-xs">Comprehensive statistical comparison across all 10 administrative zones</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Zone / Purok</TableHead>
+                <TableHead>Population</TableHead>
+                <TableHead>Households</TableHead>
+                <TableHead>Voters</TableHead>
+                <TableHead>Male / Female</TableHead>
+                <TableHead>Businesses</TableHead>
+                <TableHead>Incidents</TableHead>
+                <TableHead className="text-right">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data?.puroks.map((p) => (
+                <TableRow key={p.purok} className="hover:bg-muted/50 cursor-pointer" onClick={() => handleSelectPurok(p.purok)}>
+                  <TableCell className="font-bold">
+                    {isNaN(Number(p.purok)) ? p.purok : `Purok ${p.purok}`}
+                  </TableCell>
+                  <TableCell className="font-black text-blue-600 dark:text-blue-400">{p.population}</TableCell>
+                  <TableCell>{p.households}</TableCell>
+                  <TableCell>{p.voters}</TableCell>
+                  <TableCell className="text-muted-foreground">{p.males} / {p.females}</TableCell>
+                  <TableCell className="text-sky-600 dark:text-sky-400 font-semibold">{p.businessCount}</TableCell>
+                  <TableCell className="text-amber-600 dark:text-amber-400 font-semibold">{p.blotterCount}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleSelectPurok(p.purok); }}>
+                      Inspect <FileText className="ml-1.5 h-3.5 w-3.5" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* Zone Details Modal */}
       {showModal && currentPurokData && (
