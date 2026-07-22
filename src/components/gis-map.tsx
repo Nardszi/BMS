@@ -86,6 +86,13 @@ export default function GISMap({
         lng: coords[p.purok][1],
         label: isNaN(Number(p.purok)) ? p.purok : `Purok ${p.purok}`,
         color: p.population / maxPop > 0.7 ? "#ef4444" : p.population / maxPop > 0.4 ? "#f59e0b" : "#3b82f6",
+        population: p.population,
+        households: p.households,
+        voters: p.voters,
+        males: p.males,
+        females: p.females,
+        businessCount: p.businessCount,
+        blotterCount: p.blotterCount,
       }));
   }, [puroks, maxPop, coords]);
 

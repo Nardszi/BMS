@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import { MapPin, ZoomIn, ZoomOut, Maximize2, Satellite, Map, Trash2, Check } from "lucide-react";
+import { MapPin, ZoomIn, ZoomOut, Maximize2, Satellite, Map, Trash2, Check, Users, Home, Vote, Building2, ShieldAlert, X } from "lucide-react";
 
 interface MapMarker {
   id: string;
@@ -9,6 +9,13 @@ interface MapMarker {
   lng: number;
   label: string;
   color?: string;
+  population?: number;
+  households?: number;
+  voters?: number;
+  males?: number;
+  females?: number;
+  businessCount?: number;
+  blotterCount?: number;
 }
 
 interface StaticTileMapProps {
@@ -68,6 +75,9 @@ export default function StaticTileMap({
 
   // Placed marker preview
   const [previewMarker, setPreviewMarker] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Selected marker info popup
+  const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null);
 
   const tileSize = 256;
 
@@ -232,10 +242,14 @@ export default function StaticTileMap({
           {isLoaded && markerPositions.map((m) => (
             <div
               key={m.id}
-              className="absolute group z-10"
+              className={`absolute z-10 ${placing ? "" : "cursor-pointer"}`}
               style={{ left: m.screenX, top: m.screenY, transform: "translate(-50%, -100%)" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!placing) setSelectedMarker(selectedMarker?.id === m.id ? null : m);
+              }}
             >
-              <MapPin className="h-7 w-7 drop-shadow-lg transition-transform group-hover:scale-125" style={{ color: m.color || "#ef4444" }} fill={m.color || "#ef4444"} strokeWidth={0} />
+              <MapPin className="h-7 w-7 drop-shadow-lg transition-transform hover:scale-125" style={{ color: m.color || "#ef4444" }} fill={m.color || "#ef4444"} strokeWidth={0} />
               {/* Always-visible label */}
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0.5 pointer-events-none z-30">
                 <div className="bg-black/80 backdrop-blur-sm text-white text-[10px] px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap font-bold border border-white/20">
@@ -244,6 +258,82 @@ export default function StaticTileMap({
               </div>
             </div>
           ))}
+
+          {/* Info popup for selected marker */}
+          {isLoaded && selectedMarker && (() => {
+            const px = latLngToPixel(selectedMarker.lat, selectedMarker.lng, zoom, tileSize);
+            const sx = px.x - originX;
+            const sy = px.y - originY;
+            return (
+              <div
+                className="absolute z-40 pointer-events-auto"
+                style={{ left: sx, top: sy, transform: "translate(-50%, calc(-100% - 40px))" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 w-64 relative">
+                  <button
+                    onClick={() => setSelectedMarker(null)}
+                    className="absolute top-2 right-2 h-5 w-5 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700"
+                  >
+                    <X className="h-3 w-3 text-gray-500" />
+                  </button>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: selectedMarker.color }} />
+                    <h4 className="font-black text-sm text-gray-900 dark:text-white">{selectedMarker.label}</h4>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {selectedMarker.population != null && (
+                      <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                        <Users className="h-3.5 w-3.5 text-blue-500" />
+                        <span>Pop:</span>
+                        <span className="font-bold text-gray-900 dark:text-white ml-auto">{selectedMarker.population.toLocaleString()}</span>
+                      </div>
+                    )}
+                    {selectedMarker.households != null && (
+                      <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                        <Home className="h-3.5 w-3.5 text-indigo-500" />
+                        <span>HH:</span>
+                        <span className="font-bold text-gray-900 dark:text-white ml-auto">{selectedMarker.households.toLocaleString()}</span>
+                      </div>
+                    )}
+                    {selectedMarker.voters != null && (
+                      <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                        <Vote className="h-3.5 w-3.5 text-green-500" />
+                        <span>Voters:</span>
+                        <span className="font-bold text-gray-900 dark:text-white ml-auto">{selectedMarker.voters.toLocaleString()}</span>
+                      </div>
+                    )}
+                    {selectedMarker.males != null && selectedMarker.females != null && (
+                      <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                        <span>♂♀</span>
+                        <span>M/F:</span>
+                        <span className="font-bold text-gray-900 dark:text-white ml-auto">{selectedMarker.males}/{selectedMarker.females}</span>
+                      </div>
+                    )}
+                    {selectedMarker.businessCount != null && (
+                      <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                        <Building2 className="h-3.5 w-3.5 text-sky-500" />
+                        <span>Biz:</span>
+                        <span className="font-bold text-gray-900 dark:text-white ml-auto">{selectedMarker.businessCount}</span>
+                      </div>
+                    )}
+                    {selectedMarker.blotterCount != null && (
+                      <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                        <ShieldAlert className="h-3.5 w-3.5 text-amber-500" />
+                        <span>Cases:</span>
+                        <span className="font-bold text-gray-900 dark:text-white ml-auto">{selectedMarker.blotterCount}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-gray-100 dark:border-gray-800 text-[10px] text-gray-400 font-mono">
+                    {selectedMarker.lat.toFixed(5)}°N, {selectedMarker.lng.toFixed(5)}°E
+                  </div>
+                  {/* Arrow */}
+                  <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-4 h-4 bg-white dark:bg-gray-900 border-r border-b border-gray-200 dark:border-gray-700 rotate-45" />
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Preview marker (placing mode) */}
           {isLoaded && previewPos && (
