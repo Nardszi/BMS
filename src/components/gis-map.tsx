@@ -91,12 +91,12 @@ export default function GISMap({
         maxZoom: 19,
       });
 
-      // Default to Satellite for high precision, or allow switching
-      satellite.addTo(map);
+      // Default to Standard OpenStreetMap for guaranteed reliable tile loading
+      osm.addTo(map);
 
       const baseMaps = {
-        "Satellite (High-Res)": satellite,
         "Standard (OpenStreetMap)": osm,
+        "Satellite (Esri)": satellite,
         "Clean Vector (Carto)": carto,
       };
 
