@@ -5,18 +5,19 @@ import { prisma } from "@/lib/prisma";
 
 // Geocoordinates for Puroks in Barangay IX - Daan Banwa, Victorias City, Negros Occidental
 // Official barangay center: 10.9042, 123.0611 (PhilAtlas/Victorias City)
-// Land area: 23.24 hectares (~480m x 480m)
+// Land area: 23.24 hectares (~550m x 420m, elongated N-S)
+// Spacing: ~150-180m between purok centers
 const PUROK_COORDINATES: Record<string, [number, number]> = {
-  "1": [10.9055, 123.0600],  // Northwest
-  "2": [10.9055, 123.0615],  // North-center
-  "3": [10.9055, 123.0630],  // Northeast
-  "4": [10.9042, 123.0595],  // West-center
-  "5": [10.9042, 123.0611],  // Center
-  "6": [10.9042, 123.0627],  // East-center
-  "7": [10.9029, 123.0600],  // Southwest
-  "8": [10.9029, 123.0615],  // South-center
-  "9": [10.9029, 123.0630],  // Southeast
-  "10": [10.9065, 123.0615], // Far north
+  "1": [10.9062, 123.0598],  // Far northwest
+  "2": [10.9062, 123.0614],  // Far north-center
+  "3": [10.9062, 123.0630],  // Far northeast
+  "4": [10.9047, 123.0593],  // West
+  "5": [10.9047, 123.0611],  // Center-west
+  "6": [10.9047, 123.0628],  // Center-east
+  "7": [10.9032, 123.0598],  // South-west
+  "8": [10.9032, 123.0614],  // South-center
+  "9": [10.9032, 123.0630],  // South-east
+  "10": [10.9017, 123.0614], // Far south
 };
 
 // Deterministic pseudo-random offset for placing markers within a purok area

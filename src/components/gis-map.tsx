@@ -109,7 +109,7 @@ export default function GISMap({
         if (selectedPurok && selectedPurok !== "all" && p.purok !== selectedPurok) return;
 
         const ratio = p.population / maxPop;
-        const radius = Math.max(120, ratio * 280);
+        const radius = Math.max(60, ratio * 140);
         const color =
           ratio > 0.7 ? "#ef4444" : ratio > 0.4 ? "#f59e0b" : "#3b82f6";
 
