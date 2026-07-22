@@ -4,18 +4,19 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PUROK_OPTIONS } from "@/lib/constants";
 
-// Geocoordinates for Puroks/Sitios in Barangay IX - Daan Banwa, Victorias City, Negros Occidental
+// Geocoordinates for Puroks & Sitios in Barangay IX - Daan Banwa, Victorias City, Negros Occidental
+// Aligned with official map landmarks (Daan Banwa Elementary School, San Roque Church, Malijao River, Western Nautical Hwy)
 const PUROK_COORDINATES: Record<string, [number, number]> = {
-  "1": [10.9080, 123.0585],
-  "2": [10.9080, 123.0611],
-  "3": [10.9080, 123.0637],
-  "4": [10.9042, 123.0575],
-  "5": [10.9042, 123.0611],
-  "6": [10.9042, 123.0647],
-  "7": [10.9004, 123.0585],
-  "8": [10.9004, 123.0611],
-  "Toreno": [10.9004, 123.0637],
-  "Aji": [10.8966, 123.0611],
+  "1": [10.9055, 123.0590],  // Northwest (Daan Banwa Elementary School area)
+  "2": [10.9050, 123.0610],  // North-center (San Roque Church / Kamalig Restobar area)
+  "3": [10.9045, 123.0635],  // Northeast (Muntinlupa St / riverbend)
+  "4": [10.9035, 123.0595],  // Central-west residential
+  "5": [10.9030, 123.0615],  // Central core (Bukidnon St / Sulu St / Siargao St)
+  "6": [10.9025, 123.0635],  // East-central (Sarangani St / Manila St)
+  "7": [10.9015, 123.0620],  // Southeast (Cebu St / Batangas St area)
+  "8": [10.9010, 123.0645],  // Far east (Siquijor St / Malijao River side)
+  "Toreno": [10.8995, 123.0625], // Southern corridor (Manila St / Melchora Aquino St)
+  "Aji": [10.8980, 123.0615],    // Southern tip (Iloilo St / Guisinga Store / Western Nautical Hwy)
 };
 
 // Deterministic pseudo-random offset for placing markers within a purok area (smaller offset to prevent overlapping outside purok)
