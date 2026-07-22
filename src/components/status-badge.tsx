@@ -10,7 +10,7 @@ const STATUS_CONFIG: Record<string, { className: string }> = {
   REJECTED: { className: "bg-red-100 text-red-800" },
   REVOKED: { className: "bg-red-100 text-red-800" },
   ESCALATED: { className: "bg-orange-100 text-orange-800" },
-  LOST: { className: "bg-muted text-foreground/80" },
+  LOST: { className: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200" },
   UPCOMING: { className: "bg-blue-100 text-blue-800" },
 };
 
@@ -20,7 +20,7 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
-  const config = STATUS_CONFIG[status] || { className: "bg-muted text-foreground/80" };
+  const config = STATUS_CONFIG[status] || { className: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200" };
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${config.className} ${className}`}>
       {status}

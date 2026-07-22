@@ -94,7 +94,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-center h-[60vh]">
         <div className="flex flex-col items-center gap-3">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -103,7 +103,7 @@ export default function DashboardPage() {
   if (!stats) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
-        <p className="text-muted-foreground">Failed to load dashboard data.</p>
+        <p className="text-gray-500 dark:text-gray-400">Failed to load dashboard data.</p>
       </div>
     );
   }
@@ -145,9 +145,9 @@ export default function DashboardPage() {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Residents</p>
-                <p className="mt-1 text-3xl font-bold text-foreground">{stats.totalResidents}</p>
-                <p className="mt-1 text-xs text-muted-foreground/70">Registered inhabitants</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Residents</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.totalResidents}</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400/70">Registered inhabitants</p>
               </div>
               <div className="rounded-xl bg-blue-50 p-3">
                 <Users className="h-6 w-6 text-blue-600" />
@@ -161,9 +161,9 @@ export default function DashboardPage() {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Pending Certificates</p>
-                <p className="mt-1 text-3xl font-bold text-foreground">{stats.pendingCertificates}</p>
-                <p className="mt-1 text-xs text-muted-foreground/70">Awaiting approval</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Certificates</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.pendingCertificates}</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400/70">Awaiting approval</p>
               </div>
               <div className="rounded-xl bg-amber-50 p-3">
                 <FileText className="h-6 w-6 text-amber-600" />
@@ -177,9 +177,9 @@ export default function DashboardPage() {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Open Blotter Cases</p>
-                <p className="mt-1 text-3xl font-bold text-foreground">{stats.openBlotterCases}</p>
-                <p className="mt-1 text-xs text-muted-foreground/70">Active investigations</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Open Blotter Cases</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.openBlotterCases}</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400/70">Active investigations</p>
               </div>
               <div className="rounded-xl bg-red-50 p-3">
                 <AlertTriangle className="h-6 w-6 text-red-600" />
@@ -193,9 +193,9 @@ export default function DashboardPage() {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Active Permits</p>
-                <p className="mt-1 text-3xl font-bold text-foreground">{stats.activePermits}</p>
-                <p className="mt-1 text-xs text-muted-foreground/70">Operating businesses</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Permits</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.activePermits}</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400/70">Operating businesses</p>
               </div>
               <div className="rounded-xl bg-emerald-50 p-3">
                 <Building2 className="h-6 w-6 text-emerald-600" />
@@ -245,40 +245,40 @@ export default function DashboardPage() {
                 <Users className="h-4 w-4 text-blue-600" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">Manage Residents</p>
-                <p className="text-xs text-muted-foreground">View and update records</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Manage Residents</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">View and update records</p>
               </div>
-              <ArrowRight className="h-4 w-4 text-muted-foreground/70 transition-transform group-hover:translate-x-1 group-hover:text-blue-600" />
+              <ArrowRight className="h-4 w-4 text-gray-500 dark:text-gray-400/70 transition-transform group-hover:translate-x-1 group-hover:text-blue-600" />
             </Link>
             <Link href="/certificates" className="group flex items-center gap-3 rounded-lg border p-3 transition-all hover:border-amber-200 hover:bg-amber-50">
               <div className="rounded-lg bg-amber-100 p-2 transition-colors group-hover:bg-amber-200">
                 <FileCheck className="h-4 w-4 text-amber-600" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">Certificates</p>
-                <p className="text-xs text-muted-foreground">Issue and track requests</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Certificates</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Issue and track requests</p>
               </div>
-              <ArrowRight className="h-4 w-4 text-muted-foreground/70 transition-transform group-hover:translate-x-1 group-hover:text-amber-600" />
+              <ArrowRight className="h-4 w-4 text-gray-500 dark:text-gray-400/70 transition-transform group-hover:translate-x-1 group-hover:text-amber-600" />
             </Link>
             <Link href="/blotter" className="group flex items-center gap-3 rounded-lg border p-3 transition-all hover:border-red-200 hover:bg-red-50">
               <div className="rounded-lg bg-red-100 p-2 transition-colors group-hover:bg-red-200">
                 <AlertTriangle className="h-4 w-4 text-red-600" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">Blotter Reports</p>
-                <p className="text-xs text-muted-foreground">File and manage cases</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Blotter Reports</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">File and manage cases</p>
               </div>
-              <ArrowRight className="h-4 w-4 text-muted-foreground/70 transition-transform group-hover:translate-x-1 group-hover:text-red-600" />
+              <ArrowRight className="h-4 w-4 text-gray-500 dark:text-gray-400/70 transition-transform group-hover:translate-x-1 group-hover:text-red-600" />
             </Link>
             <Link href="/reports" className="group flex items-center gap-3 rounded-lg border p-3 transition-all hover:border-emerald-200 hover:bg-emerald-50">
               <div className="rounded-lg bg-emerald-100 p-2 transition-colors group-hover:bg-emerald-200">
                 <BarChart3 className="h-4 w-4 text-emerald-600" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">Reports</p>
-                <p className="text-xs text-muted-foreground">View analytics and stats</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Reports</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">View analytics and stats</p>
               </div>
-              <ArrowRight className="h-4 w-4 text-muted-foreground/70 transition-transform group-hover:translate-x-1 group-hover:text-emerald-600" />
+              <ArrowRight className="h-4 w-4 text-gray-500 dark:text-gray-400/70 transition-transform group-hover:translate-x-1 group-hover:text-emerald-600" />
             </Link>
           </CardContent>
         </Card>
@@ -300,10 +300,10 @@ export default function DashboardPage() {
                 {stats.recentCertificates.slice(0, 5).map((cert) => (
                   <div key={cert.id} className="flex items-center justify-between rounded-lg border p-3">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-foreground">
+                      <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
                         {cert.resident.lastName}, {cert.resident.firstName}
                       </p>
-                      <p className="text-xs text-muted-foreground">{typeLabels[cert.type] || cert.type}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{typeLabels[cert.type] || cert.type}</p>
                     </div>
                     <Badge className={`ml-2 flex-shrink-0 ${statusColors[cert.status] || ""}`}>
                       {cert.status}
@@ -312,8 +312,8 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <div className="py-6 text-center text-sm text-muted-foreground">
-                <FileText className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
+              <div className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                <FileText className="mx-auto mb-2 h-8 w-8 text-gray-500 dark:text-gray-400/50" />
                 No recent requests
               </div>
             )}
@@ -337,10 +337,10 @@ export default function DashboardPage() {
                 {stats.announcements.slice(0, 4).map((ann) => (
                   <div key={ann.id} className="rounded-lg border p-3">
                     <div className="flex items-start justify-between">
-                      <h4 className="text-sm font-medium text-foreground">{ann.title}</h4>
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{ann.title}</h4>
                     </div>
-                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{ann.content}</p>
-                    <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground/70">
+                    <p className="mt-1 line-clamp-2 text-xs text-gray-500 dark:text-gray-400">{ann.content}</p>
+                    <div className="mt-2 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400/70">
                       <span>{ann.postedBy?.name}</span>
                       <span>&middot;</span>
                       <span>{new Date(ann.createdAt).toLocaleDateString("en-PH")}</span>
@@ -349,8 +349,8 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <div className="py-6 text-center text-sm text-muted-foreground">
-                <Megaphone className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
+              <div className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                <Megaphone className="mx-auto mb-2 h-8 w-8 text-gray-500 dark:text-gray-400/50" />
                 No announcements
               </div>
             )}
@@ -412,7 +412,7 @@ export default function DashboardPage() {
                 return (
                   <div key={item.purok} className="rounded-lg border p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-foreground/80">
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100/80">
                         Purok {item.purok}
                       </span>
                       <span className="text-lg font-bold text-blue-900">{item.count}</span>
