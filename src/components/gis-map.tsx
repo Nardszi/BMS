@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Building2, ShieldAlert, Home, MapPin, ExternalLink, ArrowUpRight, Navigation, Target, X, Check, Settings } from "lucide-react";
+import { Users, Building2, ShieldAlert, Home, MapPin, ExternalLink, ArrowUpRight, Navigation, Target, X, Check, Settings, Copy } from "lucide-react";
 import StaticTileMap from "@/components/static-tile-map";
 
 interface PurokData {
@@ -168,9 +168,21 @@ export default function GISMap({
               <h4 className="text-sm font-bold text-white">Place Purok Markers</h4>
               <span className="text-[10px] text-blue-300 bg-blue-900/50 px-2 py-0.5 rounded-full">Click a purok, then click the map</span>
             </div>
-            <button onClick={() => setShowPlacement(false)} className="text-gray-400 hover:text-white">
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const saved = localStorage.getItem("bms-purok-coords");
+                  if (saved) navigator.clipboard.writeText(saved);
+                }}
+                className="text-gray-400 hover:text-white flex items-center gap-1 text-[10px]"
+                title="Copy current coordinates"
+              >
+                <Copy className="h-3 w-3" /> Export
+              </button>
+              <button onClick={() => setShowPlacement(false)} className="text-gray-400 hover:text-white">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
           <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
             {puroks.map((p) => {
