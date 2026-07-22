@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Building2, ShieldAlert, Home, MapPin, ExternalLink, ArrowUpRight, Compass, Navigation } from "lucide-react";
+import StaticTileMap from "@/components/static-tile-map";
 
 interface PurokData {
   purok: string;
@@ -61,48 +62,86 @@ export default function GISMap({
   const [hoveredZone, setHoveredZone] = useState<string | null>(null);
   const maxPop = Math.max(...puroks.map((p) => p.population), 1);
 
+  // Purok center coordinates for map markers
+  const purokCoordinates: Record<string, [number, number]> = {
+    "1": [10.9065, 123.0585],
+    "2": [10.9055, 123.0600],
+    "3": [10.9048, 123.0620],
+    "4": [10.9038, 123.0635],
+    "5": [10.9030, 123.0615],
+    "6": [10.9025, 123.0595],
+    "7": [10.9035, 123.0575],
+    "8": [10.9050, 123.0560],
+    "Toreno": [10.9070, 123.0625],
+    "Aji": [10.9018, 123.0630],
+  };
+
+  // Generate markers from purok data
+  const mapMarkers = useMemo(() => {
+    return puroks
+      .filter((p) => purokCoordinates[p.purok])
+      .map((p) => ({
+        id: p.purok,
+        lat: purokCoordinates[p.purok][0],
+        lng: purokCoordinates[p.purok][1],
+        label: isNaN(Number(p.purok)) ? p.purok : `Purok ${p.purok}`,
+        color: p.population / maxPop > 0.7 ? "#ef4444" : p.population / maxPop > 0.4 ? "#f59e0b" : "#3b82f6",
+      }));
+  }, [puroks, maxPop]);
+
   return (
     <div className="space-y-6">
-      {/* High-Performance Visual Map Banner (Zero Iframe Error Risk) */}
-      <Card className="border-0 shadow-xl overflow-hidden rounded-2xl bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-900 text-white">
-        <CardContent className="p-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-800/80 text-blue-200 text-xs font-semibold">
-                <Compass className="h-3.5 w-3.5 animate-spin-slow" /> Geographic Coordinates: 10.9042° N, 123.0611° E
+      {/* Live Map Preview with OpenStreetMap Tiles */}
+      <Card className="border-0 shadow-xl overflow-hidden rounded-2xl">
+        <CardContent className="p-0">
+          <div className="relative">
+            <StaticTileMap
+              center={[10.9042, 123.0611]}
+              zoom={15}
+              width={1200}
+              height={450}
+              markers={mapMarkers}
+              className="w-full"
+            />
+            {/* Overlay info panel */}
+            <div className="absolute top-4 left-16 z-10 max-w-sm">
+              <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Compass className="h-4 w-4 text-blue-500" />
+                  <h3 className="font-bold text-sm text-gray-900 dark:text-white">Barangay IX (Daan Banwa)</h3>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                  23.24 hectares • Malijao River • Western Nautical Highway
+                </p>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <span className="text-[10px] bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">Postal: 6119</span>
+                  <span className="text-[10px] bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full">10 Zones</span>
+                </div>
               </div>
-              <h2 className="text-2xl md:text-3xl font-black tracking-tight">Barangay IX (Daan Banwa) Live Map</h2>
-              <p className="text-blue-100/80 text-sm max-w-xl leading-relaxed">
-                Covering 23.24 hectares bounded by Malijao River and Western Nautical Highway. Landmarks include Daan Banwa Elementary School and San Roque Parish Church.
-              </p>
-              <div className="flex flex-wrap gap-3 pt-2 text-xs text-blue-200">
-                <span className="bg-white/10 px-2.5 py-1 rounded-md">Postal Code: 6119</span>
-                <span className="bg-white/10 px-2.5 py-1 rounded-md">Victorias City, Negros Occidental</span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3 w-full md:w-auto">
-              <a
-                href="https://www.openstreetmap.org/#map=16/10.9042/123.0611"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <button className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-4 text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 transition-colors">
-                  <Navigation className="h-4 w-4" /> Open OpenStreetMap <ExternalLink className="h-3.5 w-3.5 ml-1" />
-                </button>
-              </a>
-              <a
-                href="https://www.google.com/maps/search/Barangay+IX+Daan+Banwa+Victorias+City+Negros+Occidental+Philippines"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <button className="w-full md:w-auto bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-3 text-sm rounded-xl border border-white/20 flex items-center justify-center gap-2 transition-colors">
-                  <MapPin className="h-4 w-4 text-amber-400" /> Open Google Maps <ExternalLink className="h-3.5 w-3.5 ml-1" />
-                </button>
-              </a>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* External Map Links */}
+      <div className="flex flex-wrap gap-3">
+        <a
+          href="https://www.openstreetmap.org/#map=16/10.9042/123.0611"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2.5 text-sm rounded-xl shadow-lg transition-colors"
+        >
+          <Navigation className="h-4 w-4" /> OpenStreetMap <ExternalLink className="h-3.5 w-3.5" />
+        </a>
+        <a
+          href="https://www.google.com/maps/search/Barangay+IX+Daan+Banwa+Victorias+City+Negros+Occidental+Philippines"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold px-4 py-2.5 text-sm rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transition-colors"
+        >
+          <MapPin className="h-4 w-4 text-amber-500" /> Google Maps <ExternalLink className="h-3.5 w-3.5" />
+        </a>
+      </div>
 
       {/* Interactive Vector Master Plan Zoning Grid */}
       <div className="relative w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 shadow-2xl p-6 flex flex-col justify-between">
