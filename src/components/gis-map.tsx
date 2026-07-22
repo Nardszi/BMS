@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Users, Building2, ShieldAlert, Home, MapPin, ExternalLink, ArrowUpRight } from "lucide-react";
 
 interface PurokData {
   purok: string;
@@ -56,211 +57,115 @@ export default function GISMap({
   puroks,
   permits,
   blotters,
-  center,
   activeLayer,
   selectedPurok,
   onSelectPurok,
 }: GISMapProps) {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const layerGroupRef = useRef<L.LayerGroup | null>(null);
+  const [hoveredZone, setHoveredZone] = useState<string | null>(null);
 
-  // Initialize Map
-  useEffect(() => {
-    if (!mapContainerRef.current) return;
-
-    if (!mapInstanceRef.current) {
-      const map = L.map(mapContainerRef.current, {
-        center: center,
-        zoom: 14,
-        zoomControl: true,
-      });
-
-      const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
-      });
-
-      const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-        maxZoom: 19,
-      });
-
-      const carto = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        maxZoom: 19,
-      });
-
-      // Default to Standard OpenStreetMap for guaranteed reliable tile loading
-      osm.addTo(map);
-
-      const baseMaps = {
-        "Standard (OpenStreetMap)": osm,
-        "Satellite (Esri)": satellite,
-        "Clean Vector (Carto)": carto,
-      };
-
-      L.control.layers(baseMaps, {}, { position: "topright" }).addTo(map);
-
-      layerGroupRef.current = L.layerGroup().addTo(map);
-      mapInstanceRef.current = map;
-
-      // Ensure Leaflet recalculates size after mount
-      setTimeout(() => {
-        map.invalidateSize();
-      }, 150);
-    }
-
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
-  }, []);
-
-  // Update Layers dynamically based on props
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    const layerGroup = layerGroupRef.current;
-    if (!map || !layerGroup) return;
-
-    layerGroup.clearLayers();
-
-    const maxPop = Math.max(...puroks.map((p) => p.population), 1);
-
-    // 1. Population Heat Circles per Purok
-    if (activeLayer === "population" || activeLayer === "all") {
-      puroks.forEach((p) => {
-        if (selectedPurok && selectedPurok !== "all" && p.purok !== selectedPurok) return;
-
-        const ratio = p.population / maxPop;
-        const radius = Math.max(60, ratio * 140);
-        const color =
-          ratio > 0.7 ? "#ef4444" : ratio > 0.4 ? "#f59e0b" : "#3b82f6";
-
-        const circle = L.circle(p.center, {
-          color: color,
-          fillColor: color,
-          fillOpacity: 0.35,
-          radius: radius,
-          weight: 2,
-        });
-
-        circle.bindPopup(`
-          <div style="font-family: sans-serif; padding: 4px;">
-            <h4 style="margin: 0 0 6px; color: #1e293b; font-size: 14px; font-weight: bold;">Purok ${p.purok} - Population</h4>
-            <div style="font-size: 12px; color: #475569; line-height: 1.5;">
-              <p style="margin: 2px 0;"><b>Total Residents:</b> ${p.population}</p>
-              <p style="margin: 2px 0;"><b>Households:</b> ${p.households}</p>
-              <p style="margin: 2px 0;"><b>Voters:</b> ${p.voters}</p>
-              <p style="margin: 2px 0;"><b>Active Businesses:</b> ${p.businessCount}</p>
-              <p style="margin: 2px 0;"><b>Blotter Cases:</b> ${p.blotterCount}</p>
-            </div>
-          </div>
-        `);
-
-        circle.on("click", () => {
-          onSelectPurok(p.purok);
-        });
-
-        layerGroup.addLayer(circle);
-
-        // Purok Center Marker Tag
-        const textIcon = L.divIcon({
-          className: "custom-purok-label",
-          html: `<div style="background: rgba(15, 23, 42, 0.85); color: white; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.3); text-align: center;">Purok ${p.purok} (${p.population})</div>`,
-          iconSize: [80, 24],
-          iconAnchor: [40, 12],
-        });
-        const labelMarker = L.marker(p.center, { icon: textIcon });
-        layerGroup.addLayer(labelMarker);
-      });
-    }
-
-    // 2. Blotter Hotspot Markers
-    if (activeLayer === "blotters" || activeLayer === "all") {
-      blotters.forEach((b) => {
-        if (selectedPurok && selectedPurok !== "all" && b.purok !== selectedPurok) return;
-
-        const isResolved = b.status === "RESOLVED";
-        const isEscalated = b.status === "ESCALATED";
-
-        const iconBg = isResolved ? "#10b981" : isEscalated ? "#f59e0b" : "#ef4444";
-
-        const blotterIcon = L.divIcon({
-          className: "custom-blotter-icon",
-          html: `<div style="background-color: ${iconBg}; width: 22px; height: 22px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold;">⚠️</div>`,
-          iconSize: [22, 22],
-          iconAnchor: [11, 11],
-        });
-
-        const marker = L.marker(b.coordinates, { icon: blotterIcon });
-
-        marker.bindPopup(`
-          <div style="font-family: sans-serif; padding: 4px; max-width: 220px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <span style="font-size: 10px; font-weight: bold; font-family: monospace; color: #64748b;">${b.caseNumber}</span>
-              <span style="font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: ${iconBg}; color: white;">${b.status}</span>
-            </div>
-            <h5 style="margin: 0 0 4px; font-size: 13px; font-weight: bold; color: #0f172a;">${b.incidentType}</h5>
-            <p style="margin: 2px 0; font-size: 11px; color: #475569;"><b>Complainant:</b> ${b.complainantName}</p>
-            <p style="margin: 2px 0; font-size: 11px; color: #475569;"><b>Location:</b> ${b.location}</p>
-            <p style="margin: 4px 0 0; font-size: 10px; color: #64748b; line-clamp: 2;">${b.narrative}</p>
-          </div>
-        `);
-
-        layerGroup.addLayer(marker);
-      });
-    }
-
-    // 3. Commercial Establishments / Permits Markers
-    if (activeLayer === "permits" || activeLayer === "all") {
-      permits.forEach((p) => {
-        if (selectedPurok && selectedPurok !== "all" && p.purok !== selectedPurok) return;
-
-        const isActive = p.status === "ACTIVE";
-        const iconBg = isActive ? "#0284c7" : "#94a3b8";
-
-        const permitIcon = L.divIcon({
-          className: "custom-permit-icon",
-          html: `<div style="background-color: ${iconBg}; width: 22px; height: 22px; border-radius: 6px; border: 2px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold;">🏢</div>`,
-          iconSize: [22, 22],
-          iconAnchor: [11, 11],
-        });
-
-        const marker = L.marker(p.coordinates, { icon: permitIcon });
-
-        marker.bindPopup(`
-          <div style="font-family: sans-serif; padding: 4px; max-width: 220px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <span style="font-size: 10px; font-weight: bold; font-family: monospace; color: #0284c7;">${p.permitNumber}</span>
-              <span style="font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: #e0f2fe; color: #0369a1;">${p.businessType}</span>
-            </div>
-            <h5 style="margin: 0 0 4px; font-size: 13px; font-weight: bold; color: #0f172a;">${p.businessName}</h5>
-            <p style="margin: 2px 0; font-size: 11px; color: #475569;"><b>Owner:</b> ${p.ownerName}</p>
-            <p style="margin: 2px 0; font-size: 11px; color: #475569;"><b>Address:</b> ${p.address}</p>
-          </div>
-        `);
-
-        layerGroup.addLayer(marker);
-      });
-    }
-
-    // Pan map to selected Purok if specific purok chosen
-    if (selectedPurok && selectedPurok !== "all") {
-      const targetPurok = puroks.find((p) => p.purok === selectedPurok);
-      if (targetPurok) {
-        map.flyTo(targetPurok.center, 18, { duration: 1 });
-      }
-    } else {
-      map.flyTo(center, 14, { duration: 1 });
-    }
-  }, [puroks, permits, blotters, activeLayer, selectedPurok, center, onSelectPurok]);
+  const maxPop = Math.max(...puroks.map((p) => p.population), 1);
 
   return (
-    <div className="relative w-full h-[620px] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-xl">
-      <div ref={mapContainerRef} className="w-full h-full z-0 absolute inset-0" />
+    <div className="space-y-4">
+      {/* Interactive Vector Master Plan Map Container */}
+      <div className="relative w-full h-[620px] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 shadow-2xl p-6 flex flex-col justify-between">
+        
+        {/* Map Header & Landmarks Overlay */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 z-10 bg-black/40 backdrop-blur-md p-4 rounded-xl border border-white/10 text-white">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <h3 className="font-black text-base tracking-wide">Barangay IX (Daan Banwa) Master Plan Map</h3>
+            </div>
+            <p className="text-xs text-blue-200/80 mt-0.5">
+              Interactive Vector Zoning — Victorias City, Negros Occidental (Malijao River & Western Nautical Hwy boundaries)
+            </p>
+          </div>
+          <a
+            href="https://www.google.com/maps/search/Barangay+IX+Daan+Banwa+Victorias+City+Negros+Occidental+Philippines"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <button className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow transition-colors">
+              <MapPin className="h-3.5 w-3.5" /> Open Google Maps <ExternalLink className="h-3 w-3 ml-0.5" />
+            </button>
+          </a>
+        </div>
+
+        {/* Visual Barangay Layout Grid representing Puroks 1-8, Toreno, Aji */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5 z-10 my-auto">
+          {puroks.map((p) => {
+            const isSelected = selectedPurok === p.purok;
+            const ratio = p.population / maxPop;
+            const bgIntensity = ratio > 0.7 ? "bg-red-950/80 border-red-500/50" : ratio > 0.4 ? "bg-amber-950/80 border-amber-500/50" : "bg-blue-950/80 border-blue-500/50";
+
+            return (
+              <div
+                key={p.purok}
+                onClick={() => onSelectPurok(isSelected ? "all" : p.purok)}
+                onMouseEnter={() => setHoveredZone(p.purok)}
+                onMouseLeave={() => setHoveredZone(null)}
+                className={`cursor-pointer rounded-2xl p-4 border transition-all duration-300 relative overflow-hidden backdrop-blur-md flex flex-col justify-between ${
+                  isSelected
+                    ? "ring-2 ring-blue-400 bg-blue-900/90 shadow-lg shadow-blue-500/20 scale-105"
+                    : bgIntensity
+                } hover:border-blue-400 hover:scale-[1.02]`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-white bg-black/40 px-2 py-0.5 rounded-md">
+                    {isNaN(Number(p.purok)) ? p.purok : `Purok ${p.purok}`}
+                  </span>
+                  <ArrowUpRight className="h-3.5 w-3.5 text-blue-300 opacity-70" />
+                </div>
+
+                <div className="space-y-1.5 my-2">
+                  <div className="flex items-center justify-between text-xs text-blue-100">
+                    <span className="flex items-center gap-1"><Users className="h-3 w-3 text-blue-400" /> Pop:</span>
+                    <span className="font-bold">{p.population}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-blue-100">
+                    <span className="flex items-center gap-1"><Home className="h-3 w-3 text-indigo-400" /> HH:</span>
+                    <span className="font-bold">{p.households}</span>
+                  </div>
+                  {(activeLayer === "permits" || activeLayer === "all") && (
+                    <div className="flex items-center justify-between text-xs text-blue-100">
+                      <span className="flex items-center gap-1"><Building2 className="h-3 w-3 text-sky-400" /> Biz:</span>
+                      <span className="font-bold text-sky-300">{p.businessCount}</span>
+                    </div>
+                  )}
+                  {(activeLayer === "blotters" || activeLayer === "all") && (
+                    <div className="flex items-center justify-between text-xs text-blue-100">
+                      <span className="flex items-center gap-1"><ShieldAlert className="h-3 w-3 text-amber-400" /> Cases:</span>
+                      <span className="font-bold text-amber-300">{p.blotterCount}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Status indicator bar */}
+                <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden mt-1">
+                  <div
+                    className={`h-full rounded-full ${
+                      ratio > 0.7 ? "bg-red-500" : ratio > 0.4 ? "bg-amber-500" : "bg-blue-500"
+                    }`}
+                    style={{ width: `${Math.max(15, ratio * 100)}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Map Footer Legend & Instructions */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 z-10 bg-black/40 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 text-xs text-blue-200">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-red-500" /> High Density</span>
+            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-amber-500" /> Medium Density</span>
+            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-blue-500" /> Normal Density</span>
+          </div>
+          <p className="text-[11px] text-blue-300/80 font-medium">Click any zone card above to inspect detailed demographics & records</p>
+        </div>
+
+      </div>
     </div>
   );
 }
