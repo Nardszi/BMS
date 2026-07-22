@@ -161,7 +161,6 @@ export default function StaticTileMap({
                 src={tile.url}
                 alt=""
                 loading="lazy"
-                crossOrigin="anonymous"
                 onLoad={() => setIsLoaded(true)}
                 onError={() => setLoadError(true)}
               className="absolute"

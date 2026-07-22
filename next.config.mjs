@@ -19,7 +19,7 @@ const nextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob:",
+              "img-src 'self' data: blob: https://*.cartocdn.com https://tile.openstreetmap.org https://*.openstreetmap.org",
               "font-src 'self'",
               "connect-src 'self'",
               "frame-ancestors 'none'",
