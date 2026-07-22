@@ -213,6 +213,16 @@ export default function UsersPage() {
             <div className="space-y-2">
               <Label>Password {editing && <span className="text-muted-foreground/70 font-normal">(leave blank to keep current)</span>}</Label>
               <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={editing ? "••••••••" : "Password"} />
+              {password && (
+                <div className="space-y-1 pt-1">
+                  <div className="flex gap-1 h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                    <div className={`h-full transition-all duration-300 ${password.length >= 6 ? (password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password) ? "w-full bg-emerald-500" : "w-2/3 bg-amber-500") : "w-1/3 bg-red-500"}`} />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    {password.length < 6 ? "Too short (min 6 chars)" : password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password) ? "Strong password" : "Medium strength (add numbers/uppercase)"}
+                  </p>
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Role</Label>
