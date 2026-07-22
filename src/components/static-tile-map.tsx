@@ -89,8 +89,8 @@ export default function StaticTileMap({
       for (let col = 0; col < gridCols; col++) {
         const tileX = startX + col;
         const tileY = startY + row;
-        // Use multiple tile servers for redundancy
-        const url = `https://tile.openstreetmap.org/${zoom}/${tileX}/${tileY}.png`;
+        // CartoDB basemaps - more permissive CORS policy than OSM
+        const url = `https://basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${tileX}/${tileY}@2x.png`;
         result.push({
           url,
           x: col * tileSize,
@@ -156,13 +156,14 @@ export default function StaticTileMap({
 
         <div className="relative" style={{ width: gridCols * tileSize, height: gridRows * tileSize }}>
           {tiles.map((tile) => (
-            <img
-              key={tile.key}
-              src={tile.url}
-              alt=""
-              loading="lazy"
-              onLoad={() => setIsLoaded(true)}
-              onError={() => setLoadError(true)}
+              <img
+                key={tile.key}
+                src={tile.url}
+                alt=""
+                loading="lazy"
+                crossOrigin="anonymous"
+                onLoad={() => setIsLoaded(true)}
+                onError={() => setLoadError(true)}
               className="absolute"
               style={{
                 left: tile.x,
@@ -231,7 +232,7 @@ export default function StaticTileMap({
       {/* Attribution */}
       <div className="absolute bottom-1 left-1 z-20">
         <span className="text-[10px] bg-white/80 dark:bg-gray-800/80 px-1.5 py-0.5 rounded text-gray-500 dark:text-gray-400">
-          © OpenStreetMap contributors
+          © <a href="https://carto.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-700 dark:hover:text-gray-200">CARTO</a> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-700 dark:hover:text-gray-200">OpenStreetMap</a>
         </span>
       </div>
 
