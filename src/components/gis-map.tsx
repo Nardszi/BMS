@@ -117,26 +117,8 @@ export default function GISMap({
 
   // Generate polygon boundaries (using saved or auto-generated)
   const mapPolygons = useMemo(() => {
-    const offset = 0.0012;
-    return puroks
-      .filter((p) => coords[p.purok])
-      .map((p) => {
-        const [lat, lng] = coords[p.purok];
-        const ratio = p.population / maxPop;
-        const color = ratio > 0.7 ? "#ef4444" : ratio > 0.4 ? "#f59e0b" : "#3b82f6";
-        const label = isNaN(Number(p.purok)) ? p.purok : `P${p.purok}`;
-        const savedPoints = polygons[p.purok];
-        const points: [number, number][] = savedPoints && savedPoints.length >= 3
-          ? savedPoints
-          : [
-              [lat + offset, lng - offset],
-              [lat + offset, lng + offset],
-              [lat - offset, lng + offset],
-              [lat - offset, lng - offset],
-            ];
-        return { id: p.purok, label, color, fillColor: color, points };
-      });
-  }, [puroks, maxPop, coords, polygons]);
+    return [];
+  }, []);
 
   const handlePolygonComplete = useCallback((id: string, points: [number, number][]) => {
     setDrawingPolygon(null);
