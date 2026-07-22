@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
-import { Users, Building2, MapPin, ShieldAlert, Home, Award, RefreshCw, Layers, FileCheck, CheckCircle } from "lucide-react";
+import { Users, Building2, MapPin, ShieldAlert, Home, RefreshCw, Layers, CheckCircle } from "lucide-react";
 
 interface PurokData {
   purok: string;
@@ -59,51 +59,38 @@ export default function BarangayOverviewPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Barangay IX (Daan Banwa) Overview"
-        subtitle="Comprehensive administrative, demographic, and spatial overview of Barangay IX, Victorias City, Negros Occidental"
+        title="Barangay IX (Daan Banwa) Map & Overview"
+        subtitle="Google Maps live location view and comprehensive demographic breakdown for Puroks 1–8, Toreno, and Aji"
       >
         <Button variant="outline" size="sm" onClick={fetchOverviewData} disabled={loading}>
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh Overview
+          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh Data
         </Button>
       </PageHeader>
 
-      {/* Barangay Profile Banner Card */}
-      <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-2xl overflow-hidden">
-        <CardContent className="p-8">
-          <div className="grid md:grid-cols-3 gap-6 items-center">
-            <div className="md:col-span-2 space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-800/80 text-blue-200 text-xs font-semibold">
-                <MapPin className="h-3.5 w-3.5" /> Victorias City, Negros Occidental • Region VI (NIR)
-              </div>
-              <h2 className="text-2xl md:text-3xl font-black tracking-tight">Barangay IX — Daan Banwa</h2>
-              <p className="text-blue-100/80 text-sm leading-relaxed max-w-xl">
-                Barangay IX (formerly known as Daan Banwa) has a total land area of 23.24 hectares and is politically subdivided into 10 active Puroks. This management overview aggregates resident demographics, commercial establishments, and community safety records.
-              </p>
-              <div className="flex flex-wrap gap-4 pt-2 text-xs font-medium text-blue-200">
-                <div className="flex items-center gap-1.5"><Home className="h-4 w-4 text-blue-400" /> Postal Code: 6119</div>
-                <div className="flex items-center gap-1.5"><Layers className="h-4 w-4 text-blue-400" /> Total Land Area: 23.24 Hectares</div>
-                <div className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-emerald-400" /> Active Governance Status</div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10">
-              <div className="text-center p-3 rounded-lg bg-black/20">
-                <p className="text-xs text-blue-200 font-medium">Puroks</p>
-                <p className="text-2xl font-black text-white mt-1">10</p>
-              </div>
-              <div className="text-center p-3 rounded-lg bg-black/20">
-                <p className="text-xs text-blue-200 font-medium">Households</p>
-                <p className="text-2xl font-black text-white mt-1">{totalHouseholds}</p>
-              </div>
-              <div className="text-center p-3 rounded-lg bg-black/20">
-                <p className="text-xs text-blue-200 font-medium">Voters</p>
-                <p className="text-2xl font-black text-white mt-1">{totalVoters}</p>
-              </div>
-              <div className="text-center p-3 rounded-lg bg-black/20">
-                <p className="text-xs text-blue-200 font-medium">Businesses</p>
-                <p className="text-2xl font-black text-white mt-1">{totalBusinesses}</p>
-              </div>
-            </div>
+      {/* Google Maps Embed View */}
+      <Card className="border-0 shadow-xl overflow-hidden rounded-2xl dark:bg-gray-900">
+        <CardHeader className="bg-gradient-to-r from-blue-900 to-slate-900 text-white pb-4">
+          <CardTitle className="text-base font-bold flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-blue-400" />
+            <span>Google Maps Location: Barangay IX (Daan Banwa), Victorias City</span>
+          </CardTitle>
+          <CardDescription className="text-blue-200 text-xs">
+            Official geographical reference view for Barangay IX, Negros Occidental, Philippines (Postal Code: 6119)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="w-full h-[450px] relative bg-muted">
+            <iframe
+              title="Barangay IX Google Map"
+              src="https://maps.google.com/maps?q=Barangay+IX+Daan+Banwa+Victorias+City+Negros+Occidental+Philippines&t=&z=16&ie=UTF8&iwloc=&output=embed"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen={false}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full h-full"
+            />
           </div>
         </CardContent>
       </Card>
@@ -130,7 +117,7 @@ export default function BarangayOverviewPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-black text-foreground">{totalHouseholds}</div>
-            <p className="text-xs text-muted-foreground mt-1">Across 10 Puroks</p>
+            <p className="text-xs text-muted-foreground mt-1">Across Puroks 1-8, Toreno & Aji</p>
           </CardContent>
         </Card>
 
@@ -157,13 +144,11 @@ export default function BarangayOverviewPage() {
         </Card>
       </div>
 
-      {/* Purok Breakdown Section */}
+      {/* Purok / Area Breakdown Section */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold tracking-tight">Purok Demographics & Statistics</h3>
-            <p className="text-xs text-muted-foreground">Detailed breakdown of residents, voters, and activity per purok in Barangay IX</p>
-          </div>
+        <div>
+          <h3 className="text-lg font-bold tracking-tight">Puroks & Sitios Breakdown (Puroks 1–8, Toreno, Aji)</h3>
+          <p className="text-xs text-muted-foreground">Detailed demographic and activity summary for each community zone in Barangay IX</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -172,10 +157,10 @@ export default function BarangayOverviewPage() {
               <CardHeader className="pb-3 border-b dark:border-gray-800">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base font-bold flex items-center gap-2">
-                    <span className="h-7 w-7 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 flex items-center justify-center text-xs font-black">
+                    <span className="h-7 px-2 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 flex items-center justify-center text-xs font-black">
                       {p.purok}
                     </span>
-                    <span>Purok {p.purok}</span>
+                    <span>{isNaN(Number(p.purok)) ? p.purok : `Purok ${p.purok}`}</span>
                   </CardTitle>
                   <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
                     {p.households} Households

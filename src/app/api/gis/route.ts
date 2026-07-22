@@ -2,21 +2,20 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { PUROK_OPTIONS } from "@/lib/constants";
 
-// Geocoordinates for Puroks in Barangay IX - Daan Banwa, Victorias City, Negros Occidental
-// Official barangay center: 10.9042, 123.0611 (PhilAtlas/Victorias City)
-// Spacing: well-distributed across Barangay IX
+// Geocoordinates for Puroks/Sitios in Barangay IX - Daan Banwa, Victorias City, Negros Occidental
 const PUROK_COORDINATES: Record<string, [number, number]> = {
-  "1": [10.9080, 123.0585],  // Northwest
-  "2": [10.9080, 123.0611],  // North
-  "3": [10.9080, 123.0637],  // Northeast
-  "4": [10.9042, 123.0575],  // West
-  "5": [10.9042, 123.0611],  // Center
-  "6": [10.9042, 123.0647],  // East
-  "7": [10.9004, 123.0585],  // Southwest
-  "8": [10.9004, 123.0611],  // South
-  "9": [10.9004, 123.0637],  // Southeast
-  "10": [10.8966, 123.0611], // Far south
+  "1": [10.9080, 123.0585],
+  "2": [10.9080, 123.0611],
+  "3": [10.9080, 123.0637],
+  "4": [10.9042, 123.0575],
+  "5": [10.9042, 123.0611],
+  "6": [10.9042, 123.0647],
+  "7": [10.9004, 123.0585],
+  "8": [10.9004, 123.0611],
+  "Toreno": [10.9004, 123.0637],
+  "Aji": [10.8966, 123.0611],
 };
 
 // Deterministic pseudo-random offset for placing markers within a purok area (smaller offset to prevent overlapping outside purok)
@@ -156,15 +155,14 @@ export async function GET() {
 
     // Map blotter reports with coordinates
     const blotterMarkers = blotters.map((b) => {
-      // Try to extract purok from location string if mentioned
       let purok = "1";
-      const match = b.location?.match(/Purok\s*(\d+)/i);
-      if (match && PUROK_COORDINATES[match[1]]) {
-        purok = match[1];
+      const match = b.location?.match(/(?:Purok\s*(\d+|Toreno|Aji)|(Toreno|Aji))/i);
+      const matchedPurok = match ? (match[1] || match[2]) : null;
+      if (matchedPurok && PUROK_COORDINATES[matchedPurok]) {
+        purok = matchedPurok;
       } else {
-        // Fallback modulo distribution for visualization consistency
         const charCodeSum = b.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-        purok = String((charCodeSum % 10) + 1);
+        purok = PUROK_OPTIONS[charCodeSum % PUROK_OPTIONS.length];
       }
 
       if (purokStats[purok]) purokStats[purok].blotterCount += 1;
