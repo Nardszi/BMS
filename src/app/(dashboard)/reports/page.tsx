@@ -325,10 +325,10 @@ export default function ReportsPage() {
           <CardHeader><CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4" /> Business Permits</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
-                <div className="text-center p-3 bg-emerald-50 rounded-lg"><div className="text-xl font-bold text-emerald-700">{data.permitStats.active}</div><div className="text-xs text-muted-foreground">Active</div></div>
-                <div className="text-center p-3 bg-red-50 rounded-lg"><div className="text-xl font-bold text-red-700">{data.permitStats.expired}</div><div className="text-xs text-muted-foreground">Expired</div></div>
-                <div className="text-center p-3 bg-amber-50 rounded-lg"><div className="text-xl font-bold text-amber-700">{data.permitStats.revoked}</div><div className="text-xs text-muted-foreground">Revoked</div></div>
-                <div className="text-center p-3 bg-blue-50 rounded-lg"><div className="text-xl font-bold text-blue-700">{data.permitStats.total}</div><div className="text-xs text-muted-foreground">Total</div></div>
+                <div className="text-center p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/40 rounded-lg"><div className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{data.permitStats.active}</div><div className="text-xs text-muted-foreground">Active</div></div>
+                <div className="text-center p-3 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-800/40 rounded-lg"><div className="text-xl font-bold text-red-700 dark:text-red-300">{data.permitStats.expired}</div><div className="text-xs text-muted-foreground">Expired</div></div>
+                <div className="text-center p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-800/40 rounded-lg"><div className="text-xl font-bold text-amber-700 dark:text-amber-300">{data.permitStats.revoked}</div><div className="text-xs text-muted-foreground">Revoked</div></div>
+                <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-800/40 rounded-lg"><div className="text-xl font-bold text-blue-700 dark:text-blue-300">{data.permitStats.total}</div><div className="text-xs text-muted-foreground">Total</div></div>
               </div>
             </CardContent>
           </Card>
@@ -337,10 +337,10 @@ export default function ReportsPage() {
             <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Shield className="h-4 w-4" /> Blotter Reports</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
-                <div className="text-center p-3 bg-amber-50 rounded-lg"><div className="text-xl font-bold text-amber-700">{data.blotterStats.open}</div><div className="text-xs text-muted-foreground">Open</div></div>
-                <div className="text-center p-3 bg-emerald-50 rounded-lg"><div className="text-xl font-bold text-emerald-700">{data.blotterStats.resolved}</div><div className="text-xs text-muted-foreground">Resolved</div></div>
-                <div className="text-center p-3 bg-red-50 rounded-lg"><div className="text-xl font-bold text-red-700">{data.blotterStats.escalated}</div><div className="text-xs text-muted-foreground">Escalated</div></div>
-                <div className="text-center p-3 bg-blue-50 rounded-lg"><div className="text-xl font-bold text-blue-700">{data.blotterStats.total}</div><div className="text-xs text-muted-foreground">Total</div></div>
+                <div className="text-center p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-800/40 rounded-lg"><div className="text-xl font-bold text-amber-700 dark:text-amber-300">{data.blotterStats.open}</div><div className="text-xs text-muted-foreground">Open</div></div>
+                <div className="text-center p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/40 rounded-lg"><div className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{data.blotterStats.resolved}</div><div className="text-xs text-muted-foreground">Resolved</div></div>
+                <div className="text-center p-3 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-800/40 rounded-lg"><div className="text-xl font-bold text-red-700 dark:text-red-300">{data.blotterStats.escalated}</div><div className="text-xs text-muted-foreground">Escalated</div></div>
+                <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-800/40 rounded-lg"><div className="text-xl font-bold text-blue-700 dark:text-blue-300">{data.blotterStats.total}</div><div className="text-xs text-muted-foreground">Total</div></div>
               </div>
             </CardContent>
           </Card>

@@ -22,6 +22,7 @@ import {
   Settings,
   History,
   User,
+  MapPin,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -37,6 +38,7 @@ interface NavItem {
 
 const allNavItems: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN", "SECRETARY", "TREASURER", "KAGAWAD", "STAFF"], group: "Overview" },
+  { href: "/map", label: "GIS Heatmaps", icon: MapPin, roles: ["ADMIN", "SECRETARY", "TREASURER", "KAGAWAD", "STAFF"], group: "Overview" },
   { href: "/residents", label: "Residents", icon: Users, roles: ["ADMIN", "SECRETARY", "TREASURER", "KAGAWAD", "STAFF"], group: "Records" },
   { href: "/barangay-ids", label: "Barangay IDs", icon: CreditCard, roles: ["ADMIN", "SECRETARY"], group: "Records" },
   { href: "/certificates", label: "Certificates", icon: FileText, roles: ["ADMIN", "SECRETARY", "STAFF"], group: "Services" },

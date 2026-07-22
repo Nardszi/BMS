@@ -3,19 +3,19 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 const roleRoutes: Record<string, string[]> = {
-  ADMIN: ["/", "/residents", "/barangay-ids", "/certificates", "/blotter", "/permits", "/officials", "/announcements", "/reports", "/users", "/audit", "/profile"],
-  SECRETARY: ["/", "/residents", "/barangay-ids", "/certificates", "/blotter", "/announcements", "/audit", "/profile"],
-  TREASURER: ["/", "/permits", "/residents", "/profile"],
-  KAGAWAD: ["/", "/blotter", "/profile"],
-  STAFF: ["/", "/residents", "/certificates", "/profile"],
+  ADMIN: ["/", "/residents", "/barangay-ids", "/certificates", "/blotter", "/permits", "/officials", "/announcements", "/reports", "/users", "/audit", "/profile", "/map"],
+  SECRETARY: ["/", "/residents", "/barangay-ids", "/certificates", "/blotter", "/announcements", "/audit", "/profile", "/map"],
+  TREASURER: ["/", "/permits", "/residents", "/profile", "/map"],
+  KAGAWAD: ["/", "/blotter", "/profile", "/map"],
+  STAFF: ["/", "/residents", "/certificates", "/profile", "/map"],
 };
 
 const apiRoleRoutes: Record<string, string[]> = {
-  ADMIN: ["/api/residents", "/api/barangay-ids", "/api/certificates", "/api/blotter", "/api/permits", "/api/officials", "/api/announcements", "/api/reports", "/api/users", "/api/dashboard", "/api/upload", "/api/notifications", "/api/audit"],
-  SECRETARY: ["/api/residents", "/api/barangay-ids", "/api/certificates", "/api/blotter", "/api/announcements", "/api/reports", "/api/dashboard", "/api/upload", "/api/notifications", "/api/audit"],
-  TREASURER: ["/api/permits", "/api/residents", "/api/reports", "/api/dashboard", "/api/notifications"],
-  KAGAWAD: ["/api/blotter", "/api/residents", "/api/dashboard", "/api/notifications"],
-  STAFF: ["/api/residents", "/api/certificates", "/api/dashboard", "/api/notifications"],
+  ADMIN: ["/api/residents", "/api/barangay-ids", "/api/certificates", "/api/blotter", "/api/permits", "/api/officials", "/api/announcements", "/api/reports", "/api/users", "/api/dashboard", "/api/upload", "/api/notifications", "/api/audit", "/api/gis"],
+  SECRETARY: ["/api/residents", "/api/barangay-ids", "/api/certificates", "/api/blotter", "/api/announcements", "/api/reports", "/api/dashboard", "/api/upload", "/api/notifications", "/api/audit", "/api/gis"],
+  TREASURER: ["/api/permits", "/api/residents", "/api/reports", "/api/dashboard", "/api/notifications", "/api/gis"],
+  KAGAWAD: ["/api/blotter", "/api/residents", "/api/dashboard", "/api/notifications", "/api/gis"],
+  STAFF: ["/api/residents", "/api/certificates", "/api/dashboard", "/api/notifications", "/api/gis"],
 };
 
 export async function middleware(request: NextRequest) {
