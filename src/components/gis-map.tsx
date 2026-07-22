@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Building2, ShieldAlert, Home, MapPin, ExternalLink, ArrowUpRight, Navigation, Target, X, Check, Settings, Copy } from "lucide-react";
+import { Users, Building2, ShieldAlert, Home, MapPin, ExternalLink, ArrowUpRight, Navigation, Target, X, Check, Settings, Copy, Pen } from "lucide-react";
 import StaticTileMap from "@/components/static-tile-map";
 
 interface PurokData {
@@ -84,6 +84,16 @@ export default function GISMap({
     return DEFAULT_COORDS;
   });
   const [showPlacement, setShowPlacement] = useState(false);
+  const [drawingPolygon, setDrawingPolygon] = useState<string | null>(null);
+  const [polygons, setPolygons] = useState<Record<string, [number, number][]>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("bms-purok-polygons");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return {};
+  });
   const maxPop = Math.max(...puroks.map((p) => p.population), 1);
 
   const mapMarkers = useMemo(() => {
@@ -105,7 +115,7 @@ export default function GISMap({
       }));
   }, [puroks, maxPop, coords]);
 
-  // Generate polygon boundaries around each purok center
+  // Generate polygon boundaries (using saved or auto-generated)
   const mapPolygons = useMemo(() => {
     const offset = 0.0012;
     return puroks
@@ -115,20 +125,28 @@ export default function GISMap({
         const ratio = p.population / maxPop;
         const color = ratio > 0.7 ? "#ef4444" : ratio > 0.4 ? "#f59e0b" : "#3b82f6";
         const label = isNaN(Number(p.purok)) ? p.purok : `P${p.purok}`;
-        return {
-          id: p.purok,
-          label,
-          color,
-          fillColor: color,
-          points: [
-            [lat + offset, lng - offset] as [number, number],
-            [lat + offset, lng + offset] as [number, number],
-            [lat - offset, lng + offset] as [number, number],
-            [lat - offset, lng - offset] as [number, number],
-          ],
-        };
+        const savedPoints = polygons[p.purok];
+        const points: [number, number][] = savedPoints && savedPoints.length >= 3
+          ? savedPoints
+          : [
+              [lat + offset, lng - offset],
+              [lat + offset, lng + offset],
+              [lat - offset, lng + offset],
+              [lat - offset, lng - offset],
+            ];
+        return { id: p.purok, label, color, fillColor: color, points };
       });
-  }, [puroks, maxPop, coords]);
+  }, [puroks, maxPop, coords, polygons]);
+
+  const handlePolygonComplete = useCallback((id: string, points: [number, number][]) => {
+    setDrawingPolygon(null);
+    if (points.length < 3) return;
+    setPolygons((prev) => {
+      const next = { ...prev, [id]: points };
+      localStorage.setItem("bms-purok-polygons", JSON.stringify(next));
+      return next;
+    });
+  }, []);
 
   // Heatmap data from population
   const heatmapPoints = useMemo(() => {
@@ -197,6 +215,8 @@ export default function GISMap({
             markers={mapMarkers}
             polygons={mapPolygons}
             heatmapPoints={heatmapPoints}
+            drawingPolygon={drawingPolygon}
+            onPolygonComplete={handlePolygonComplete}
             onMapClick={placingPurok ? handleMapClick : undefined}
             placing={!!placingPurok}
             className="w-full"
@@ -250,6 +270,36 @@ export default function GISMap({
                 </button>
               );
             })}
+          </div>
+          {/* Polygon draw buttons */}
+          <div className="mt-3 pt-3 border-t border-blue-800/30">
+            <div className="flex items-center gap-2 mb-2">
+              <Pen className="h-3.5 w-3.5 text-purple-400" />
+              <span className="text-[10px] font-bold text-purple-300">Draw Boundaries</span>
+              <span className="text-[10px] text-blue-300/50">Click purok, then click map points</span>
+            </div>
+            <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+              {puroks.map((p) => {
+                const isDrawing = drawingPolygon === p.purok;
+                const hasPolygon = !!polygons[p.purok];
+                return (
+                  <button
+                    key={`poly-${p.purok}`}
+                    onClick={() => setDrawingPolygon(isDrawing ? null : p.purok)}
+                    className={`text-[10px] font-bold px-1.5 py-1.5 rounded-lg transition-all ${
+                      isDrawing
+                        ? "bg-purple-500 text-white shadow-lg shadow-purple-500/30 scale-110"
+                        : hasPolygon
+                        ? "bg-purple-900/80 text-purple-200 hover:bg-purple-800/80 border border-purple-600/30"
+                        : "bg-gray-800 text-gray-400 hover:bg-gray-700 border border-gray-700"
+                    }`}
+                  >
+                    {isNaN(Number(p.purok)) ? p.purok : `P${p.purok}`}
+                    {hasPolygon && !isDrawing && <Check className="h-2.5 w-2.5 inline ml-0.5 text-green-400" />}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

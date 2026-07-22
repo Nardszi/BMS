@@ -41,6 +41,8 @@ interface StaticTileMapProps {
   polygons?: MapPolygon[];
   heatmapPoints?: Array<{ lat: number; lng: number; intensity: number }>;
   onMapClick?: (lat: number, lng: number) => void;
+  onPolygonComplete?: (id: string, points: [number, number][]) => void;
+  drawingPolygon?: string | null;
   placing?: boolean;
   className?: string;
 }
@@ -84,6 +86,8 @@ export default function StaticTileMap({
   polygons = [],
   heatmapPoints = [],
   onMapClick,
+  onPolygonComplete,
+  drawingPolygon = null,
   placing = false,
   className = "",
 }: StaticTileMapProps) {
@@ -143,6 +147,9 @@ export default function StaticTileMap({
 
   // Heatmap
   const [showHeatmap, setShowHeatmap] = useState(false);
+
+  // Polygon drawing
+  const [drawPoints, setDrawPoints] = useState<Array<{ lat: number; lng: number }>>([]);
 
   const tileSize = 256;
   const gridCols = Math.ceil(containerWidth / tileSize) + 2;
@@ -299,25 +306,26 @@ export default function StaticTileMap({
   }, [offset]);
 
   const onContainerClick = useCallback((e: React.MouseEvent) => {
-    if (measuring) {
-      const rect = containerRef.current!.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-      const pixelX = originX + clickX;
-      const pixelY = originY + clickY;
-      const ll = pixelToLatLng(pixelX, pixelY, zoom, tileSize);
-      setMeasurePoints((prev) => [...prev, ll]);
-      return;
-    }
-    if (!onMapClick) return;
     const rect = containerRef.current!.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
     const pixelX = originX + clickX;
     const pixelY = originY + clickY;
     const ll = pixelToLatLng(pixelX, pixelY, zoom, tileSize);
+
+    // Polygon drawing mode
+    if (drawingPolygon) {
+      setDrawPoints((prev) => [...prev, ll]);
+      return;
+    }
+
+    if (measuring) {
+      setMeasurePoints((prev) => [...prev, ll]);
+      return;
+    }
+    if (!onMapClick) return;
     setPreviewMarker(ll);
-  }, [onMapClick, originX, originY, zoom, tileSize, measuring]);
+  }, [onMapClick, originX, originY, zoom, tileSize, measuring, drawingPolygon]);
 
   const confirmPlacement = useCallback(() => {
     if (!previewMarker || !onMapClick) return;
@@ -441,6 +449,23 @@ export default function StaticTileMap({
                 })()}
               </g>
             ))}
+
+            {/* Polygon being drawn */}
+            {isLoaded && drawingPolygon && drawPoints.length > 0 && (() => {
+              const pts = drawPoints.map((p) => {
+                const px = latLngToPixel(p.lat, p.lng, zoom, tileSize);
+                return { x: px.x - originX, y: px.y - originY };
+              });
+              const pathD = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+              return (
+                <g>
+                  <path d={pathD} fill="rgba(168, 85, 247, 0.15)" stroke="#a855f7" strokeWidth={2} strokeDasharray="6 3" />
+                  {pts.map((p, i) => (
+                    <circle key={`dp-${i}`} cx={p.x} cy={p.y} r={5} fill="#a855f7" stroke="white" strokeWidth={2} />
+                  ))}
+                </g>
+              );
+            })()}
 
             {/* Heatmap overlay */}
             {isLoaded && showHeatmap && heatmapPositions.map((h, i) => {
@@ -589,6 +614,23 @@ export default function StaticTileMap({
             📏 Click points to measure — {measurePoints.length} point{measurePoints.length !== 1 ? "s" : ""}
             {measureLine && <span className="ml-2 bg-yellow-700 px-2 py-0.5 rounded">{formatDistance(measureLine.totalDist)}</span>}
             <button onClick={() => { setMeasurePoints([]); setMeasuring(false); }} className="ml-1 hover:text-yellow-200"><X className="h-3.5 w-3.5" /></button>
+          </div>
+        </div>
+      )}
+
+      {/* Polygon drawing banner */}
+      {drawingPolygon && (
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-30">
+          <div className="bg-purple-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl flex items-center gap-2">
+            ✏️ Drawing: {drawingPolygon} — {drawPoints.length} points (double-click or press ✓ to finish)
+            {drawPoints.length >= 3 && (
+              <button onClick={() => {
+                const coords: [number, number][] = drawPoints.map((p) => [p.lat, p.lng]);
+                onPolygonComplete?.(drawingPolygon, coords);
+                setDrawPoints([]);
+              }} className="ml-1 bg-purple-700 hover:bg-purple-800 px-2 py-0.5 rounded"><Check className="h-3.5 w-3.5 inline" /></button>
+            )}
+            <button onClick={() => { setDrawPoints([]); onPolygonComplete?.(drawingPolygon, []); }} className="ml-1 hover:text-purple-200"><X className="h-3.5 w-3.5" /></button>
           </div>
         </div>
       )}
