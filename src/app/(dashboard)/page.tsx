@@ -207,14 +207,14 @@ export default function DashboardPage() {
 
       {/* Expiring Permits Warning */}
       {stats.expiringSoonPermits > 0 && (
-        <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 shadow-sm">
+        <Card className="border-amber-200 dark:border-amber-800 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950 shadow-sm">
           <CardContent className="flex items-center gap-4 py-4">
             <div className="rounded-xl bg-amber-100 p-3">
               <AlertTriangle className="h-5 w-5 text-amber-600" />
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-amber-900">Permit Renewal Reminder</p>
-              <p className="text-sm text-amber-700">
+              <p className="font-semibold text-amber-900 dark:text-amber-200">Permit Renewal Reminder</p>
+              <p className="text-sm text-amber-700 dark:text-amber-300">
                 {stats.expiringSoonPermits} business permit(s) are expiring within 30 days.{" "}
                 <Link href="/permits" className="font-medium underline">
                   View all permits
@@ -222,7 +222,7 @@ export default function DashboardPage() {
               </p>
             </div>
             <Link href="/permits">
-              <Button variant="outline" size="sm" className="border-amber-300 text-amber-700 hover:bg-amber-100">
+              <Button variant="outline" size="sm" className="border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900">
                 View <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             </Link>
@@ -235,12 +235,12 @@ export default function DashboardPage() {
         <Card className="lg:col-span-1 border-0 shadow-md">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Activity className="h-5 w-5 text-blue-600" />
-              Quick Actions
+              <Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <span className="dark:text-gray-100">Quick Actions</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Link href="/residents" className="group flex items-center gap-3 rounded-lg border p-3 transition-all hover:border-blue-200 hover:bg-blue-50">
+            <Link href="/residents" className="group flex items-center gap-3 rounded-lg border p-3 transition-all hover:border-blue-200 hover:bg-blue-50 dark:hover:border-blue-800 dark:hover:bg-blue-950">
               <div className="rounded-lg bg-blue-100 p-2 transition-colors group-hover:bg-blue-200">
                 <Users className="h-4 w-4 text-blue-600" />
               </div>
@@ -250,7 +250,7 @@ export default function DashboardPage() {
               </div>
               <ArrowRight className="h-4 w-4 text-gray-500 dark:text-gray-400/70 transition-transform group-hover:translate-x-1 group-hover:text-blue-600" />
             </Link>
-            <Link href="/certificates" className="group flex items-center gap-3 rounded-lg border p-3 transition-all hover:border-amber-200 hover:bg-amber-50">
+            <Link href="/certificates" className="group flex items-center gap-3 rounded-lg border p-3 transition-all hover:border-amber-200 hover:bg-amber-50 dark:hover:border-amber-800 dark:hover:bg-amber-950">
               <div className="rounded-lg bg-amber-100 p-2 transition-colors group-hover:bg-amber-200">
                 <FileCheck className="h-4 w-4 text-amber-600" />
               </div>
@@ -260,7 +260,7 @@ export default function DashboardPage() {
               </div>
               <ArrowRight className="h-4 w-4 text-gray-500 dark:text-gray-400/70 transition-transform group-hover:translate-x-1 group-hover:text-amber-600" />
             </Link>
-            <Link href="/blotter" className="group flex items-center gap-3 rounded-lg border p-3 transition-all hover:border-red-200 hover:bg-red-50">
+            <Link href="/blotter" className="group flex items-center gap-3 rounded-lg border p-3 transition-all hover:border-red-200 hover:bg-red-50 dark:hover:border-red-800 dark:hover:bg-red-950">
               <div className="rounded-lg bg-red-100 p-2 transition-colors group-hover:bg-red-200">
                 <AlertTriangle className="h-4 w-4 text-red-600" />
               </div>
@@ -270,7 +270,7 @@ export default function DashboardPage() {
               </div>
               <ArrowRight className="h-4 w-4 text-gray-500 dark:text-gray-400/70 transition-transform group-hover:translate-x-1 group-hover:text-red-600" />
             </Link>
-            <Link href="/reports" className="group flex items-center gap-3 rounded-lg border p-3 transition-all hover:border-emerald-200 hover:bg-emerald-50">
+            <Link href="/reports" className="group flex items-center gap-3 rounded-lg border p-3 transition-all hover:border-emerald-200 hover:bg-emerald-50 dark:hover:border-emerald-800 dark:hover:bg-emerald-950">
               <div className="rounded-lg bg-emerald-100 p-2 transition-colors group-hover:bg-emerald-200">
                 <BarChart3 className="h-4 w-4 text-emerald-600" />
               </div>
@@ -287,8 +287,8 @@ export default function DashboardPage() {
         <Card className="lg:col-span-1 border-0 shadow-md">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <FileText className="h-5 w-5 text-blue-600" />
-              Recent Requests
+              <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <span className="dark:text-gray-100">Recent Requests</span>
             </CardTitle>
             <Link href="/certificates" className="text-xs font-medium text-blue-600 hover:underline">
               View all
@@ -324,8 +324,8 @@ export default function DashboardPage() {
         <Card className="lg:col-span-1 border-0 shadow-md">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Megaphone className="h-5 w-5 text-blue-600" />
-              Announcements
+              <Megaphone className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <span className="dark:text-gray-100">Announcements</span>
             </CardTitle>
             <Link href="/announcements" className="text-xs font-medium text-blue-600 hover:underline">
               View all
@@ -360,36 +360,36 @@ export default function DashboardPage() {
 
       {/* Summary Footer */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="border-0 bg-gradient-to-br from-blue-50 to-blue-100 shadow-sm">
+        <Card className="border-0 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 shadow-sm">
           <CardContent className="flex items-center gap-4 p-4">
-            <div className="rounded-full bg-blue-200 p-3">
-              <UserCheck className="h-5 w-5 text-blue-700" />
+            <div className="rounded-full bg-blue-200 dark:bg-blue-800 p-3">
+              <UserCheck className="h-5 w-5 text-blue-700 dark:text-blue-300" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-blue-900">{stats.totalResidents}</p>
-              <p className="text-xs text-blue-600">Registered Residents</p>
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-300">{stats.totalResidents}</p>
+              <p className="text-xs text-blue-600 dark:text-blue-400">Registered Residents</p>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-sm">
+        <Card className="border-0 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900 shadow-sm">
           <CardContent className="flex items-center gap-4 p-4">
-            <div className="rounded-full bg-emerald-200 p-3">
-              <CheckCircle2 className="h-5 w-5 text-emerald-700" />
+            <div className="rounded-full bg-emerald-200 dark:bg-emerald-800 p-3">
+              <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-300" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-emerald-900">{stats.activePermits}</p>
-              <p className="text-xs text-emerald-600">Active Business Permits</p>
+              <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-300">{stats.activePermits}</p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400">Active Business Permits</p>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-gradient-to-br from-amber-50 to-amber-100 shadow-sm">
+        <Card className="border-0 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 shadow-sm">
           <CardContent className="flex items-center gap-4 p-4">
-            <div className="rounded-full bg-amber-200 p-3">
-              <Clock className="h-5 w-5 text-amber-700" />
+            <div className="rounded-full bg-amber-200 dark:bg-amber-800 p-3">
+              <Clock className="h-5 w-5 text-amber-700 dark:text-amber-300" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-amber-900">{stats.pendingCertificates}</p>
-              <p className="text-xs text-amber-600">Pending Certificates</p>
+              <p className="text-2xl font-bold text-amber-900 dark:text-amber-300">{stats.pendingCertificates}</p>
+              <p className="text-xs text-amber-600 dark:text-amber-400">Pending Certificates</p>
             </div>
           </CardContent>
         </Card>
@@ -400,8 +400,8 @@ export default function DashboardPage() {
         <Card className="border-0 shadow-md">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <BarChart3 className="h-5 w-5 text-blue-600" />
-              Residents per Purok
+              <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <span className="dark:text-gray-100">Residents per Purok</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -415,7 +415,7 @@ export default function DashboardPage() {
                       <span className="text-sm font-medium text-gray-900 dark:text-gray-100/80">
                         Purok {item.purok}
                       </span>
-                      <span className="text-lg font-bold text-blue-900">{item.count}</span>
+                      <span className="text-lg font-bold text-blue-900 dark:text-blue-300">{item.count}</span>
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                       <div
