@@ -74,7 +74,15 @@ export default function GISMap({
 }: GISMapProps) {
   const [hoveredZone, setHoveredZone] = useState<string | null>(null);
   const [placingPurok, setPlacingPurok] = useState<string | null>(null);
-  const [coords, setCoords] = useState<Record<string, [number, number]>>(DEFAULT_COORDS);
+  const [coords, setCoords] = useState<Record<string, [number, number]>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("bms-purok-coords");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return DEFAULT_COORDS;
+  });
   const [showPlacement, setShowPlacement] = useState(false);
   const maxPop = Math.max(...puroks.map((p) => p.population), 1);
 
@@ -100,7 +108,13 @@ export default function GISMap({
   const handleMapClick = useCallback(
     (lat: number, lng: number) => {
       if (!placingPurok) return;
-      setCoords((prev) => ({ ...prev, [placingPurok]: [lat, lng] }));
+      const key = placingPurok;
+      const pos: [number, number] = [lat, lng];
+      setCoords((prev) => {
+        const next = { ...prev, [key]: pos };
+        localStorage.setItem("bms-purok-coords", JSON.stringify(next));
+        return next;
+      });
       setPlacingPurok(null);
     },
     [placingPurok]
