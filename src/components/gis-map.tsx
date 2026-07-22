@@ -63,35 +63,34 @@ export default function GISMap({
 
   return (
     <div className="space-y-6">
-      {/* Live Google Map Embed for Barangay IX, Victorias City */}
+      {/* OpenStreetMap Embed View for Barangay IX, Victorias City */}
       <Card className="border-0 shadow-xl overflow-hidden rounded-2xl dark:bg-gray-900">
         <CardHeader className="bg-gradient-to-r from-blue-900 to-slate-900 text-white pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
               <MapPin className="h-4 w-4 text-blue-400" />
-              <span>Live Google Map View: Barangay IX (Daan Banwa), Victorias City</span>
+              <span>OpenStreetMap Live View: Barangay IX (Daan Banwa), Victorias City</span>
             </CardTitle>
             <a
-              href="https://www.google.com/maps/search/Barangay+IX+Daan+Banwa+Victorias+City+Negros+Occidental+Philippines"
+              href="https://www.openstreetmap.org/#map=16/10.9042/123.0611"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs text-blue-200 hover:text-white transition-colors"
             >
-              <span>Open Fullscreen</span> <ExternalLink className="h-3 w-3" />
+              <span>View Larger Map</span> <ExternalLink className="h-3 w-3" />
             </a>
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="w-full h-[400px] relative bg-muted">
+          <div className="w-full h-[420px] relative bg-muted">
             <iframe
-              title="Barangay IX Live Google Map"
-              src="https://maps.google.com/maps?q=Barangay+IX+Daan+Banwa+Victorias+City+Negros+Occidental+Philippines&t=&z=16&ie=UTF8&iwloc=&output=embed"
+              title="Barangay IX OpenStreetMap"
+              src="https://www.openstreetmap.org/export/embed.html?bbox=123.0500%2C10.8950%2C123.0750%2C10.9150&layer=mapnik&marker=10.9042%2C123.0611"
               width="100%"
               height="100%"
               style={{ border: 0 }}
               allowFullScreen={false}
               loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
               className="w-full h-full"
             />
           </div>
