@@ -105,6 +105,31 @@ export default function GISMap({
       }));
   }, [puroks, maxPop, coords]);
 
+  // Generate polygon boundaries around each purok center
+  const mapPolygons = useMemo(() => {
+    const offset = 0.0012;
+    return puroks
+      .filter((p) => coords[p.purok])
+      .map((p) => {
+        const [lat, lng] = coords[p.purok];
+        const ratio = p.population / maxPop;
+        const color = ratio > 0.7 ? "#ef4444" : ratio > 0.4 ? "#f59e0b" : "#3b82f6";
+        const label = isNaN(Number(p.purok)) ? p.purok : `P${p.purok}`;
+        return {
+          id: p.purok,
+          label,
+          color,
+          fillColor: color,
+          points: [
+            [lat + offset, lng - offset] as [number, number],
+            [lat + offset, lng + offset] as [number, number],
+            [lat - offset, lng + offset] as [number, number],
+            [lat - offset, lng - offset] as [number, number],
+          ],
+        };
+      });
+  }, [puroks, maxPop, coords]);
+
   const handleMapClick = useCallback(
     (lat: number, lng: number) => {
       if (!placingPurok) return;
@@ -159,6 +184,7 @@ export default function GISMap({
             zoom={17}
             height={500}
             markers={mapMarkers}
+            polygons={mapPolygons}
             onMapClick={placingPurok ? handleMapClick : undefined}
             placing={!!placingPurok}
             className="w-full"
