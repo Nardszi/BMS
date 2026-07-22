@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import { MapPin, ZoomIn, ZoomOut, Maximize2, Satellite, Map, Trash2, Check, X, Bookmark, BookmarkPlus, Ruler, Search, Printer, Flame } from "lucide-react";
+import { MapPin, ZoomIn, ZoomOut, Maximize2, Satellite, Map, Trash2, Check, X, Bookmark, BookmarkPlus, Ruler, Search, Printer, Flame, Eye, EyeOff } from "lucide-react";
 
 interface MapMarker {
   id: string;
@@ -147,6 +147,9 @@ export default function StaticTileMap({
 
   // Heatmap
   const [showHeatmap, setShowHeatmap] = useState(false);
+
+  // Marker visibility
+  const [showMarkers, setShowMarkers] = useState(true);
 
   // Polygon drawing
   const [drawPoints, setDrawPoints] = useState<Array<{ lat: number; lng: number }>>([]);
@@ -497,7 +500,7 @@ export default function StaticTileMap({
           </svg>
 
           {/* Markers */}
-          {isLoaded && markerPositions.map((m) => (
+          {isLoaded && showMarkers && markerPositions.map((m) => (
             <div key={m.id}
               className={`absolute z-10 ${placing ? "" : "cursor-pointer"}`}
               style={{ left: m.screenX, top: m.screenY, transform: "translate(-50%, -100%)" }}
@@ -718,6 +721,9 @@ export default function StaticTileMap({
         <div className="h-px bg-gray-200 dark:bg-gray-700 my-0.5" />
         <button onClick={() => setShowHeatmap(!showHeatmap)} className={`h-8 w-8 rounded-lg shadow-md flex items-center justify-center transition-colors border ${showHeatmap ? "bg-orange-500 border-orange-400 text-white" : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"}`} title="Toggle heatmap">
           <Flame className="h-4 w-4" />
+        </button>
+        <button onClick={() => setShowMarkers(!showMarkers)} className={`h-8 w-8 rounded-lg shadow-md flex items-center justify-center transition-colors border ${!showMarkers ? "bg-gray-500 border-gray-400 text-white" : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"}`} title={showMarkers ? "Hide markers" : "Show markers"}>
+          {showMarkers ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
         </button>
         <button onClick={handlePrint} className="h-8 w-8 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700" title="Print map">
           <Printer className="h-4 w-4 text-gray-700 dark:text-gray-300" />
