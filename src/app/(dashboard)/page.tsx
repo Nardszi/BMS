@@ -140,65 +140,73 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="relative overflow-hidden border-0 shadow-md transition-shadow hover:shadow-lg">
+        <Card className="relative overflow-hidden border-0 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
           <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 to-blue-600" />
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Residents</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.totalResidents}</p>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400/70">Registered inhabitants</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Residents</p>
+                <p className="mt-1 text-3xl font-extrabold tracking-tight text-foreground">{stats.totalResidents}</p>
+                <div className="mt-1.5 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                  <TrendingUp className="h-3.5 w-3.5" /> Registered inhabitants
+                </div>
               </div>
-              <div className="rounded-xl bg-blue-50 p-3">
-                <Users className="h-6 w-6 text-blue-600" />
+              <div className="rounded-2xl bg-blue-50 dark:bg-blue-950/50 p-3.5 shadow-inner">
+                <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-0 shadow-md transition-shadow hover:shadow-lg">
+        <Card className="relative overflow-hidden border-0 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
           <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 to-amber-500" />
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Certificates</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.pendingCertificates}</p>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400/70">Awaiting approval</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pending Certificates</p>
+                <p className="mt-1 text-3xl font-extrabold tracking-tight text-foreground">{stats.pendingCertificates}</p>
+                <div className="mt-1.5 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+                  <Clock className="h-3.5 w-3.5" /> Awaiting approval
+                </div>
               </div>
-              <div className="rounded-xl bg-amber-50 p-3">
-                <FileText className="h-6 w-6 text-amber-600" />
+              <div className="rounded-2xl bg-amber-50 dark:bg-amber-950/50 p-3.5 shadow-inner">
+                <FileText className="h-6 w-6 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-0 shadow-md transition-shadow hover:shadow-lg">
+        <Card className="relative overflow-hidden border-0 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
           <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-red-500 to-red-600" />
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Open Blotter Cases</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.openBlotterCases}</p>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400/70">Active investigations</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Open Blotter Cases</p>
+                <p className="mt-1 text-3xl font-extrabold tracking-tight text-foreground">{stats.openBlotterCases}</p>
+                <div className="mt-1.5 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400 font-medium">
+                  <AlertTriangle className="h-3.5 w-3.5" /> Active investigations
+                </div>
               </div>
-              <div className="rounded-xl bg-red-50 p-3">
-                <AlertTriangle className="h-6 w-6 text-red-600" />
+              <div className="rounded-2xl bg-red-50 dark:bg-red-950/50 p-3.5 shadow-inner">
+                <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-0 shadow-md transition-shadow hover:shadow-lg">
+        <Card className="relative overflow-hidden border-0 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
           <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-600" />
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Permits</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.activePermits}</p>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400/70">Operating businesses</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Active Permits</p>
+                <p className="mt-1 text-3xl font-extrabold tracking-tight text-foreground">{stats.activePermits}</p>
+                <div className="mt-1.5 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Operating businesses
+                </div>
               </div>
-              <div className="rounded-xl bg-emerald-50 p-3">
-                <Building2 className="h-6 w-6 text-emerald-600" />
+              <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 p-3.5 shadow-inner">
+                <Building2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
           </CardContent>
