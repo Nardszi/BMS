@@ -120,6 +120,13 @@ export default function GISMap({
     [placingPurok]
   );
 
+  const mapCenter = useMemo<[number, number]>(() => {
+    const values = Object.values(coords);
+    const avgLat = values.reduce((s, c) => s + c[0], 0) / values.length;
+    const avgLng = values.reduce((s, c) => s + c[1], 0) / values.length;
+    return [avgLat, avgLng];
+  }, [coords]);
+
   return (
     <div className="space-y-6">
       {/* Map Card */}
@@ -188,15 +195,7 @@ export default function GISMap({
             {puroks.map((p) => {
               const isPlacing = placingPurok === p.purok;
               const hasCoord = !!coords[p.purok];
-  // Auto-calculate center from purok positions
-  const mapCenter = useMemo<[number, number]>(() => {
-    const values = Object.values(coords);
-    const avgLat = values.reduce((s, c) => s + c[0], 0) / values.length;
-    const avgLng = values.reduce((s, c) => s + c[1], 0) / values.length;
-    return [avgLat, avgLng];
-  }, [coords]);
-
-  return (
+              return (
                 <button
                   key={p.purok}
                   onClick={() => setPlacingPurok(isPlacing ? null : p.purok)}
