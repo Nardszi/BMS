@@ -104,6 +104,11 @@ export default function GISMap({
 
       layerGroupRef.current = L.layerGroup().addTo(map);
       mapInstanceRef.current = map;
+
+      // Ensure Leaflet recalculates size after mount
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 150);
     }
 
     return () => {
@@ -255,7 +260,7 @@ export default function GISMap({
 
   return (
     <div className="relative w-full h-[620px] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-xl">
-      <div ref={mapContainerRef} className="w-full h-full z-0" />
+      <div ref={mapContainerRef} className="w-full h-full z-0 absolute inset-0" />
     </div>
   );
 }
