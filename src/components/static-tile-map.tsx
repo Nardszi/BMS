@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import { MapPin, ZoomIn, ZoomOut, Maximize2, Satellite, Map, Trash2, Check, X, Bookmark, BookmarkPlus, Ruler, Search } from "lucide-react";
+import { MapPin, ZoomIn, ZoomOut, Maximize2, Satellite, Map, Trash2, Check, X, Bookmark, BookmarkPlus, Ruler, Search, Printer, Flame } from "lucide-react";
 
 interface MapMarker {
   id: string;
@@ -39,6 +39,7 @@ interface StaticTileMapProps {
   height?: number;
   markers?: MapMarker[];
   polygons?: MapPolygon[];
+  heatmapPoints?: Array<{ lat: number; lng: number; intensity: number }>;
   onMapClick?: (lat: number, lng: number) => void;
   placing?: boolean;
   className?: string;
@@ -81,6 +82,7 @@ export default function StaticTileMap({
   height = 450,
   markers = [],
   polygons = [],
+  heatmapPoints = [],
   onMapClick,
   placing = false,
   className = "",
@@ -138,6 +140,9 @@ export default function StaticTileMap({
   // Search
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+
+  // Heatmap
+  const [showHeatmap, setShowHeatmap] = useState(false);
 
   const tileSize = 256;
   const gridCols = Math.ceil(containerWidth / tileSize) + 2;
@@ -210,6 +215,52 @@ export default function StaticTileMap({
     const px = latLngToPixel(previewMarker.lat, previewMarker.lng, zoom, tileSize);
     return { screenX: px.x - originX, screenY: px.y - originY };
   }, [previewMarker, zoom, tileSize, originX, originY]);
+
+  // Heatmap screen positions
+  const heatmapPositions = useMemo(() => {
+    return heatmapPoints.map((h) => {
+      const px = latLngToPixel(h.lat, h.lng, zoom, tileSize);
+      return { x: px.x - originX, y: px.y - originY, intensity: h.intensity };
+    });
+  }, [heatmapPoints, zoom, tileSize, originX, originY]);
+
+  // Print handler
+  const handlePrint = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = containerWidth * 2;
+    canvas.height = height * 2;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    // Draw a placeholder
+    ctx.fillStyle = "#1a1a2e";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "white";
+    ctx.font = "bold 32px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Barangay IX (Daan Banwa) — GIS Map", canvas.width / 2, 60);
+    ctx.font = "20px sans-serif";
+    ctx.fillText(`${markers.length} puroks • ${center[0].toFixed(4)}°N, ${center[1].toFixed(4)}°E • Zoom ${zoom}`, canvas.width / 2, 100);
+    // Draw marker list
+    ctx.textAlign = "left";
+    ctx.font = "16px sans-serif";
+    markers.forEach((m, i) => {
+      const y = 160 + i * 30;
+      ctx.fillStyle = m.color || "#ef4444";
+      ctx.beginPath();
+      ctx.arc(40, y - 5, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "white";
+      ctx.fillText(`${m.label} — Pop: ${m.population ?? "N/A"} | HH: ${m.households ?? "N/A"} | Biz: ${m.businessCount ?? "N/A"} | Cases: ${m.blotterCount ?? "N/A"}`, 60, y);
+    });
+    const dataUrl = canvas.toDataURL("image/png");
+    printWindow.document.write(`<html><head><title>Barangay IX Map</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#0f172a"><img src="${dataUrl}" style="max-width:100%"/></body></html>`);
+    printWindow.document.close();
+    printWindow.onload = () => { printWindow.print(); };
+  }, [containerWidth, height, markers, center, zoom]);
 
   // Marker size based on zoom
   const markerSize = useMemo(() => {
@@ -390,6 +441,17 @@ export default function StaticTileMap({
                 })()}
               </g>
             ))}
+
+            {/* Heatmap overlay */}
+            {isLoaded && showHeatmap && heatmapPositions.map((h, i) => {
+              const radius = 30 + h.intensity * 40;
+              const opacity = 0.15 + h.intensity * 0.35;
+              return (
+                <circle key={`heat-${i}`} cx={h.x} cy={h.y} r={radius}
+                  fill={`rgba(255, ${Math.round(150 - h.intensity * 150)}, 0, ${opacity})`}
+                  stroke="none" className="pointer-events-none" />
+              );
+            })}
 
             {/* Measurement line */}
             {isLoaded && measureLine && (
@@ -610,6 +672,13 @@ export default function StaticTileMap({
         </button>
         <button onClick={saveBookmark} className="h-8 w-8 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700" title="Save current view">
           <BookmarkPlus className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+        </button>
+        <div className="h-px bg-gray-200 dark:bg-gray-700 my-0.5" />
+        <button onClick={() => setShowHeatmap(!showHeatmap)} className={`h-8 w-8 rounded-lg shadow-md flex items-center justify-center transition-colors border ${showHeatmap ? "bg-orange-500 border-orange-400 text-white" : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"}`} title="Toggle heatmap">
+          <Flame className="h-4 w-4" />
+        </button>
+        <button onClick={handlePrint} className="h-8 w-8 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700" title="Print map">
+          <Printer className="h-4 w-4 text-gray-700 dark:text-gray-300" />
         </button>
       </div>
 

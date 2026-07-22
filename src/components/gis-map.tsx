@@ -130,6 +130,17 @@ export default function GISMap({
       });
   }, [puroks, maxPop, coords]);
 
+  // Heatmap data from population
+  const heatmapPoints = useMemo(() => {
+    return puroks
+      .filter((p) => coords[p.purok])
+      .map((p) => ({
+        lat: coords[p.purok][0],
+        lng: coords[p.purok][1],
+        intensity: p.population / maxPop,
+      }));
+  }, [puroks, maxPop, coords]);
+
   const handleMapClick = useCallback(
     (lat: number, lng: number) => {
       if (!placingPurok) return;
@@ -185,6 +196,7 @@ export default function GISMap({
             height={500}
             markers={mapMarkers}
             polygons={mapPolygons}
+            heatmapPoints={heatmapPoints}
             onMapClick={placingPurok ? handleMapClick : undefined}
             placing={!!placingPurok}
             className="w-full"
