@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { MapPin, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 
 interface StaticTileMapProps {
   center: [number, number]; // [lat, lng]
   zoom?: number;
-  width?: number;
   height?: number;
   markers?: Array<{
     id: string;
@@ -18,118 +17,102 @@ interface StaticTileMapProps {
   className?: string;
 }
 
-// Convert lat/lng to tile coordinates (slippy map tiles)
-function latLngToTile(lat: number, lng: number, zoom: number) {
+// Web Mercator: lat/lng → absolute pixel position at given zoom
+function latLngToPixel(lat: number, lng: number, zoom: number, tileSize: number) {
+  const n = tileSize * Math.pow(2, zoom);
+  const x = (lng + 180) / 360 * n;
   const latRad = (lat * Math.PI) / 180;
-  const n = Math.pow(2, zoom);
-  const x = Math.floor(((lng + 180) / 360) * n);
-  const y = Math.floor(((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n);
+  const y = (1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n;
   return { x, y };
-}
-
-// Convert tile coordinates back to lat/lng (top-left corner)
-function tileToLatLng(x: number, y: number, zoom: number) {
-  const n = Math.pow(2, zoom);
-  const lng = (x / n) * 360 - 180;
-  const latRad = Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / n)));
-  const lat = (latRad * 180) / Math.PI;
-  return { lat, lng };
-}
-
-// Get pixel position for a marker within the tile grid
-function getMarkerPixelPosition(
-  markerLat: number,
-  markerLng: number,
-  centerLat: number,
-  centerLng: number,
-  zoom: number,
-  tileSize: number,
-  gridWidth: number,
-  gridHeight: number
-) {
-  const centerTile = latLngToTile(centerLat, centerLng, zoom);
-  const markerTile = latLngToTile(markerLat, markerLng, zoom);
-
-  // Fractional tile position relative to center
-  const dx = (markerLng - centerLng) / (360 / Math.pow(2, zoom));
-  const latRad = (markerLat * Math.PI) / 180;
-  const dy = -(markerLat - centerLat) / (360 / Math.pow(2, zoom) * Math.cos(latRad) * (Math.PI / 180));
-
-  const pixelX = gridWidth / 2 + dx * tileSize;
-  const pixelY = gridHeight / 2 + dy * tileSize;
-
-  return { x: pixelX, y: pixelY };
 }
 
 export default function StaticTileMap({
   center,
-  zoom: initialZoom = 15,
-  width = 800,
-  height = 500,
+  zoom: initialZoom = 16,
+  height = 450,
   markers = [],
   className = "",
 }: StaticTileMapProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(800);
   const [zoom, setZoom] = useState(initialZoom);
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
 
   const tileSize = 256;
-  const gridCols = Math.ceil(width / tileSize) + 2;
+
+  // Measure container width
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const obs = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerWidth(Math.floor(entry.contentRect.width));
+      }
+    });
+    obs.observe(containerRef.current);
+    return () => obs.disconnect();
+  }, []);
+
+  const gridCols = Math.ceil(containerWidth / tileSize) + 2;
   const gridRows = Math.ceil(height / tileSize) + 2;
 
-  const centerTile = useMemo(() => latLngToTile(center[0], center[1], zoom), [center, zoom]);
+  // Center pixel position
+  const centerPixel = useMemo(
+    () => latLngToPixel(center[0], center[1], zoom, tileSize),
+    [center, zoom, tileSize]
+  );
 
-  // Generate tile URLs in a grid
+  // Top-left tile origin so centerPixel is in the middle of the viewport
+  const originX = useMemo(
+    () => centerPixel.x - (gridCols * tileSize) / 2,
+    [centerPixel, gridCols, tileSize]
+  );
+  const originY = useMemo(
+    () => centerPixel.y - (gridRows * tileSize) / 2,
+    [centerPixel, gridRows, tileSize]
+  );
+
+  // Generate tile URLs
   const tiles = useMemo(() => {
-    const result: Array<{ url: string; x: number; y: number; key: string }> = [];
-    const startX = centerTile.x - Math.floor(gridCols / 2);
-    const startY = centerTile.y - Math.floor(gridRows / 2);
+    const startTileX = Math.floor(originX / tileSize);
+    const startTileY = Math.floor(originY / tileSize);
+    const result: Array<{ url: string; px: number; py: number; key: string }> = [];
 
     for (let row = 0; row < gridRows; row++) {
       for (let col = 0; col < gridCols; col++) {
-        const tileX = startX + col;
-        const tileY = startY + row;
-        // CartoDB basemaps - more permissive CORS policy than OSM
+        const tileX = startTileX + col;
+        const tileY = startTileY + row;
         const url = `https://basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${tileX}/${tileY}@2x.png`;
         result.push({
           url,
-          x: col * tileSize,
-          y: row * tileSize,
+          px: tileX * tileSize - originX,
+          py: tileY * tileSize - originY,
           key: `${zoom}-${tileX}-${tileY}`,
         });
       }
     }
     return result;
-  }, [centerTile, zoom, gridCols, gridRows, tileSize]);
+  }, [originX, originY, zoom, gridCols, gridRows, tileSize]);
 
-  // Calculate marker positions
+  // Marker pixel positions (relative to viewport)
   const markerPositions = useMemo(() => {
-    return markers.map((marker) => {
-      const pos = getMarkerPixelPosition(
-        marker.lat,
-        marker.lng,
-        center[0],
-        center[1],
-        zoom,
-        tileSize,
-        gridCols * tileSize,
-        gridRows * tileSize
-      );
-      return { ...marker, pixelX: pos.x, pixelY: pos.y };
+    return markers.map((m) => {
+      const px = latLngToPixel(m.lat, m.lng, zoom, tileSize);
+      return {
+        ...m,
+        screenX: px.x - originX,
+        screenY: px.y - originY,
+      };
     });
-  }, [markers, center, zoom, tileSize, gridCols, gridRows]);
+  }, [markers, zoom, tileSize, originX, originY]);
 
   const handleZoomIn = () => setZoom((z) => Math.min(19, z + 1));
   const handleZoomOut = () => setZoom((z) => Math.max(10, z - 1));
   const handleReset = () => setZoom(initialZoom);
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 ${className}`}>
-      {/* Tile Grid */}
-      <div
-        className="relative"
-        style={{ width, height, overflow: "hidden" }}
-      >
+    <div ref={containerRef} className={`relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 ${className}`}>
+      <div className="relative" style={{ width: "100%", height, overflow: "hidden" }}>
         {!isLoaded && !loadError && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900 z-10">
             <div className="flex flex-col items-center gap-3">
@@ -144,10 +127,7 @@ export default function StaticTileMap({
             <div className="flex flex-col items-center gap-3 text-center px-4">
               <MapPin className="h-10 w-10 text-gray-400" />
               <p className="text-sm text-gray-500 dark:text-gray-400">Unable to load map tiles</p>
-              <button
-                onClick={() => { setLoadError(false); setIsLoaded(false); }}
-                className="text-xs text-blue-500 hover:text-blue-600 underline"
-              >
+              <button onClick={() => { setLoadError(false); setIsLoaded(false); }} className="text-xs text-blue-500 hover:text-blue-600 underline">
                 Retry
               </button>
             </div>
@@ -156,76 +136,68 @@ export default function StaticTileMap({
 
         <div className="relative" style={{ width: gridCols * tileSize, height: gridRows * tileSize }}>
           {tiles.map((tile) => (
-              <img
-                key={tile.key}
-                src={tile.url}
-                alt=""
-                loading="lazy"
-                onLoad={() => setIsLoaded(true)}
-                onError={() => setLoadError(true)}
+            <img
+              key={tile.key}
+              src={tile.url}
+              alt=""
+              loading="eager"
+              onLoad={() => setIsLoaded(true)}
+              onError={() => setLoadError(true)}
               className="absolute"
-              style={{
-                left: tile.x,
-                top: tile.y,
-                width: tileSize,
-                height: tileSize,
-              }}
+              style={{ left: tile.px, top: tile.py, width: tileSize, height: tileSize }}
               draggable={false}
             />
           ))}
 
-          {/* Markers overlay */}
-          {isLoaded && markerPositions.map((marker) => (
+          {/* Markers */}
+          {isLoaded && markerPositions.map((m) => (
             <div
-              key={marker.id}
-              className="absolute group"
-              style={{
-                left: marker.pixelX,
-                top: marker.pixelY,
-                transform: "translate(-50%, -100%)",
-              }}
+              key={m.id}
+              className="absolute group z-10"
+              style={{ left: m.screenX, top: m.screenY, transform: "translate(-50%, -100%)" }}
             >
-              <div
-                className="relative cursor-pointer"
-                title={marker.label}
-              >
-                <MapPin
-                  className="h-6 w-6 drop-shadow-lg"
-                  style={{ color: marker.color || "#ef4444" }}
-                  fill={marker.color || "#ef4444"}
-                />
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
-                  <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
-                    {marker.label}
-                  </div>
+              <MapPin
+                className="h-7 w-7 drop-shadow-lg transition-transform group-hover:scale-125"
+                style={{ color: m.color || "#ef4444" }}
+                fill={m.color || "#ef4444"}
+                strokeWidth={0}
+              />
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30">
+                <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-medium">
+                  {m.label}
                 </div>
               </div>
             </div>
           ))}
+
+          {/* Center crosshair */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-5">
+            <div className="w-4 h-4 border-2 border-red-500/60 rounded-full" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 bg-red-500 rounded-full" />
+          </div>
         </div>
       </div>
 
-      {/* Controls */}
+      {/* Zoom controls */}
       <div className="absolute top-3 right-3 flex flex-col gap-1 z-20">
-        <button
-          onClick={handleZoomIn}
-          className="h-8 w-8 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
-        >
+        <button onClick={handleZoomIn} className="h-8 w-8 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700">
           <ZoomIn className="h-4 w-4 text-gray-700 dark:text-gray-300" />
         </button>
-        <button
-          onClick={handleZoomOut}
-          className="h-8 w-8 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
-        >
+        <button onClick={handleZoomOut} className="h-8 w-8 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700">
           <ZoomOut className="h-4 w-4 text-gray-700 dark:text-gray-300" />
         </button>
-        <button
-          onClick={handleReset}
-          className="h-8 w-8 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
-        >
+        <button onClick={handleReset} className="h-8 w-8 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700">
           <Maximize2 className="h-4 w-4 text-gray-700 dark:text-gray-300" />
         </button>
+      </div>
+
+      {/* Coordinates */}
+      <div className="absolute top-3 left-3 z-20">
+        <div className="bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+          <span className="text-[11px] font-mono text-gray-600 dark:text-gray-300">
+            {center[0].toFixed(4)}°N, {center[1].toFixed(4)}°E • Zoom {zoom}
+          </span>
+        </div>
       </div>
 
       {/* Attribution */}
@@ -233,15 +205,6 @@ export default function StaticTileMap({
         <span className="text-[10px] bg-white/80 dark:bg-gray-800/80 px-1.5 py-0.5 rounded text-gray-500 dark:text-gray-400">
           © <a href="https://carto.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-700 dark:hover:text-gray-200">CARTO</a> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-700 dark:hover:text-gray-200">OpenStreetMap</a>
         </span>
-      </div>
-
-      {/* Coordinates display */}
-      <div className="absolute top-3 left-3 z-20">
-        <div className="bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-          <span className="text-[11px] font-mono text-gray-600 dark:text-gray-300">
-            {center[0].toFixed(4)}°N, {center[1].toFixed(4)}°E
-          </span>
-        </div>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Building2, ShieldAlert, Home, MapPin, ExternalLink, ArrowUpRight, Compass, Navigation } from "lucide-react";
+import { Users, Building2, ShieldAlert, Home, MapPin, ExternalLink, ArrowUpRight, Navigation } from "lucide-react";
 import StaticTileMap from "@/components/static-tile-map";
 
 interface PurokData {
@@ -94,32 +94,13 @@ export default function GISMap({
       {/* Live Map Preview with OpenStreetMap Tiles */}
       <Card className="border-0 shadow-xl overflow-hidden rounded-2xl">
         <CardContent className="p-0">
-          <div className="relative">
-            <StaticTileMap
-              center={[10.9042, 123.0611]}
-              zoom={15}
-              width={1200}
-              height={450}
-              markers={mapMarkers}
-              className="w-full"
-            />
-            {/* Overlay info panel */}
-            <div className="absolute top-4 left-16 z-10 max-w-sm">
-              <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Compass className="h-4 w-4 text-blue-500" />
-                  <h3 className="font-bold text-sm text-gray-900 dark:text-white">Barangay IX (Daan Banwa)</h3>
-                </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                  23.24 hectares • Malijao River • Western Nautical Highway
-                </p>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <span className="text-[10px] bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">Postal: 6119</span>
-                  <span className="text-[10px] bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full">10 Zones</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <StaticTileMap
+            center={[10.9042, 123.0611]}
+            zoom={16}
+            height={450}
+            markers={mapMarkers}
+            className="w-full"
+          />
         </CardContent>
       </Card>
 
