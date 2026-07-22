@@ -5,30 +5,29 @@ import { prisma } from "@/lib/prisma";
 
 // Geocoordinates for Puroks in Barangay IX - Daan Banwa, Victorias City, Negros Occidental
 // Official barangay center: 10.9042, 123.0611 (PhilAtlas/Victorias City)
-// Land area: 23.24 hectares (~550m x 420m, elongated N-S)
-// Spacing: ~150-180m between purok centers
+// Spacing: well-distributed across Barangay IX
 const PUROK_COORDINATES: Record<string, [number, number]> = {
-  "1": [10.9062, 123.0598],  // Far northwest
-  "2": [10.9062, 123.0614],  // Far north-center
-  "3": [10.9062, 123.0630],  // Far northeast
-  "4": [10.9047, 123.0593],  // West
-  "5": [10.9047, 123.0611],  // Center-west
-  "6": [10.9047, 123.0628],  // Center-east
-  "7": [10.9032, 123.0598],  // South-west
-  "8": [10.9032, 123.0614],  // South-center
-  "9": [10.9032, 123.0630],  // South-east
-  "10": [10.9017, 123.0614], // Far south
+  "1": [10.9080, 123.0585],  // Northwest
+  "2": [10.9080, 123.0611],  // North
+  "3": [10.9080, 123.0637],  // Northeast
+  "4": [10.9042, 123.0575],  // West
+  "5": [10.9042, 123.0611],  // Center
+  "6": [10.9042, 123.0647],  // East
+  "7": [10.9004, 123.0585],  // Southwest
+  "8": [10.9004, 123.0611],  // South
+  "9": [10.9004, 123.0637],  // Southeast
+  "10": [10.8966, 123.0611], // Far south
 };
 
-// Deterministic pseudo-random offset for placing markers within a purok area
+// Deterministic pseudo-random offset for placing markers within a purok area (smaller offset to prevent overlapping outside purok)
 function getOffsetCoords(baseLat: number, baseLng: number, seed: string): [number, number] {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     hash = (hash << 5) - hash + seed.charCodeAt(i);
     hash |= 0;
   }
-  const latOffset = (((hash % 1000) / 1000) - 0.5) * 0.003;
-  const lngOffset = ((((hash >> 3) % 1000) / 1000) - 0.5) * 0.003;
+  const latOffset = (((hash % 1000) / 1000) - 0.5) * 0.0008;
+  const lngOffset = ((((hash >> 3) % 1000) / 1000) - 0.5) * 0.0008;
   return [baseLat + latOffset, baseLng + lngOffset];
 }
 

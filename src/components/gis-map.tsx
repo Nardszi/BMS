@@ -72,7 +72,7 @@ export default function GISMap({
     if (!mapInstanceRef.current) {
       const map = L.map(mapContainerRef.current, {
         center: center,
-        zoom: 15,
+        zoom: 17,
         zoomControl: true,
       });
 
@@ -225,10 +225,10 @@ export default function GISMap({
     if (selectedPurok && selectedPurok !== "all") {
       const targetPurok = puroks.find((p) => p.purok === selectedPurok);
       if (targetPurok) {
-        map.flyTo(targetPurok.center, 16, { duration: 1 });
+        map.flyTo(targetPurok.center, 18, { duration: 1 });
       }
     } else {
-      map.flyTo(center, 15, { duration: 1 });
+      map.flyTo(center, 17, { duration: 1 });
     }
   }, [puroks, permits, blotters, activeLayer, selectedPurok, center, onSelectPurok]);
 
