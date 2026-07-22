@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Building2, ShieldAlert, Home, MapPin, ExternalLink, ArrowUpRight, Navigation, Target, X, Check, Settings } from "lucide-react";
 import StaticTileMap from "@/components/static-tile-map";
@@ -96,6 +96,15 @@ export default function GISMap({
         blotterCount: p.blotterCount,
       }));
   }, [puroks, maxPop, coords]);
+
+  const handleMapClick = useCallback(
+    (lat: number, lng: number) => {
+      if (!placingPurok) return;
+      setCoords((prev) => ({ ...prev, [placingPurok]: [lat, lng] }));
+      setPlacingPurok(null);
+    },
+    [placingPurok]
+  );
 
   return (
     <div className="space-y-6">
@@ -217,15 +226,7 @@ export default function GISMap({
             const ratio = p.population / maxPop;
             const bgIntensity = ratio > 0.7 ? "bg-red-950/80 border-red-500/50" : ratio > 0.4 ? "bg-amber-950/80 border-amber-500/50" : "bg-blue-950/80 border-blue-500/50";
 
-  const handleMapClick = useMemo(() => {
-    return (lat: number, lng: number) => {
-      if (!placingPurok) return;
-      setCoords((prev) => ({ ...prev, [placingPurok]: [lat, lng] }));
-      setPlacingPurok(null);
-    };
-  }, [placingPurok]);
-
-  return (
+            return (
               <div
                 key={p.purok}
                 onClick={() => onSelectPurok(isSelected ? "all" : p.purok)}
