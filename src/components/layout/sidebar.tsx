@@ -85,37 +85,37 @@ export function Sidebar() {
     <div className="flex h-full flex-col bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
       <div className={cn(
-        "relative flex items-center border-b border-white/10 px-4 py-5 transition-all",
-        collapsed ? "justify-center" : "gap-3"
+        "relative flex items-center border-b border-white/10 px-3.5 py-3.5 transition-all flex-shrink-0",
+        collapsed ? "justify-center" : "gap-2.5"
       )}>
-        <div className="relative h-10 w-10 flex-shrink-0 rounded-xl bg-white p-1 shadow-lg">
+        <div className="relative h-8 w-8 flex-shrink-0 rounded-lg bg-white p-0.5 shadow-md">
           <Image src="/barangay-seal.png" alt="Barangay Seal" fill className="object-contain" />
         </div>
         {!collapsed && (
-          <div className="min-w-0">
-            <p className="text-sm font-bold text-white tracking-wide">Barangay IX</p>
-            <p className="text-xs text-slate-400">Daan Banwa, Victorias City</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold text-white tracking-wide truncate">Barangay IX</p>
+            <p className="text-[10px] text-slate-400 truncate">Daan Banwa, Victorias City</p>
           </div>
         )}
         {/* Active indicator dot */}
-        <div className="absolute right-3 top-3 h-2 w-2 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50" />
+        <div className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50" />
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin">
+      <nav className="flex-1 min-h-0 overflow-y-auto px-2.5 py-2.5 scrollbar-thin">
         {groupOrder.map((group) => {
           const items = groupedItems[group];
           if (!items) return null;
 
           return (
-            <div key={group} className="mb-4">
+            <div key={group} className="mb-2">
               {!collapsed && (
-                <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+                <p className="mb-1 px-2.5 text-[9px] font-bold uppercase tracking-widest text-slate-500">
                   {group}
                 </p>
               )}
-              {collapsed && <div className="mx-auto mb-2 h-px w-6 bg-slate-700" />}
-              <div className="space-y-1">
+              {collapsed && <div className="mx-auto mb-1.5 h-px w-5 bg-slate-700" />}
+              <div className="space-y-0.5">
                 {items.map((item) => {
                   const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
                   return (
@@ -123,9 +123,9 @@ export function Sidebar() {
                       <Link
                         href={item.href}
                         className={cn(
-                          "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                          "group relative flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200",
                           isActive
-                            ? "bg-white/10 text-white shadow-lg shadow-black/10"
+                            ? "bg-white/10 text-white shadow-md shadow-black/10"
                             : "text-slate-400 hover:bg-white/5 hover:text-white",
                           collapsed && "justify-center px-2"
                         )}
@@ -134,20 +134,20 @@ export function Sidebar() {
                       >
                         {/* Active indicator */}
                         {isActive && (
-                          <div className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-blue-400 shadow-lg shadow-blue-400/50" />
+                          <div className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-blue-400 shadow-md shadow-blue-400/50" />
                         )}
 
                         <item.icon className={cn(
-                          "h-5 w-5 flex-shrink-0 transition-all duration-200",
+                          "h-4 w-4 flex-shrink-0 transition-all duration-200",
                           isActive ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300",
-                          !collapsed && isActive && "scale-110"
+                          !collapsed && isActive && "scale-105"
                         )} />
 
                         {!collapsed && (
                           <>
-                            <span className="flex-1">{item.label}</span>
+                            <span className="flex-1 truncate">{item.label}</span>
                             {item.badge && item.badge > 0 && (
-                              <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white shadow-lg shadow-red-500/30">
+                              <span className="flex h-4 min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-md shadow-red-500/30">
                                 {item.badge}
                               </span>
                             )}
@@ -156,7 +156,7 @@ export function Sidebar() {
 
                         {/* Tooltip for collapsed state */}
                         {collapsed && hoveredItem === item.href && (
-                          <div className="absolute left-full ml-3 z-50 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white shadow-xl whitespace-nowrap">
+                          <div className="absolute left-full ml-2.5 z-50 rounded-md bg-slate-900 px-2.5 py-1 text-xs font-medium text-white shadow-xl whitespace-nowrap">
                             {item.label}
                             <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
                           </div>
@@ -173,24 +173,24 @@ export function Sidebar() {
 
       {/* User Section */}
       <div className={cn(
-        "border-t border-white/10 transition-all",
-        collapsed ? "p-3" : "p-4"
+        "border-t border-white/10 transition-all flex-shrink-0",
+        collapsed ? "p-2" : "p-3"
       )}>
         <div className={cn(
-          "flex items-center rounded-xl bg-white/5 p-3 transition-all",
-          collapsed ? "justify-center" : "gap-3"
+          "flex items-center rounded-lg bg-white/5 p-2 transition-all",
+          collapsed ? "justify-center" : "gap-2.5"
         )}>
           <div className="relative flex-shrink-0">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-sm font-bold text-white shadow-lg shadow-blue-500/30">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-xs font-bold text-white shadow-md shadow-blue-500/30">
               {session?.user?.name?.charAt(0) || "U"}
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-slate-800 bg-emerald-400" />
+            <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-800 bg-emerald-400" />
           </div>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-white">{session?.user?.name}</p>
+              <p className="truncate text-xs font-semibold text-white">{session?.user?.name}</p>
               <span className={cn(
-                "mt-0.5 inline-block rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                "mt-0.5 inline-block rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
                 roleColors[userRole] || "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200"
               )}>
                 {userRole}
@@ -199,29 +199,31 @@ export function Sidebar() {
           )}
         </div>
 
-        <Link
-          href="/profile"
-          className={cn(
-            "mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
-            "text-slate-400 hover:bg-white/5 hover:text-white",
-            collapsed && "justify-center px-2"
-          )}
-        >
-          <User className="h-4 w-4" />
-          {!collapsed && <span>Profile</span>}
-        </Link>
+        <div className="mt-1.5 space-y-0.5">
+          <Link
+            href="/profile"
+            className={cn(
+              "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200",
+              "text-slate-400 hover:bg-white/5 hover:text-white",
+              collapsed && "justify-center px-2"
+            )}
+          >
+            <User className="h-3.5 w-3.5" />
+            {!collapsed && <span>Profile</span>}
+          </Link>
 
-        <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className={cn(
-            "mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
-            "text-slate-400 hover:bg-red-500/10 hover:text-red-400",
-            collapsed && "justify-center px-2"
-          )}
-        >
-          <LogOut className="h-4 w-4" />
-          {!collapsed && <span>Sign Out</span>}
-        </button>
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className={cn(
+              "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200",
+              "text-slate-400 hover:bg-red-500/10 hover:text-red-400",
+              collapsed && "justify-center px-2"
+            )}
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            {!collapsed && <span>Sign Out</span>}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -263,14 +265,14 @@ export function Sidebar() {
 
       {/* Desktop sidebar */}
       <aside className={cn(
-        "hidden flex-shrink-0 transition-all duration-300 ease-out md:block",
-        collapsed ? "w-[76px]" : "w-72"
+        "hidden flex-shrink-0 transition-all duration-300 ease-out md:block h-screen sticky top-0",
+        collapsed ? "w-[68px]" : "w-64"
       )}>
         <div className="relative h-full">
           {sidebarContent}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="absolute -right-3 top-7 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 shadow-md transition-all duration-200 hover:text-slate-600 hover:shadow-lg"
+            className="absolute -right-3 top-5 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 shadow-md transition-all duration-200 hover:text-slate-600 hover:shadow-lg"
           >
             <ChevronLeft className={cn("h-3.5 w-3.5 transition-transform duration-300", collapsed && "rotate-180")} />
           </button>
