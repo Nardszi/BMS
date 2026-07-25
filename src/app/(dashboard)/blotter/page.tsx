@@ -79,9 +79,12 @@ export default function BlotterPage() {
   const role = session?.user?.role ?? "";
   const canCreate = ["ADMIN", "SECRETARY", "KAGAWAD"].includes(role);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<BlotterForm>({
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<BlotterForm>({
     resolver: zodResolver(blotterSchema),
+    mode: "onChange",
   });
+
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchBlotters = useCallback(async () => {
     const params = new URLSearchParams();
@@ -96,11 +99,13 @@ export default function BlotterPage() {
   useEffect(() => { fetchBlotters(); }, [fetchBlotters]);
 
   async function onSubmit(data: BlotterForm) {
+    setSubmitting(true);
     const res = await fetch("/api/blotter", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
+    setSubmitting(false);
     if (res.ok) {
       toast({ title: "Blotter Report Filed", variant: "success" });
       setOpen(false);
@@ -277,11 +282,8 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                   </div>
                   <div className="space-y-2">
                     <Label>Incident Type</Label>
-                    <Select onValueChange={(v) => {
-                      const field = register("incidentType");
-                      field.onChange({ target: { value: v } });
-                    }}>
-                      <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                    <Select onValueChange={(v) => setValue("incidentType", v, { shouldValidate: true })}>
+                      <SelectTrigger className={errors.incidentType ? "border-red-500 ring-red-500/30" : ""}><SelectValue placeholder="Select type" /></SelectTrigger>
                       <SelectContent className="z-[100]">
                         {INCIDENT_TYPES.map((t) => (
                           <SelectItem key={t} value={t}>{t}</SelectItem>
@@ -304,7 +306,9 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                   <Textarea {...register("narrative")} rows={5} placeholder="Describe the incident in detail..." />
                   {errors.narrative && <p className="text-sm text-red-500">{errors.narrative.message}</p>}
                 </div>
-                <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800">File Report</Button>
+                <Button type="submit" disabled={submitting} className="w-full bg-blue-900 hover:bg-blue-800">
+                  {submitting ? "Filing Report..." : "File Report"}
+                </Button>
               </form>
             </DialogContent>
           </Dialog>

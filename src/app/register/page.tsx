@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { PUROK_OPTIONS, BARANGAY_CITY, BARANGAY_PROVINCE } from "@/lib/constants";
 
-const phoneRegex = /^(09|\+639)\d{9}$/;
+const phoneRegex = /^(\+639\d{2}-\d{3}-\d{4}|09\d{2}-\d{3}-\d{4})$/;
 
 const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required").max(50),

@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
     const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "10")));
+    const limit = Math.min(10000, Math.max(1, parseInt(searchParams.get("limit") || "10")));
     const purok = searchParams.get("purok") || "";
     const status = searchParams.get("status") || "";
     const sortBy = searchParams.get("sortBy") || "lastName";

@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         civilStatus: body.civilStatus,
         householdId: household.id,
         occupation: body.occupation || null,
-        contactNumber: body.contactNumber,
+        contactNumber: body.contactNumber.replace(/\D/g, ""),
         emergencyContact: body.emergencyContact || null,
         emergencyPhone: body.emergencyPhone || null,
         isRegisteredVoter: body.isRegisteredVoter || false,

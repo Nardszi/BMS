@@ -70,8 +70,11 @@ export default function CertificatesPage() {
   const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "SECRETARY"].includes(role);
 
+  const [submitting, setSubmitting] = useState(false);
+
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<CertForm>({
     resolver: zodResolver(certSchema),
+    mode: "onChange",
   });
 
   const fetchCertificates = async () => {
@@ -90,11 +93,13 @@ export default function CertificatesPage() {
   useEffect(() => { fetchCertificates(); fetchResidents(); }, []);
 
   async function onSubmit(data: CertForm) {
+    setSubmitting(true);
     const res = await fetch("/api/certificates", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
+    setSubmitting(false);
     if (res.ok) {
       toast({ title: "Certificate Request Created", variant: "success" });
       setOpen(false);
@@ -267,8 +272,8 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label>Resident</Label>
-                <Select onValueChange={(v) => setValue("residentId", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select resident" /></SelectTrigger>
+                <Select onValueChange={(v) => setValue("residentId", v, { shouldValidate: true })}>
+                  <SelectTrigger className={errors.residentId ? "border-red-500 ring-red-500/30" : ""}><SelectValue placeholder="Select resident" /></SelectTrigger>
                   <SelectContent>
                     {residents.map((r) => (
                       <SelectItem key={r.id} value={r.id}>
@@ -281,8 +286,8 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
               </div>
               <div className="space-y-2">
                 <Label>Certificate Type</Label>
-                <Select onValueChange={(v) => setValue("type", v as "CLEARANCE" | "RESIDENCY" | "INDIGENCY" | "BUSINESS_PERMIT")}>
-                  <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                <Select onValueChange={(v) => setValue("type", v as "CLEARANCE" | "RESIDENCY" | "INDIGENCY" | "BUSINESS_PERMIT", { shouldValidate: true })}>
+                  <SelectTrigger className={errors.type ? "border-red-500 ring-red-500/30" : ""}><SelectValue placeholder="Select type" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="CLEARANCE">Barangay Clearance</SelectItem>
                     <SelectItem value="RESIDENCY">Certificate of Residency</SelectItem>
@@ -297,7 +302,9 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                 <Textarea {...register("purpose")} placeholder="Purpose of the certificate..." />
                 {errors.purpose && <p className="text-sm text-red-500">{errors.purpose.message}</p>}
               </div>
-              <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800">Submit Request</Button>
+              <Button type="submit" disabled={submitting} className="w-full bg-blue-900 hover:bg-blue-800">
+                {submitting ? "Submitting..." : "Submit Request"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
