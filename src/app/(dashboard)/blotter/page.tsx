@@ -22,6 +22,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { BARANGAY_FULL_NAME, BARANGAY_CITY, BARANGAY_PROVINCE } from "@/lib/constants";
+import { escapeHtml } from "@/lib/sanitize";
 
 const blotterSchema = z.object({
   complainantName: z.string().min(1, "Complainant name is required").max(200),
@@ -160,25 +161,25 @@ export default function BlotterPage() {
         </div>
         <h2 style="text-align:center;font-size:18px;font-weight:700;text-transform:uppercase;text-decoration:underline;margin-bottom:20px">Blotter Report</h2>
         <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px">
-          <tr><td style="padding:6px 0;font-weight:700;width:160px">Case Number:</td><td style="padding:6px 0">${b.caseNumber}</td></tr>
+          <tr><td style="padding:6px 0;font-weight:700;width:160px">Case Number:</td><td style="padding:6px 0">${escapeHtml(b.caseNumber)}</td></tr>
           <tr><td style="padding:6px 0;font-weight:700">Date of Incident:</td><td style="padding:6px 0">${new Date(b.incidentDate).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}</td></tr>
-          <tr><td style="padding:6px 0;font-weight:700">Type of Incident:</td><td style="padding:6px 0">${b.incidentType}</td></tr>
-          <tr><td style="padding:6px 0;font-weight:700">Location:</td><td style="padding:6px 0">${b.location || "N/A"}</td></tr>
-          <tr><td style="padding:6px 0;font-weight:700">Status:</td><td style="padding:6px 0">${b.status}</td></tr>
-          <tr><td style="padding:6px 0;font-weight:700">Handled By:</td><td style="padding:6px 0">${b.handledBy?.name || "N/A"}</td></tr>
+          <tr><td style="padding:6px 0;font-weight:700">Type of Incident:</td><td style="padding:6px 0">${escapeHtml(b.incidentType)}</td></tr>
+          <tr><td style="padding:6px 0;font-weight:700">Location:</td><td style="padding:6px 0">${escapeHtml(b.location || "N/A")}</td></tr>
+          <tr><td style="padding:6px 0;font-weight:700">Status:</td><td style="padding:6px 0">${escapeHtml(b.status)}</td></tr>
+          <tr><td style="padding:6px 0;font-weight:700">Handled By:</td><td style="padding:6px 0">${escapeHtml(b.handledBy?.name || "N/A")}</td></tr>
         </table>
         <div style="margin-bottom:20px">
           <p style="font-weight:700;font-size:13px;margin-bottom:4px">Complainant:</p>
-          <p style="font-size:13px;margin:0 0 12px">${b.complainantName}</p>
+          <p style="font-size:13px;margin:0 0 12px">${escapeHtml(b.complainantName)}</p>
           <p style="font-weight:700;font-size:13px;margin-bottom:4px">Respondent:</p>
-          <p style="font-size:13px;margin:0 0 12px">${b.respondentName}</p>
-          ${b.witnesses ? `<p style="font-weight:700;font-size:13px;margin-bottom:4px">Witnesses:</p><p style="font-size:13px;margin:0 0 12px">${b.witnesses}</p>` : ""}
+          <p style="font-size:13px;margin:0 0 12px">${escapeHtml(b.respondentName)}</p>
+          ${b.witnesses ? `<p style="font-weight:700;font-size:13px;margin-bottom:4px">Witnesses:</p><p style="font-size:13px;margin:0 0 12px">${escapeHtml(b.witnesses)}</p>` : ""}
         </div>
         <div style="margin-bottom:20px">
           <p style="font-weight:700;font-size:13px;margin-bottom:4px">Narrative:</p>
-          <p style="font-size:13px;line-height:1.6;text-align:justify;margin:0">${b.narrative}</p>
+          <p style="font-size:13px;line-height:1.6;text-align:justify;margin:0">${escapeHtml(b.narrative)}</p>
         </div>
-        ${b.resolutionNotes ? `<div style="margin-bottom:20px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:12px"><p style="font-weight:700;font-size:13px;margin-bottom:4px">Resolution Notes:</p><p style="font-size:13px;line-height:1.6;margin:0">${b.resolutionNotes}</p></div>` : ""}
+        ${b.resolutionNotes ? `<div style="margin-bottom:20px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:12px"><p style="font-weight:700;font-size:13px;margin-bottom:4px">Resolution Notes:</p><p style="font-size:13px;line-height:1.6;margin:0">${escapeHtml(b.resolutionNotes)}</p></div>` : ""}
         <div style="border-top:1px solid #ccc;padding-top:12px;margin-top:40px;display:flex;justify-content:space-between;font-size:12px;color:#666">
           <span>Date Filed: ${new Date(b.createdAt).toLocaleDateString("en-PH")}</span>
           <span>${BARANGAY_FULL_NAME}</span>

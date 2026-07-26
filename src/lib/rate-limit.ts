@@ -34,7 +34,7 @@ if (typeof setInterval !== "undefined") {
 
 // Predefined rate limits
 export const RATE_LIMITS = {
-  auth: { windowMs: 15 * 60 * 1000, maxRequests: 20 }, // 20 attempts per 15 min
+  auth: { windowMs: 15 * 60 * 1000, maxRequests: 5 }, // 5 attempts per 15 min
   api: { windowMs: 60 * 1000, maxRequests: 60 }, // 60 requests per minute
   register: { windowMs: 60 * 60 * 1000, maxRequests: 10 }, // 10 registrations per hour
 } as const;

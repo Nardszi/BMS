@@ -22,6 +22,7 @@ import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { escapeHtml } from "@/lib/sanitize";
 
 const certSchema = z.object({
   residentId: z.string().min(1, "Resident is required"),
@@ -140,21 +141,24 @@ export default function CertificatesPage() {
 
   function buildCertHTML(cert: Certificate) {
     const r = cert.resident;
-    const fullName = `${r.lastName}, ${r.firstName}${r.middleName ? ` ${r.middleName}` : ""}`;
+    const fullName = escapeHtml(`${r.lastName}, ${r.firstName}${r.middleName ? ` ${r.middleName}` : ""}`);
     const birthDate = new Date(r.birthDate).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
     const typeLabel: Record<string, string> = { CLEARANCE: "BARANGAY CLEARANCE", RESIDENCY: "CERTIFICATE OF RESIDENCY", INDIGENCY: "CERTIFICATE OF INDIGENCY", BUSINESS_PERMIT: "BUSINESS PERMIT CERTIFICATE" };
     const baseUrl = window.location.origin;
     const seal = `${baseUrl}/barangay-seal.png`;
+    const address = escapeHtml(r.household.address);
+    const purok = escapeHtml(r.household.purok);
+    const purpose = escapeHtml(cert.purpose);
 
     let body = "";
     if (cert.type === "CLEARANCE") {
-      body = `<p>TO WHOM IT MAY CONCERN:</p><p style="text-align:justify;text-indent:48px">This is to certify that <strong>${fullName}</strong>, of legal age, Filipino, and a resident of <strong>${r.household.address}, Purok ${r.household.purok}</strong>, this barangay, is a person of good moral character and has no pending case or criminal record in this barangay as of this date.</p><p style="text-align:justify;text-indent:48px">This certification is being issued at the request of the interested party for <strong>${cert.purpose}</strong>.</p>`;
+      body = `<p>TO WHOM IT MAY CONCERN:</p><p style="text-align:justify;text-indent:48px">This is to certify that <strong>${fullName}</strong>, of legal age, Filipino, and a resident of <strong>${address}, Purok ${purok}</strong>, this barangay, is a person of good moral character and has no pending case or criminal record in this barangay as of this date.</p><p style="text-align:justify;text-indent:48px">This certification is being issued at the request of the interested party for <strong>${purpose}</strong>.</p>`;
     } else if (cert.type === "RESIDENCY") {
-      body = `<p>TO WHOM IT MAY CONCERN:</p><p style="text-align:justify;text-indent:48px">This is to certify that <strong>${fullName}</strong>, ${birthDate}, ${r.gender.toLowerCase()}, ${r.civilStatus.toLowerCase()}, Filipino, is a bonafide resident of <strong>${r.household.address}, Purok ${r.household.purok}</strong>, Barangay IX - Daan Banwa, City of Victorias, Negros Occidental.</p><p style="text-align:justify;text-indent:48px">This certification is issued upon request of the interested party for <strong>${cert.purpose}</strong>.</p>`;
+      body = `<p>TO WHOM IT MAY CONCERN:</p><p style="text-align:justify;text-indent:48px">This is to certify that <strong>${fullName}</strong>, ${birthDate}, ${r.gender.toLowerCase()}, ${r.civilStatus.toLowerCase()}, Filipino, is a bonafide resident of <strong>${address}, Purok ${purok}</strong>, Barangay IX - Daan Banwa, City of Victorias, Negros Occidental.</p><p style="text-align:justify;text-indent:48px">This certification is issued upon request of the interested party for <strong>${purpose}</strong>.</p>`;
     } else if (cert.type === "INDIGENCY") {
-      body = `<p>TO WHOM IT MAY CONCERN:</p><p style="text-align:justify;text-indent:48px">This is to certify that <strong>${fullName}</strong>, of legal age, Filipino, and a resident of <strong>${r.household.address}, Purok ${r.household.purok}</strong>, this barangay, belongs to an indigent family and is considered a beneficiary of the barangay's social welfare programs.</p><p style="text-align:justify;text-indent:48px">This certification is being issued at the request of the interested party for <strong>${cert.purpose}</strong>.</p>`;
+      body = `<p>TO WHOM IT MAY CONCERN:</p><p style="text-align:justify;text-indent:48px">This is to certify that <strong>${fullName}</strong>, of legal age, Filipino, and a resident of <strong>${address}, Purok ${purok}</strong>, this barangay, belongs to an indigent family and is considered a beneficiary of the barangay's social welfare programs.</p><p style="text-align:justify;text-indent:48px">This certification is being issued at the request of the interested party for <strong>${purpose}</strong>.</p>`;
     } else {
-      body = `<p>TO WHOM IT MAY CONCERN:</p><p style="text-align:justify;text-indent:48px">This is to certify that <strong>${fullName}</strong> has been granted permission to operate a business establishment within the jurisdiction of Barangay IX - Daan Banwa, City of Victorias, Negros Occidental, subject to the terms and conditions provided under existing barangay ordinances.</p><p style="text-align:justify;text-indent:48px">This certificate is issued for <strong>${cert.purpose}</strong>.</p>`;
+      body = `<p>TO WHOM IT MAY CONCERN:</p><p style="text-align:justify;text-indent:48px">This is to certify that <strong>${fullName}</strong> has been granted permission to operate a business establishment within the jurisdiction of Barangay IX - Daan Banwa, City of Victorias, Negros Occidental, subject to the terms and conditions provided under existing barangay ordinances.</p><p style="text-align:justify;text-indent:48px">This certificate is issued for <strong>${purpose}</strong>.</p>`;
     }
 
     return `<div style="position:relative;overflow:hidden;background:#fff;width:8.5in;min-height:11in;padding:1in 1.2in;font-family:'Times New Roman',Times,serif;color:#1a1a1a;box-sizing:border-box">
