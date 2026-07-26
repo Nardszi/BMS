@@ -30,6 +30,7 @@ export async function GET(request: Request) {
       where,
       include: { handledBy: true },
       orderBy: { createdAt: "desc" },
+      take: 10000,
     });
 
     const [totalCount, openCount, resolvedCount, escalatedCount] = await Promise.all([

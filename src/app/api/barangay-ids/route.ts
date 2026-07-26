@@ -28,6 +28,7 @@ export async function GET(request: Request) {
       where,
       include: { resident: { include: { household: true } }, issuedBy: true },
       orderBy: { createdAt: "desc" },
+      take: 10000,
     });
 
     return NextResponse.json(ids);

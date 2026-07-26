@@ -25,6 +25,7 @@ export async function GET(request: Request) {
         issuedBy: { select: { id: true, name: true, role: true } },
       },
       orderBy: { createdAt: "desc" },
+      take: 10000,
     });
 
     return NextResponse.json(certificates);

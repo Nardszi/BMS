@@ -85,7 +85,7 @@ export default function CertificatesPage() {
   };
 
   const fetchResidents = async () => {
-    const res = await fetch("/api/residents?limit=1000");
+    const res = await fetch("/api/residents?limit=10000");
     const data = await res.json();
     setResidents(data.residents || []);
   };

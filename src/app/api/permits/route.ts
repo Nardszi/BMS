@@ -45,6 +45,7 @@ export async function GET(request: Request) {
       where,
       include: { owner: true },
       orderBy: { createdAt: "desc" },
+      take: 10000,
     });
 
     const now = new Date();
