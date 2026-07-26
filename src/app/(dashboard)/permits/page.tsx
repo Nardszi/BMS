@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
-import { Plus, AlertTriangle, Eye, Search, FileText, RotateCcw, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Plus, AlertTriangle, Eye, Search, FileText, RotateCcw, CheckCircle, XCircle, Clock, Trash2 } from "lucide-react";
 import { PermitPDF, buildPermitHTML } from "@/components/permit-pdf";
 
 const permitSchema = z.object({
@@ -76,6 +76,7 @@ export default function PermitsPage() {
   const [loading, setLoading] = useState(true);
   const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "TREASURER"].includes(role);
+  const canDelete = role === "ADMIN";
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<PermitForm>({
     resolver: zodResolver(permitSchema),
@@ -166,6 +167,19 @@ export default function PermitsPage() {
     } else {
       const err = await res.json();
       toast({ title: "Error", description: err.error || "Failed to revoke permit", variant: "error" });
+    }
+  }
+
+  async function deletePermit(id: string) {
+    if (!window.confirm("Are you sure you want to delete this permit? This action cannot be undone.")) return;
+    const res = await fetch(`/api/permits/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      toast({ title: "Permit Deleted", variant: "success" });
+      setViewPermit(null);
+      fetchPermits();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to delete permit", variant: "error" });
     }
   }
 
@@ -414,6 +428,11 @@ export default function PermitsPage() {
                                 <RotateCcw className="h-4 w-4 text-blue-500" />
                               </Button>
                             )}
+                            {canDelete && (
+                              <Button variant="ghost" size="sm" onClick={() => deletePermit(p.id)} title="Delete" aria-label="Delete">
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                       )}
@@ -482,6 +501,11 @@ export default function PermitsPage() {
                 {(viewPermit.status === "EXPIRED" || (viewPermit.status === "ACTIVE" && getDaysUntilExpiry(viewPermit.expiryDate) <= 30)) && (
                   <Button onClick={() => { renewPermit(viewPermit); setViewPermit(null); }} variant="outline" className="flex-1">
                     <RotateCcw className="mr-2 h-4 w-4" /> Renew Permit
+                  </Button>
+                )}
+                {canDelete && (
+                  <Button onClick={() => deletePermit(viewPermit.id)} variant="destructive" className="flex-1">
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete Permit
                   </Button>
                 )}
               </div>

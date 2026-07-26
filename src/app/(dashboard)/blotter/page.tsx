@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
-import { Plus, Eye, Download, Printer, Search as SearchIcon } from "lucide-react";
+import { Plus, Eye, Download, Printer, Search as SearchIcon, Trash2 } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { StatusBadge } from "@/components/status-badge";
@@ -131,6 +131,18 @@ export default function BlotterPage() {
     } else {
       const err = await res.json();
       toast({ title: "Error", description: err.error || "Failed to update status", variant: "error" });
+    }
+  }
+
+  async function deleteBlotter(id: string) {
+    if (!window.confirm("Are you sure you want to delete this blotter report? This action cannot be undone.")) return;
+    const res = await fetch(`/api/blotter/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      toast({ title: "Blotter Report Deleted", variant: "success" });
+      fetchBlotters();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to delete", variant: "error" });
     }
   }
 
@@ -393,6 +405,11 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                         <Button variant="ghost" size="sm" onClick={() => printBlotter(b)} aria-label="Print">
                           <Printer className="h-4 w-4" />
                         </Button>
+                        {canCreate && (
+                          <Button variant="ghost" size="sm" onClick={() => deleteBlotter(b.id)} aria-label="Delete">
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        )}
                         {canCreate && b.status === "OPEN" && (
                           <>
                             <Button variant="ghost" size="sm" onClick={() => handleResolve(b.id)} className="text-emerald-600 hover:text-emerald-700">

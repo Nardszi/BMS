@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
 import { Input } from "@/components/ui/input";
-import { Plus, FileText, Check, X, Eye, Download, Printer, RotateCcw, ArrowUpDown, Search } from "lucide-react";
+import { Plus, FileText, Check, X, Eye, Download, Printer, RotateCcw, ArrowUpDown, Search, Trash2 } from "lucide-react";
 import { CertificatePDF } from "@/components/certificate-pdf";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
@@ -123,6 +123,18 @@ export default function CertificatesPage() {
     } else {
       const err = await res.json();
       toast({ title: "Error", description: err.error || "Failed to update status", variant: "error" });
+    }
+  }
+
+  async function deleteCertificate(id: string) {
+    if (!window.confirm("Are you sure you want to delete this certificate request? This action cannot be undone.")) return;
+    const res = await fetch(`/api/certificates/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      toast({ title: "Certificate Deleted", variant: "success" });
+      fetchCertificates();
+    } else {
+      const err = await res.json();
+      toast({ title: "Error", description: err.error || "Failed to delete", variant: "error" });
     }
   }
 
@@ -391,6 +403,9 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                         )}
                         <Button variant="ghost" size="sm" onClick={() => setPreviewCert(c)} aria-label="View certificate">
                           <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => deleteCertificate(c.id)} aria-label="Delete certificate">
+                          <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       </TableCell>
                     )}
