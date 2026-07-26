@@ -37,7 +37,7 @@ const residentSchema = z.object({
   address: z.string().min(1, "Address is required"),
   purok: z.string().min(1, "Purok is required"),
   occupation: z.string().optional(),
-  contactNumber: z.string().min(1, "Contact number is required"),
+  contactNumber: z.string().min(1, "Contact number is required").regex(/^(\+639\d{2}-\d{3}-\d{4}|09\d{2}-\d{3}-\d{4})$/, "Must be a valid Philippine number (09XX-XXX-XXXX)"),
   emergencyContact: z.string().optional(),
   emergencyPhone: z.string().optional(),
   isRegisteredVoter: z.boolean().optional(),
@@ -361,7 +361,7 @@ export default function ResidentsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Gender *</Label>
-                    <Select onValueChange={(v) => setValue("gender", v as "MALE" | "FEMALE")} defaultValue={editing?.gender}>
+                    <Select onValueChange={(v) => setValue("gender", v as "MALE" | "FEMALE", { shouldValidate: true })} defaultValue={editing?.gender}>
                       <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="MALE">Male</SelectItem>
@@ -373,7 +373,7 @@ export default function ResidentsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Civil Status *</Label>
-                    <Select onValueChange={(v) => setValue("civilStatus", v as "SINGLE" | "MARRIED" | "WIDOWED" | "SEPARATED" | "DIVORCED")} defaultValue={editing?.civilStatus}>
+                    <Select onValueChange={(v) => setValue("civilStatus", v as "SINGLE" | "MARRIED" | "WIDOWED" | "SEPARATED" | "DIVORCED", { shouldValidate: true })} defaultValue={editing?.civilStatus}>
                       <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="SINGLE">Single</SelectItem>
@@ -401,7 +401,7 @@ export default function ResidentsPage() {
                     </div>
                     <div className="space-y-2">
                       <Label>Purok *</Label>
-                      <Select onValueChange={(v) => setValue("purok", v)} defaultValue={editing?.household?.purok}>
+                      <Select onValueChange={(v) => setValue("purok", v, { shouldValidate: true })} defaultValue={editing?.household?.purok}>
                         <SelectTrigger><SelectValue placeholder="Select purok" /></SelectTrigger>
                         <SelectContent>
                           {PUROK_OPTIONS.map((p) => (

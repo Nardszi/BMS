@@ -32,11 +32,11 @@ const CATEGORY_CONFIG: Record<string, string> = {
 };
 
 const announcementSchema = z.object({
-  title: z.string().min(1, "Title is required"),
+  title: z.string().min(1, "Title is required").max(200),
   content: z.string().min(1, "Content is required"),
   expiresAt: z.string().optional(),
-  priority: z.string().min(1, "Priority is required"),
-  category: z.string().min(1, "Category is required"),
+  priority: z.enum(["URGENT", "IMPORTANT", "GENERAL"], { errorMap: () => ({ message: "Priority is required" }) }),
+  category: z.enum(["HEALTH", "SAFETY", "EVENT", "MEETING", "GENERAL", "OTHERS"], { errorMap: () => ({ message: "Category is required" }) }),
 });
 
 type AnnouncementForm = z.infer<typeof announcementSchema>;
@@ -168,8 +168,8 @@ export default function AnnouncementsPage() {
     setValue("title", ann.title);
     setValue("content", ann.content);
     if (ann.expiresAt) setValue("expiresAt", ann.expiresAt.split("T")[0]);
-    setValue("priority", ann.priority);
-    setValue("category", ann.category);
+    setValue("priority", ann.priority as "URGENT" | "IMPORTANT" | "GENERAL");
+    setValue("category", ann.category as "HEALTH" | "SAFETY" | "EVENT" | "MEETING" | "GENERAL" | "OTHERS");
     setOpen(true);
   }
 
@@ -220,8 +220,8 @@ export default function AnnouncementsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Priority</Label>
-                    <Select value={watchPriority} onValueChange={(v) => setValue("priority", v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Select value={watchPriority} onValueChange={(v) => setValue("priority", v as "URGENT" | "IMPORTANT" | "GENERAL", { shouldValidate: true })}>
+                      <SelectTrigger className={errors.priority ? "border-red-500 ring-red-500/30" : ""}><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="URGENT">Urgent</SelectItem>
                         <SelectItem value="IMPORTANT">Important</SelectItem>
@@ -231,8 +231,8 @@ export default function AnnouncementsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Category</Label>
-                    <Select value={watchCategory} onValueChange={(v) => setValue("category", v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Select value={watchCategory} onValueChange={(v) => setValue("category", v as "HEALTH" | "SAFETY" | "EVENT" | "MEETING" | "GENERAL" | "OTHERS", { shouldValidate: true })}>
+                      <SelectTrigger className={errors.category ? "border-red-500 ring-red-500/30" : ""}><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {Object.keys(CATEGORY_CONFIG).map((c) => (
                           <SelectItem key={c} value={c}>{c.charAt(0) + c.slice(1).toLowerCase()}</SelectItem>

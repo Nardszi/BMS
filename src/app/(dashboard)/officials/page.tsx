@@ -31,7 +31,7 @@ const POSITIONS = [
 
 const officialSchema = z.object({
   userId: z.string().min(1, "User is required"),
-  position: z.string().min(1, "Position is required"),
+  position: z.string().min(1, "Position is required").max(100),
   termStart: z.string().min(1, "Term start is required"),
   termEnd: z.string().min(1, "Term end is required"),
 });
@@ -240,19 +240,20 @@ export default function OfficialsPage() {
                   {!editing && (
                     <div className="space-y-2">
                       <Label>User</Label>
-                      <Select onValueChange={(v) => setValue("userId", v)}>
-                        <SelectTrigger><SelectValue placeholder="Select user" /></SelectTrigger>
+                      <Select onValueChange={(v) => setValue("userId", v, { shouldValidate: true })}>
+                        <SelectTrigger className={errors.userId ? "border-red-500 ring-red-500/30" : ""}><SelectValue placeholder="Select user" /></SelectTrigger>
                         <SelectContent>
                           {users.map((u) => (
                             <SelectItem key={u.id} value={u.id}>{u.name} ({u.role})</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                      {errors.userId && <p className="text-sm text-red-500">{errors.userId.message}</p>}
                     </div>
                   )}
                   <div className="space-y-2">
                     <Label>Position</Label>
-                    <Select value={watchPosition} onValueChange={(v) => setValue("position", v)}>
+                    <Select value={watchPosition} onValueChange={(v) => setValue("position", v, { shouldValidate: true })}>
                       <SelectTrigger><SelectValue placeholder="Select position" /></SelectTrigger>
                       <SelectContent>
                         {POSITIONS.map((p) => (

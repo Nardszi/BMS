@@ -24,13 +24,13 @@ import { PageHeader } from "@/components/page-header";
 import { BARANGAY_FULL_NAME, BARANGAY_CITY, BARANGAY_PROVINCE } from "@/lib/constants";
 
 const blotterSchema = z.object({
-  complainantName: z.string().min(1, "Complainant name is required"),
-  respondentName: z.string().min(1, "Respondent name is required"),
+  complainantName: z.string().min(1, "Complainant name is required").max(200),
+  respondentName: z.string().min(1, "Respondent name is required").max(200),
   incidentDate: z.string().min(1, "Incident date is required"),
-  incidentType: z.string().min(1, "Incident type is required"),
-  location: z.string().optional(),
-  witnesses: z.string().optional(),
-  narrative: z.string().min(1, "Narrative is required"),
+  incidentType: z.string().min(1, "Incident type is required").max(100),
+  location: z.string().max(255).optional(),
+  witnesses: z.string().max(500).optional(),
+  narrative: z.string().min(1, "Narrative is required").max(2000),
 });
 
 type BlotterForm = z.infer<typeof blotterSchema>;

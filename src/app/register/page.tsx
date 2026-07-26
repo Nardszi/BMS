@@ -24,8 +24,8 @@ const registerSchema = z.object({
   lastName: z.string().min(1, "Last name is required").max(50),
   middleName: z.string().max(50).optional(),
   birthDate: z.string().min(1, "Birth date is required"),
-  gender: z.string().min(1, "Gender is required"),
-  civilStatus: z.string().min(1, "Civil status is required"),
+  gender: z.enum(["MALE", "FEMALE"], { errorMap: () => ({ message: "Gender is required" }) }),
+  civilStatus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "SEPARATED", "DIVORCED"], { errorMap: () => ({ message: "Civil status is required" }) }),
   address: z.string().min(1, "Address is required"),
   purok: z.string().min(1, "Purok is required"),
   contactNumber: z.string().min(1, "Contact number is required").regex(phoneRegex, "Must be a valid Philippine number (09XXXXXXXXX)"),
@@ -346,8 +346,8 @@ export default function RegisterPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <Label className="text-xs sm:text-[13px] font-medium text-gray-600">Gender *</Label>
-                      <Select onValueChange={(v) => setValue("gender", v)}>
-                        <SelectTrigger className={inputClass}>
+                      <Select onValueChange={(v) => setValue("gender", v as "MALE" | "FEMALE", { shouldValidate: true })}>
+                        <SelectTrigger className={errors.gender ? `${inputClass} border-red-500 ring-red-500/30` : inputClass}>
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent className="border-gray-200 bg-white text-gray-900 shadow-lg">
@@ -359,8 +359,8 @@ export default function RegisterPage() {
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs sm:text-[13px] font-medium text-gray-600">Civil Status *</Label>
-                      <Select onValueChange={(v) => setValue("civilStatus", v)}>
-                        <SelectTrigger className={inputClass}>
+                      <Select onValueChange={(v) => setValue("civilStatus", v as "SINGLE" | "MARRIED" | "WIDOWED" | "SEPARATED" | "DIVORCED", { shouldValidate: true })}>
+                        <SelectTrigger className={errors.civilStatus ? `${inputClass} border-red-500 ring-red-500/30` : inputClass}>
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent className="border-gray-200 bg-white text-gray-900 shadow-lg">
@@ -392,8 +392,8 @@ export default function RegisterPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs sm:text-[13px] font-medium text-gray-600">Purok / Zone *</Label>
-                    <Select onValueChange={(v) => setValue("purok", v)}>
-                      <SelectTrigger className={inputClass}>
+                    <Select onValueChange={(v) => setValue("purok", v, { shouldValidate: true })}>
+                      <SelectTrigger className={errors.purok ? `${inputClass} border-red-500 ring-red-500/30` : inputClass}>
                         <SelectValue placeholder="Select purok" />
                       </SelectTrigger>
                       <SelectContent className="border-gray-200 bg-white text-gray-900 shadow-lg">

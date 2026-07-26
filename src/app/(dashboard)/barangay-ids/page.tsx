@@ -162,7 +162,7 @@ export default function BarangayIDsPage() {
   function handleResidentSelect(residentId: string) {
     const r = residents.find((res) => res.id === residentId);
     setSelectedResident(r || null);
-    setValue("residentId", residentId);
+    setValue("residentId", residentId, { shouldValidate: true });
     if (r) {
       setValue("address", `${r.household.address}, Purok ${r.household.purok}`);
       setValue("contactNumber", r.contactNumber || "");

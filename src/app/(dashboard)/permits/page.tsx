@@ -18,10 +18,10 @@ import { Plus, AlertTriangle, Eye, Search, FileText, RotateCcw, CheckCircle, XCi
 import { PermitPDF, buildPermitHTML } from "@/components/permit-pdf";
 
 const permitSchema = z.object({
-  businessName: z.string().min(1, "Business name is required"),
+  businessName: z.string().min(1, "Business name is required").max(200),
   ownerResidentId: z.string().min(1, "Owner is required"),
-  businessType: z.string().min(1, "Business type is required"),
-  address: z.string().min(1, "Address is required"),
+  businessType: z.string().min(1, "Business type is required").max(100),
+  address: z.string().min(1, "Address is required").max(255),
   issueDate: z.string().min(1, "Issue date is required"),
   expiryDate: z.string().min(1, "Expiry date is required"),
 });
@@ -254,7 +254,7 @@ export default function PermitsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Owner</Label>
-                  <Select onValueChange={(v) => setValue("ownerResidentId", v)}>
+                  <Select onValueChange={(v) => setValue("ownerResidentId", v, { shouldValidate: true })}>
                     <SelectTrigger><SelectValue placeholder="Select owner" /></SelectTrigger>
                     <SelectContent>
                       {residents.map((r) => (
@@ -268,7 +268,7 @@ export default function PermitsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Business Type</Label>
-                  <Select onValueChange={(v) => setValue("businessType", v)}>
+                  <Select onValueChange={(v) => setValue("businessType", v, { shouldValidate: true })}>
                     <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                     <SelectContent>
                       {BUSINESS_TYPES.map((t) => (

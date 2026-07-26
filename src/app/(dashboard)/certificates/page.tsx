@@ -26,7 +26,7 @@ import jsPDF from "jspdf";
 const certSchema = z.object({
   residentId: z.string().min(1, "Resident is required"),
   type: z.enum(["CLEARANCE", "RESIDENCY", "INDIGENCY", "BUSINESS_PERMIT"]),
-  purpose: z.string().min(1, "Purpose is required"),
+  purpose: z.string().min(1, "Purpose is required").max(500),
 });
 
 type CertForm = z.infer<typeof certSchema>;
