@@ -67,7 +67,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     });
 
-    logAudit({ userId: session.user.id, action: "UPDATE", entity: "Resident", entityId: params.id, details: { name: `${resident.firstName} ${resident.lastName}` } });
+    await logAudit({ userId: session.user.id, action: "UPDATE", entity: "Resident", entityId: params.id, details: { name: `${resident.firstName} ${resident.lastName}` } }).catch(() => {});
 
     return NextResponse.json(resident);
   } catch (error) {
@@ -87,7 +87,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     await prisma.resident.delete({ where: { id: params.id } });
 
-    logAudit({ userId: session.user.id, action: "DELETE", entity: "Resident", entityId: params.id });
+    await logAudit({ userId: session.user.id, action: "DELETE", entity: "Resident", entityId: params.id }).catch(() => {});
 
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
@@ -115,7 +115,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       data: { status: body.status },
     });
 
-    logAudit({ userId: session.user.id, action: "STATUS_CHANGE", entity: "Resident", entityId: params.id, details: { newStatus: body.status } });
+    await logAudit({ userId: session.user.id, action: "STATUS_CHANGE", entity: "Resident", entityId: params.id, details: { newStatus: body.status } }).catch(() => {});
 
     return NextResponse.json(resident);
   } catch (error) {

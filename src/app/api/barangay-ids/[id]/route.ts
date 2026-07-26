@@ -27,7 +27,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       include: { resident: { include: { household: true } }, issuedBy: true },
     });
 
-    logAudit({ userId: session.user.id, action: "UPDATE", entity: "BarangayId", entityId: params.id, details: { idNumber: id.idNumber, newStatus: body.status } });
+    await logAudit({ userId: session.user.id, action: "UPDATE", entity: "BarangayId", entityId: params.id, details: { idNumber: id.idNumber, newStatus: body.status } }).catch(() => {});
 
     return NextResponse.json(id);
   } catch (error) {
@@ -47,7 +47,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     await prisma.barangayID.delete({ where: { id: params.id } });
 
-    logAudit({ userId: session.user.id, action: "DELETE", entity: "BarangayId", entityId: params.id });
+    await logAudit({ userId: session.user.id, action: "DELETE", entity: "BarangayId", entityId: params.id }).catch(() => {});
 
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {

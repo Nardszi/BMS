@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         civilStatus: body.civilStatus,
         householdId: household.id,
         occupation: body.occupation || null,
-        contactNumber: body.contactNumber.replace(/\D/g, ""),
+        contactNumber: typeof body.contactNumber === "string" ? body.contactNumber.replace(/\D/g, "") : "",
         emergencyContact: body.emergencyContact || null,
         emergencyPhone: body.emergencyPhone || null,
         isRegisteredVoter: body.isRegisteredVoter || false,
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
     const refNumber = `REG-${Date.now().toString(36).toUpperCase()}`;
 
-    notifyUsersByRole("SECRETARY", "New Resident Registration", `${body.firstName} ${body.lastName} has submitted a registration request.`, "resident", "/residents");
+    await notifyUsersByRole("SECRETARY", "New Resident Registration", `${body.firstName} ${body.lastName} has submitted a registration request.`, "resident", "/residents").catch(() => {});
 
     return NextResponse.json({
       message: "Registration successful! Your records have been submitted to the barangay for verification.",

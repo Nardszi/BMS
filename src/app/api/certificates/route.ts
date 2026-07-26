@@ -55,25 +55,29 @@ export async function POST(request: Request) {
     }
 
     const year = new Date().getFullYear();
-    const count = await prisma.certificateRequest.count({
-      where: { requestDate: { gte: new Date(`${year}-01-01`) } },
-    });
-    const referenceNumber = `IX-${year}-${String(count + 1).padStart(3, "0")}`;
+    const certificate = await prisma.$transaction(async (tx) => {
+      const latest = await tx.certificateRequest.findFirst({
+        where: { referenceNumber: { startsWith: `IX-${year}-` } },
+        orderBy: { referenceNumber: "desc" },
+      });
+      const nextNum = latest ? parseInt(latest.referenceNumber!.split("-")[2]) + 1 : 1;
+      const referenceNumber = `IX-${year}-${String(nextNum).padStart(3, "0")}`;
 
-    const certificate = await prisma.certificateRequest.create({
-      data: {
-        residentId,
-        type,
-        purpose,
-        referenceNumber,
-        status: "PENDING",
-      },
-      include: { resident: true },
+      return tx.certificateRequest.create({
+        data: {
+          residentId,
+          type,
+          purpose,
+          referenceNumber,
+          status: "PENDING",
+        },
+        include: { resident: true },
+      });
     });
 
     await notifyUsersByRole("SECRETARY", "New Certificate Request", `A new ${type} request has been submitted for ${residentExists.firstName} ${residentExists.lastName}.`, "certificate", "/certificates").catch(() => {});
 
-    await logAudit({ userId: session.user.id, action: "CREATE", entity: "Certificate", entityId: certificate.id, details: { type, residentName: `${residentExists.firstName} ${residentExists.lastName}`, referenceNumber } }).catch(() => {});
+    await logAudit({ userId: session.user.id, action: "CREATE", entity: "Certificate", entityId: certificate.id, details: { type, residentName: `${residentExists.firstName} ${residentExists.lastName}`, referenceNumber: certificate.referenceNumber } }).catch(() => {});
 
     return NextResponse.json(certificate, { status: 201 });
   } catch (error) {

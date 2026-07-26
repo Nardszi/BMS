@@ -39,7 +39,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       select: { id: true, name: true, email: true, role: true, createdAt: true, lastLoginAt: true },
     });
 
-    logAudit({ userId: session.user.id, action: "UPDATE", entity: "User", entityId: params.id, details: { name, email, role: newRole } });
+    await logAudit({ userId: session.user.id, action: "UPDATE", entity: "User", entityId: params.id, details: { name, email, role: newRole } }).catch(() => {});
 
     return NextResponse.json(user);
   } catch (error: any) {
@@ -67,7 +67,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     await prisma.user.delete({ where: { id: params.id } });
 
-    logAudit({ userId: session.user.id, action: "DELETE", entity: "User", entityId: params.id });
+    await logAudit({ userId: session.user.id, action: "DELETE", entity: "User", entityId: params.id }).catch(() => {});
 
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {

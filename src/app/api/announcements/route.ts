@@ -68,7 +68,7 @@ export async function POST(request: Request) {
       include: { postedBy: { select: { name: true } } },
     });
 
-    logAudit({ userId: session.user.id, action: "CREATE", entity: "Announcement", entityId: announcement.id, details: { title } });
+    await logAudit({ userId: session.user.id, action: "CREATE", entity: "Announcement", entityId: announcement.id, details: { title } }).catch(() => {});
 
     return NextResponse.json(announcement, { status: 201 });
   } catch (error) {

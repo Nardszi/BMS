@@ -93,7 +93,7 @@ export async function POST(request: Request) {
       },
     });
 
-    logAudit({ userId: session.user.id, action: "CREATE", entity: "Resident", entityId: resident.id, details: { name: `${firstName} ${lastName}`, purok } });
+    await logAudit({ userId: session.user.id, action: "CREATE", entity: "Resident", entityId: resident.id, details: { name: `${firstName} ${lastName}`, purok } }).catch(() => {});
 
     return NextResponse.json(resident, { status: 201 });
   } catch (error) {
@@ -120,7 +120,7 @@ export async function DELETE(request: Request) {
 
     await prisma.resident.deleteMany({ where: { id: { in: ids } } });
 
-    logAudit({ userId: session.user.id, action: "DELETE", entity: "Resident", entityId: ids.join(","), details: { count: ids.length } });
+    await logAudit({ userId: session.user.id, action: "DELETE", entity: "Resident", entityId: ids.join(","), details: { count: ids.length } }).catch(() => {});
 
     return NextResponse.json({ success: true, deleted: ids.length });
   } catch (error) {

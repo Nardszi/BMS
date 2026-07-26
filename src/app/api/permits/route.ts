@@ -101,9 +101,9 @@ export async function POST(request: Request) {
       include: { owner: true },
     });
 
-    notifyUsersByRole("TREASURER", "New Business Permit", `${businessName} (${permitNumber}) has been registered.`, "permit", "/permits");
+    await notifyUsersByRole("TREASURER", "New Business Permit", `${businessName} (${permitNumber}) has been registered.`, "permit", "/permits").catch(() => {});
 
-    logAudit({ userId: session.user.id, action: "CREATE", entity: "Permit", entityId: permit.id, details: { businessName, permitNumber } });
+    await logAudit({ userId: session.user.id, action: "CREATE", entity: "Permit", entityId: permit.id, details: { businessName, permitNumber } }).catch(() => {});
 
     return NextResponse.json(permit, { status: 201 });
   } catch (error) {

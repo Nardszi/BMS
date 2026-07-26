@@ -84,9 +84,9 @@ export async function POST(request: Request) {
       });
     });
 
-    notifyUsersByRole("KAGAWAD", "New Blotter Report", `Case ${blotter.caseNumber}: ${incidentType} reported by ${complainantName} vs ${respondentName}.`, "blotter", "/blotter");
+    await notifyUsersByRole("KAGAWAD", "New Blotter Report", `Case ${blotter.caseNumber}: ${incidentType} reported by ${complainantName} vs ${respondentName}.`, "blotter", "/blotter").catch(() => {});
 
-    logAudit({ userId: session.user.id, action: "CREATE", entity: "Blotter", entityId: blotter.id, details: { caseNumber: blotter.caseNumber, incidentType, complainantName, respondentName } });
+    await logAudit({ userId: session.user.id, action: "CREATE", entity: "Blotter", entityId: blotter.id, details: { caseNumber: blotter.caseNumber, incidentType, complainantName, respondentName } }).catch(() => {});
 
     return NextResponse.json(blotter, { status: 201 });
   } catch (error) {

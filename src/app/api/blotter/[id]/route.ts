@@ -27,7 +27,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     });
 
-    logAudit({ userId: session.user.id, action: "UPDATE", entity: "Blotter", entityId: params.id, details: { caseNumber: blotter.caseNumber, newStatus: body.status } });
+    await logAudit({ userId: session.user.id, action: "UPDATE", entity: "Blotter", entityId: params.id, details: { caseNumber: blotter.caseNumber, newStatus: body.status } }).catch(() => {});
 
     return NextResponse.json(blotter);
   } catch (error) {
@@ -48,7 +48,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     await prisma.blotterReport.delete({ where: { id: params.id } });
 
-    logAudit({ userId: session.user.id, action: "DELETE", entity: "Blotter", entityId: params.id });
+    await logAudit({ userId: session.user.id, action: "DELETE", entity: "Blotter", entityId: params.id }).catch(() => {});
 
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {

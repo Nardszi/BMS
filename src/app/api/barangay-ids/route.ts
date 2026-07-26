@@ -62,25 +62,29 @@ export async function POST(request: Request) {
     }
 
     const year = new Date().getFullYear();
-    const count = await prisma.barangayID.count({
-      where: { idNumber: { startsWith: `BRGY-${year}-` } },
+    const barangayId = await prisma.$transaction(async (tx) => {
+      const latest = await tx.barangayID.findFirst({
+        where: { idNumber: { startsWith: `BRGY-${year}-` } },
+        orderBy: { idNumber: "desc" },
+      });
+      const nextNum = latest ? parseInt(latest.idNumber.split("-")[2]) + 1 : 1;
+      const idNumber = `BRGY-${year}-${String(nextNum).padStart(5, "0")}`;
+
+      const issueDate = new Date();
+      const expiryDate = new Date();
+      expiryDate.setFullYear(expiryDate.getFullYear() + 3);
+
+      return tx.barangayID.create({
+        data: {
+          residentId, idNumber, photoUrl: photoUrl || null,
+          issueDate, expiryDate, contactNumber: contactNumber || null,
+          address, issuedById: session.user.id,
+        },
+        include: { resident: { include: { household: true } }, issuedBy: true },
+      });
     });
-    const idNumber = `BRGY-${year}-${String(count + 1).padStart(5, "0")}`;
 
-    const issueDate = new Date();
-    const expiryDate = new Date();
-    expiryDate.setFullYear(expiryDate.getFullYear() + 3);
-
-    const barangayId = await prisma.barangayID.create({
-      data: {
-        residentId, idNumber, photoUrl: photoUrl || null,
-        issueDate, expiryDate, contactNumber: contactNumber || null,
-        address, issuedById: session.user.id,
-      },
-      include: { resident: { include: { household: true } }, issuedBy: true },
-    });
-
-    logAudit({ userId: session.user.id, action: "CREATE", entity: "BarangayId", entityId: barangayId.id, details: { idNumber } });
+    await logAudit({ userId: session.user.id, action: "CREATE", entity: "BarangayId", entityId: barangayId.id, details: { idNumber: barangayId.idNumber } }).catch(() => {});
 
     return NextResponse.json(barangayId, { status: 201 });
   } catch (error) {

@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       select: { id: true, name: true, email: true, role: true, createdAt: true, lastLoginAt: true },
     });
 
-    logAudit({ userId: session.user.id, action: "CREATE", entity: "User", entityId: user.id, details: { name, email, role: newRole } });
+    await logAudit({ userId: session.user.id, action: "CREATE", entity: "User", entityId: user.id, details: { name, email, role: newRole } }).catch(() => {});
 
     return NextResponse.json(user, { status: 201 });
   } catch (error: any) {

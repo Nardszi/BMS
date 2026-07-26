@@ -33,12 +33,12 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     });
 
     if (status === "APPROVED") {
-      notifyUsersByRole("SECRETARY", "Certificate Approved", `${certificate.type} request for ${certificate.resident.firstName} ${certificate.resident.lastName} has been approved.`, "certificate", "/certificates");
+      await notifyUsersByRole("SECRETARY", "Certificate Approved", `${certificate.type} request for ${certificate.resident.firstName} ${certificate.resident.lastName} has been approved.`, "certificate", "/certificates").catch(() => {});
     } else if (status === "DENIED") {
-      notifyUsersByRole("SECRETARY", "Certificate Denied", `${certificate.type} request for ${certificate.resident.firstName} ${certificate.resident.lastName} has been denied.`, "certificate", "/certificates");
+      await notifyUsersByRole("SECRETARY", "Certificate Denied", `${certificate.type} request for ${certificate.resident.firstName} ${certificate.resident.lastName} has been denied.`, "certificate", "/certificates").catch(() => {});
     }
 
-    logAudit({ userId: session.user.id, action: `STATUS_${status}`, entity: "Certificate", entityId: params.id, details: { type: certificate.type, residentName: `${certificate.resident.firstName} ${certificate.resident.lastName}` } });
+    await logAudit({ userId: session.user.id, action: `STATUS_${status}`, entity: "Certificate", entityId: params.id, details: { type: certificate.type, residentName: `${certificate.resident.firstName} ${certificate.resident.lastName}` } }).catch(() => {});
 
     return NextResponse.json(certificate);
   } catch (error) {
@@ -59,7 +59,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     await prisma.certificateRequest.delete({ where: { id: params.id } });
 
-    logAudit({ userId: session.user.id, action: "DELETE", entity: "Certificate", entityId: params.id });
+    await logAudit({ userId: session.user.id, action: "DELETE", entity: "Certificate", entityId: params.id }).catch(() => {});
 
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {

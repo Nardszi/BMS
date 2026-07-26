@@ -28,7 +28,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     });
 
-    logAudit({ userId: session.user.id, action: "UPDATE", entity: "Permit", entityId: params.id, details: { permitNumber: permit.permitNumber, newStatus: body.status } });
+    await logAudit({ userId: session.user.id, action: "UPDATE", entity: "Permit", entityId: params.id, details: { permitNumber: permit.permitNumber, newStatus: body.status } }).catch(() => {});
 
     return NextResponse.json(permit);
   } catch (error) {
@@ -49,7 +49,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     await prisma.businessPermit.delete({ where: { id: params.id } });
 
-    logAudit({ userId: session.user.id, action: "DELETE", entity: "Permit", entityId: params.id });
+    await logAudit({ userId: session.user.id, action: "DELETE", entity: "Permit", entityId: params.id }).catch(() => {});
 
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {

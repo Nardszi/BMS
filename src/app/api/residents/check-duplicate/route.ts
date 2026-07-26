@@ -26,6 +26,7 @@ export async function GET(request: Request) {
       resident: existing || null,
     });
   } catch (error) {
-    return NextResponse.json({ exists: false });
+    console.error("GET /api/residents/check-duplicate error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
