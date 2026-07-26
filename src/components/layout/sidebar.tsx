@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -213,7 +214,7 @@ export function Sidebar() {
           </Link>
 
           <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={() => { toast({ title: "Signed out", description: "You have been logged out successfully.", variant: "success" }); signOut({ callbackUrl: "/login" }); }}
             className={cn(
               "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200",
               "text-slate-400 hover:bg-red-500/10 hover:text-red-400",
