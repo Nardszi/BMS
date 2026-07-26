@@ -61,17 +61,24 @@ export async function POST(request: Request) {
     const referenceNumber = `IX-${year}-${String(count + 1).padStart(3, "0")}`;
 
     const certificate = await prisma.certificateRequest.create({
-      data: { residentId, type, purpose, referenceNumber },
+      data: {
+        residentId,
+        type,
+        purpose,
+        referenceNumber,
+        status: "PENDING",
+      },
       include: { resident: true },
     });
 
-    notifyUsersByRole("SECRETARY", "New Certificate Request", `A new ${type} request has been submitted for ${residentExists.firstName} ${residentExists.lastName}.`, "certificate", "/certificates");
+    await notifyUsersByRole("SECRETARY", "New Certificate Request", `A new ${type} request has been submitted for ${residentExists.firstName} ${residentExists.lastName}.`, "certificate", "/certificates").catch(() => {});
 
-    logAudit({ userId: session.user.id, action: "CREATE", entity: "Certificate", entityId: certificate.id, details: { type, residentName: `${residentExists.firstName} ${residentExists.lastName}`, referenceNumber } });
+    await logAudit({ userId: session.user.id, action: "CREATE", entity: "Certificate", entityId: certificate.id, details: { type, residentName: `${residentExists.firstName} ${residentExists.lastName}`, referenceNumber } }).catch(() => {});
 
     return NextResponse.json(certificate, { status: 201 });
   } catch (error) {
     console.error("POST /api/certificates error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
