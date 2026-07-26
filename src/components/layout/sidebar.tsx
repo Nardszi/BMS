@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface NavItem {
   href: string;
@@ -66,6 +68,7 @@ export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const userRole = session?.user?.role ?? "";
 
   const navItems = allNavItems.filter((item) => item.roles.includes(userRole));
@@ -214,7 +217,7 @@ export function Sidebar() {
           </Link>
 
           <button
-            onClick={() => { toast({ title: "Signed out", description: "You have been logged out successfully.", variant: "success" }); signOut({ callbackUrl: "/login" }); }}
+            onClick={() => setLogoutOpen(true)}
             className={cn(
               "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200",
               "text-slate-400 hover:bg-red-500/10 hover:text-red-400",
@@ -231,6 +234,27 @@ export function Sidebar() {
 
   return (
     <>
+      {/* Logout Confirmation Dialog */}
+      <Dialog open={logoutOpen} onOpenChange={setLogoutOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sign Out</DialogTitle>
+            <DialogDescription>Are you sure you want to sign out of your account?</DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setLogoutOpen(false)}>Cancel</Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => {
+                toast({ title: "Signed out", description: "You have been logged out successfully.", variant: "success" });
+                signOut({ callbackUrl: "/login" });
+              }}
+            >
+              Yes, Sign Out
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {/* Mobile menu button */}
       <button
         onClick={() => setMobileOpen(true)}
