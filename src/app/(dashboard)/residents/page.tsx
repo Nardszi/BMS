@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -69,6 +70,7 @@ export default function ResidentsPage() {
   const { data: session } = useSession();
   const [residents, setResidents] = useState<Resident[]>([]);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [open, setOpen] = useState(false);
@@ -109,6 +111,7 @@ export default function ResidentsPage() {
   const [rejectedCount, setRejectedCount] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [lastDeletedResident, setLastDeletedResident] = useState<Resident | null>(null);
   const [bulkDeleteTarget, setBulkDeleteTarget] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -126,7 +129,7 @@ export default function ResidentsPage() {
   const fetchResidents = async () => {
     try {
       const params = new URLSearchParams({ page: String(page), limit: "15", sortBy, sortOrder });
-      if (search) params.set("search", search);
+      if (debouncedSearch) params.set("search", debouncedSearch);
       if (purokFilter) params.set("purok", purokFilter);
       if (statusFilter) params.set("status", statusFilter);
       const res = await fetch(`/api/residents?${params}`);
@@ -145,7 +148,7 @@ export default function ResidentsPage() {
     }
   };
 
-  useEffect(() => { fetchResidents(); }, [page, search, purokFilter, statusFilter, sortBy, sortOrder]);
+  useEffect(() => { fetchResidents(); }, [page, debouncedSearch, purokFilter, statusFilter, sortBy, sortOrder]);
 
   async function onSubmit(data: ResidentForm) {
     setSubmitting(true);
@@ -242,10 +245,44 @@ export default function ResidentsPage() {
   }
 
   async function handleDelete(id: string) {
-    const res = await fetch(`/api/residents/${id}`, { method: "DELETE" });
+    const resident = residents.find((r) => r.id === id);
     setDeleteTarget(null);
+    const res = await fetch(`/api/residents/${id}`, { method: "DELETE" });
     if (res.ok) {
-      toast({ title: "Resident Deleted", variant: "success" });
+      setLastDeletedResident(resident || null);
+      toast({
+        title: "Resident Deleted",
+        description: "Click undo to restore this resident.",
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            if (!lastDeletedResident) return;
+            await fetch("/api/residents", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                firstName: lastDeletedResident.firstName,
+                lastName: lastDeletedResident.lastName,
+                middleName: lastDeletedResident.middleName,
+                birthDate: lastDeletedResident.birthDate,
+                gender: lastDeletedResident.gender,
+                civilStatus: lastDeletedResident.civilStatus,
+                address: lastDeletedResident.household.address,
+                purok: lastDeletedResident.household.purok,
+                occupation: lastDeletedResident.occupation,
+                contactNumber: lastDeletedResident.contactNumber,
+                emergencyContact: lastDeletedResident.emergencyContact,
+                emergencyPhone: lastDeletedResident.emergencyPhone,
+                isRegisteredVoter: lastDeletedResident.isRegisteredVoter,
+              }),
+            });
+            toast({ title: "Resident Restored", variant: "success" });
+            setLastDeletedResident(null);
+            fetchResidents();
+          },
+        },
+      });
+      setTimeout(() => setLastDeletedResident(null), 5000);
       fetchResidents();
     } else {
       const err = await res.json();
@@ -512,13 +549,14 @@ export default function ResidentsPage() {
 
       <Card>
         <CardContent className="p-0">
-          <div className="flex items-center gap-4 border-b p-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-b p-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/70" />
               <Input placeholder="Search residents..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="pl-9" />
             </div>
-            <Select value={purokFilter} onValueChange={(v) => { setPurokFilter(v === "all" ? "" : v); setPage(1); }}>
-              <SelectTrigger className="w-40"><SelectValue placeholder="All Puroks" /></SelectTrigger>
+            <div className="flex flex-wrap gap-2">
+              <Select value={purokFilter} onValueChange={(v) => { setPurokFilter(v === "all" ? "" : v); setPage(1); }}>
+                <SelectTrigger className="w-32"><SelectValue placeholder="All Puroks" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Puroks</SelectItem>
                 {PUROK_OPTIONS.map((p) => (
@@ -560,6 +598,7 @@ export default function ResidentsPage() {
                   <Trash2 className="mr-2 h-4 w-4" /> Delete Selected ({selectedIds.length})
                 </Button>
               )}
+            </div>
             </div>
           </div>
           {loading ? (

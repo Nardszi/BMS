@@ -24,6 +24,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { escapeHtml } from "@/lib/sanitize";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { exportToCSV } from "@/lib/export-csv";
 
 const certSchema = z.object({
   residentId: z.string().min(1, "Resident is required"),
@@ -233,6 +234,21 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
     images.forEach(img => { if (img.complete) { checkDone(); } else { img.onload = checkDone; img.onerror = checkDone; } });
   }
 
+  function exportCSV() {
+    exportToCSV(
+      ["Reference #", "Resident", "Type", "Purpose", "Status", "Date"],
+      certificates.map((c) => [
+        c.id.slice(-8).toUpperCase(),
+        `${c.resident.lastName}, ${c.resident.firstName}`,
+        typeLabels[c.type] || c.type,
+        c.purpose,
+        c.status,
+        new Date(c.requestDate).toLocaleDateString("en-PH"),
+      ]),
+      "certificates"
+    );
+  }
+
   const statusColors: Record<string, string> = {
     PENDING: "warning",
     APPROVED: "success",
@@ -277,6 +293,10 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
   return (
     <div className="space-y-6">
       <PageHeader title="Certificates" subtitle="Manage certificate requests">
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={exportCSV}>
+            <Download className="mr-2 h-4 w-4" /> Export CSV
+          </Button>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="bg-primary hover:bg-primary/90">
@@ -326,6 +346,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </PageHeader>
 
       {/* Search Bar */}

@@ -87,6 +87,7 @@ export default function AnnouncementsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [lastDeletedAnnouncement, setLastDeletedAnnouncement] = useState<Announcement | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const role = session?.user?.role ?? "";
@@ -143,10 +144,36 @@ export default function AnnouncementsPage() {
   }
 
   async function handleDelete(id: string) {
-    const res = await fetch(`/api/announcements/${id}`, { method: "DELETE" });
+    const announcement = announcements.find((a) => a.id === id);
     setDeleteTarget(null);
+    const res = await fetch(`/api/announcements/${id}`, { method: "DELETE" });
     if (res.ok) {
-      toast({ title: "Announcement Deleted", variant: "success" });
+      setLastDeletedAnnouncement(announcement || null);
+      toast({
+        title: "Announcement Deleted",
+        description: "Click undo to restore this announcement.",
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            if (!lastDeletedAnnouncement) return;
+            await fetch("/api/announcements", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                title: lastDeletedAnnouncement.title,
+                content: lastDeletedAnnouncement.content,
+                expiresAt: lastDeletedAnnouncement.expiresAt,
+                priority: lastDeletedAnnouncement.priority,
+                category: lastDeletedAnnouncement.category,
+              }),
+            });
+            toast({ title: "Announcement Restored", variant: "success" });
+            setLastDeletedAnnouncement(null);
+            fetchAnnouncements();
+          },
+        },
+      });
+      setTimeout(() => setLastDeletedAnnouncement(null), 5000);
       fetchAnnouncements();
     } else {
       const err = await res.json();

@@ -94,6 +94,7 @@ export default function OfficialsPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [lastDeletedOfficial, setLastDeletedOfficial] = useState<Official | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const role = session?.user?.role ?? "";
@@ -144,10 +145,35 @@ export default function OfficialsPage() {
   }
 
   async function removeOfficial(id: string) {
-    const res = await fetch(`/api/officials/${id}`, { method: "DELETE" });
+    const official = officials.find((o) => o.id === id);
     setDeleteTarget(null);
+    const res = await fetch(`/api/officials/${id}`, { method: "DELETE" });
     if (res.ok) {
-      toast({ title: "Official Removed", variant: "success" });
+      setLastDeletedOfficial(official || null);
+      toast({
+        title: "Official Removed",
+        description: "Click undo to restore this official.",
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            if (!lastDeletedOfficial) return;
+            await fetch("/api/officials", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userId: lastDeletedOfficial.user.id,
+                position: lastDeletedOfficial.position,
+                termStart: lastDeletedOfficial.termStart,
+                termEnd: lastDeletedOfficial.termEnd,
+              }),
+            });
+            toast({ title: "Official Restored", variant: "success" });
+            setLastDeletedOfficial(null);
+            fetchOfficials();
+          },
+        },
+      });
+      setTimeout(() => setLastDeletedOfficial(null), 5000);
       fetchOfficials();
     } else {
       const err = await res.json();

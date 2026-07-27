@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
 import { Plus, Eye, Download, Printer, Search as SearchIcon, Trash2 } from "lucide-react";
+import { exportToCSV } from "@/lib/export-csv";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { StatusBadge } from "@/components/status-badge";
@@ -259,6 +260,22 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
     setResolveNotes("");
   }
 
+  function exportCSV() {
+    exportToCSV(
+      ["Case #", "Complainant", "Respondent", "Type", "Location", "Date", "Status"],
+      blotters.map((b) => [
+        b.caseNumber,
+        b.complainantName,
+        b.respondentName,
+        b.incidentType,
+        b.location || "",
+        new Date(b.incidentDate).toLocaleDateString("en-PH"),
+        b.status,
+      ]),
+      "blotter-reports"
+    );
+  }
+
   const statusColors: Record<string, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
     OPEN: "destructive",
     RESOLVED: "success",
@@ -275,6 +292,10 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
   return (
     <div className="space-y-6">
       <PageHeader title="Blotter Reports" subtitle="Incident reports and case management">
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={exportCSV}>
+            <Download className="mr-2 h-4 w-4" /> Export CSV
+          </Button>
         {canCreate && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -338,6 +359,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             </DialogContent>
           </Dialog>
         )}
+        </div>
       </PageHeader>
 
       {/* Status Tabs */}

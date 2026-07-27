@@ -16,7 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/toast";
 import { IDCardPDF } from "@/components/id-card-pdf";
 import { downloadAsPDF } from "@/lib/export-pdf";
-import { Plus, CreditCard, Printer, Search, Trash2, Eye, Ban, FileDown, Copy, Check } from "lucide-react";
+import { Plus, CreditCard, Printer, Search, Trash2, Eye, Ban, FileDown, Copy, Check, Download } from "lucide-react";
+import { exportToCSV } from "@/lib/export-csv";
 import { formatDate } from "@/lib/utils";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
@@ -162,6 +163,21 @@ export default function BarangayIDsPage() {
     }
   }
 
+  function exportCSV() {
+    exportToCSV(
+      ["ID #", "Name", "Contact", "Status", "Issue Date", "Expiry Date"],
+      ids.map((id) => [
+        id.idNumber,
+        `${id.resident.lastName}, ${id.resident.firstName}`,
+        id.contactNumber || "",
+        id.status,
+        new Date(id.issueDate).toLocaleDateString("en-PH"),
+        new Date(id.expiryDate).toLocaleDateString("en-PH"),
+      ]),
+      "barangay-ids"
+    );
+  }
+
   function handleResidentSelect(residentId: string) {
     const r = residents.find((res) => res.id === residentId);
     setSelectedResident(r || null);
@@ -186,6 +202,10 @@ export default function BarangayIDsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Barangay ID" subtitle="Generate and manage official Barangay IDs">
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={exportCSV}>
+            <Download className="mr-2 h-4 w-4" /> Export CSV
+          </Button>
         {canManage && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -255,6 +275,7 @@ export default function BarangayIDsPage() {
           </DialogContent>
         </Dialog>
         )}
+        </div>
       </PageHeader>
 
       <Card>

@@ -9,10 +9,11 @@ interface ToastProps {
   title?: string;
   description?: string;
   variant?: "default" | "success" | "error";
+  action?: { label: string; onClick: () => void };
   onClose: () => void;
 }
 
-function Toast({ title, description, variant = "default", onClose }: ToastProps) {
+function Toast({ title, description, variant = "default", action, onClose }: ToastProps) {
   const config: Record<string, { bg: string; icon: React.ReactNode }> = {
     default: { bg: "bg-gray-900 text-white", icon: <Info className="h-4 w-4" /> },
     success: { bg: "bg-emerald-600 text-white", icon: <CheckCircle2 className="h-4 w-4" /> },
@@ -47,6 +48,14 @@ function Toast({ title, description, variant = "default", onClose }: ToastProps)
         {title && <div className="font-semibold text-sm">{title}</div>}
         {description && <div className="mt-0.5 text-sm opacity-90">{description}</div>}
       </div>
+      {action && (
+        <button
+          onClick={action.onClick}
+          className="shrink-0 text-sm font-medium underline underline-offset-2 opacity-90 hover:opacity-100 transition-opacity"
+        >
+          {action.label}
+        </button>
+      )}
       <button
         onClick={() => setExiting(true)}
         className="shrink-0 rounded-md p-1 opacity-70 hover:opacity-100 transition-opacity"
