@@ -88,15 +88,25 @@ export default function BlotterPage() {
   });
 
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchBlotters = useCallback(async () => {
-    const params = new URLSearchParams();
-    if (statusFilter !== "all") params.set("status", statusFilter);
-    if (search) params.set("search", search);
-    const res = await fetch(`/api/blotter?${params.toString()}`);
-    const data = await res.json();
-    setBlotters(data.blotters || []);
-    setCounts({ totalCount: data.totalCount || 0, openCount: data.openCount || 0, resolvedCount: data.resolvedCount || 0, escalatedCount: data.escalatedCount || 0 });
+    try {
+      const params = new URLSearchParams();
+      if (statusFilter !== "all") params.set("status", statusFilter);
+      if (search) params.set("search", search);
+      const res = await fetch(`/api/blotter?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to load blotter reports");
+      const data = await res.json();
+      setBlotters(data.blotters || []);
+      setCounts({ totalCount: data.totalCount || 0, openCount: data.openCount || 0, resolvedCount: data.resolvedCount || 0, escalatedCount: data.escalatedCount || 0 });
+      setError(null);
+    } catch {
+      setError("Failed to load blotter reports. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }, [statusFilter, search]);
 
   useEffect(() => { fetchBlotters(); }, [fetchBlotters]);
@@ -365,6 +375,14 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
 
       <Card>
         <CardContent className="p-0">
+          {loading ? (
+            <div className="flex items-center justify-center py-12"><p className="text-muted-foreground">Loading blotter reports...</p></div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <p className="text-red-500 mb-2">{error}</p>
+              <Button variant="outline" size="sm" onClick={() => { setLoading(true); setError(null); fetchBlotters(); }}>Retry</Button>
+            </div>
+          ) : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -430,6 +448,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
               )}
             </TableBody>
           </Table>
+          )}
         </CardContent>
       </Card>
 

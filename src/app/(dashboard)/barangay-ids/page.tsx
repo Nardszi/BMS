@@ -81,6 +81,7 @@ export default function BarangayIDsPage() {
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [revokeTarget, setRevokeTarget] = useState<string | null>(null);
   const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "SECRETARY"].includes(role);
 
@@ -129,12 +130,12 @@ export default function BarangayIDsPage() {
   }
 
   async function revokeID(id: string) {
-    if (!confirm("Revoke this ID? The holder will no longer have a valid Barangay ID.")) return;
     const res = await fetch(`/api/barangay-ids/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "REVOKED" }),
     });
+    setRevokeTarget(null);
     if (res.ok) {
       toast({ title: "ID Revoked", variant: "success" });
       fetchIDs();
@@ -333,7 +334,7 @@ export default function BarangayIDsPage() {
                         <Printer className="h-4 w-4" />
                       </Button>
                       {canManage && id.status === "ACTIVE" && (
-                        <Button variant="ghost" size="sm" onClick={() => revokeID(id.id)} aria-label="Revoke">
+                        <Button variant="ghost" size="sm" onClick={() => setRevokeTarget(id.id)} aria-label="Revoke">
                           <Ban className="h-4 w-4 text-amber-500" />
                         </Button>
                       )}
@@ -397,6 +398,15 @@ export default function BarangayIDsPage() {
           <IDCardPDF data={downloadID} captureId={`dl-${downloadID.id}`} />
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!revokeTarget}
+        onOpenChange={(open) => { if (!open) setRevokeTarget(null); }}
+        title="Revoke Barangay ID"
+        description="Are you sure you want to revoke this ID? The holder will no longer have a valid Barangay ID."
+        confirmLabel="Revoke"
+        onConfirm={() => { if (revokeTarget) revokeID(revokeTarget); }}
+      />
 
       <ConfirmDialog
         open={!!deleteTarget}

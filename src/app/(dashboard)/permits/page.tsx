@@ -17,6 +17,7 @@ import { toast } from "@/components/ui/toast";
 import { Plus, AlertTriangle, Eye, Search, FileText, RotateCcw, CheckCircle, XCircle, Clock, Trash2 } from "lucide-react";
 import { PermitPDF, buildPermitHTML } from "@/components/permit-pdf";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { PageHeader } from "@/components/page-header";
 
 const permitSchema = z.object({
   businessName: z.string().min(1, "Business name is required").max(200),
@@ -75,6 +76,8 @@ export default function PermitsPage() {
   const [activeTab, setActiveTab] = useState<StatusTab>("ALL");
   const [stats, setStats] = useState({ total: 0, active: 0, expiring: 0, expired: 0 });
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [revokeTarget, setRevokeTarget] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const role = session?.user?.role ?? "";
@@ -88,8 +91,10 @@ export default function PermitsPage() {
   const issueDate = watch("issueDate");
 
   const fetchPermits = async () => {
-    const res = await fetch("/api/permits");
-    const allData = await res.json();
+    try {
+      const res = await fetch("/api/permits");
+      if (!res.ok) throw new Error("Failed to load permits");
+      const allData = await res.json();
     const all: Permit[] = allData || [];
     const now = Date.now();
     setStats({
@@ -122,7 +127,12 @@ export default function PermitsPage() {
       });
     }
     setPermits(filtered);
-    setLoading(false);
+    setError(null);
+    } catch {
+      setError("Failed to load permits. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchResidents = async () => {
@@ -140,6 +150,7 @@ export default function PermitsPage() {
   }, [activeTab, search]);
 
   async function onSubmit(data: PermitForm) {
+    setSubmitting(true);
     const res = await fetch("/api/permits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -155,6 +166,7 @@ export default function PermitsPage() {
       const err = await res.json();
       toast({ title: "Error", description: err.error || "Failed to create permit", variant: "error" });
     }
+    setSubmitting(false);
   }
 
   async function revokePermit(id: string) {
@@ -233,11 +245,7 @@ export default function PermitsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Business Permits</h2>
-          <p className="text-sm text-muted-foreground">Track and manage business permits</p>
-        </div>
+      <PageHeader title="Business Permits" subtitle="Track and manage business permits">
         {canManage && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -298,12 +306,14 @@ export default function PermitsPage() {
                     {errors.expiryDate && <p className="text-sm text-red-500">{errors.expiryDate.message}</p>}
                   </div>
                 </div>
-                <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800">Create Permit</Button>
+                <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={submitting}>
+                  {submitting ? "Creating..." : "Create Permit"}
+                </Button>
               </form>
             </DialogContent>
           </Dialog>
         )}
-      </div>
+      </PageHeader>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -377,6 +387,14 @@ export default function PermitsPage() {
       {/* Table */}
       <Card>
         <CardContent className="p-0">
+          {loading ? (
+            <div className="flex items-center justify-center py-12"><p className="text-muted-foreground">Loading permits...</p></div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <p className="text-red-500 mb-2">{error}</p>
+              <Button variant="outline" size="sm" onClick={() => { setLoading(true); setError(null); fetchPermits(); }}>Retry</Button>
+            </div>
+          ) : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -445,6 +463,7 @@ export default function PermitsPage() {
               )}
             </TableBody>
           </Table>
+          )}
         </CardContent>
       </Card>
 

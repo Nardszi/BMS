@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/toast";
 import { Plus, Megaphone, Trash2, Pencil, Search, Pin, ChevronDown, ChevronUp, Eye, Clock, AlertTriangle, Info, ImageIcon } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { PageHeader } from "@/components/page-header";
 
 const PRIORITY_CONFIG = {
   URGENT: { label: "Urgent", color: "bg-red-100 text-red-700 border-red-200", icon: AlertTriangle },
@@ -86,6 +87,8 @@ export default function AnnouncementsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "SECRETARY"].includes(role);
 
@@ -98,19 +101,27 @@ export default function AnnouncementsPage() {
   const watchCategory = watch("category");
 
   const fetchAnnouncements = async () => {
-    const params = new URLSearchParams();
-    if (search) params.set("search", search);
-    if (filterPriority) params.set("priority", filterPriority);
-    if (filterCategory) params.set("category", filterCategory);
-    const res = await fetch(`/api/announcements?${params.toString()}`);
-    const data = await res.json();
-    setAnnouncements(data || []);
-    setLoading(false);
+    try {
+      const params = new URLSearchParams();
+      if (search) params.set("search", search);
+      if (filterPriority) params.set("priority", filterPriority);
+      if (filterCategory) params.set("category", filterCategory);
+      const res = await fetch(`/api/announcements?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to load announcements");
+      const data = await res.json();
+      setAnnouncements(data || []);
+      setError(null);
+    } catch {
+      setError("Failed to load announcements. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchAnnouncements(); }, [search, filterPriority, filterCategory]);
 
   async function onSubmit(data: AnnouncementForm) {
+    setSubmitting(true);
     const url = editing ? `/api/announcements/${editing.id}` : "/api/announcements";
     const method = editing ? "PUT" : "POST";
     const res = await fetch(url, {
@@ -128,6 +139,7 @@ export default function AnnouncementsPage() {
       const err = await res.json();
       toast({ title: "Error", description: err.error || "Failed to save announcement", variant: "error" });
     }
+    setSubmitting(false);
   }
 
   async function handleDelete(id: string) {
@@ -192,11 +204,7 @@ export default function AnnouncementsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Announcements</h2>
-          <p className="text-sm text-muted-foreground">Post and manage barangay announcements</p>
-        </div>
+      <PageHeader title="Announcements" subtitle="Post and manage barangay announcements">
         {canManage && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -247,14 +255,14 @@ export default function AnnouncementsPage() {
                   <Label>Expires On (Optional)</Label>
                   <Input type="date" {...register("expiresAt")} />
                 </div>
-                <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800">
-                  {editing ? "Update" : "Post"} Announcement
+                <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={submitting}>
+                  {submitting ? "Saving..." : editing ? "Update" : "Post"} Announcement
                 </Button>
               </form>
             </DialogContent>
           </Dialog>
         )}
-      </div>
+      </PageHeader>
 
       {/* Search & Filters */}
       <div className="flex flex-col sm:flex-row gap-3">

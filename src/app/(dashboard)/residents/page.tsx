@@ -110,6 +110,9 @@ export default function ResidentsPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [bulkDeleteTarget, setBulkDeleteTarget] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const role = session?.user?.role ?? "";
   const canEdit = ["ADMIN", "SECRETARY", "STAFF"].includes(role);
@@ -121,22 +124,31 @@ export default function ResidentsPage() {
   });
 
   const fetchResidents = async () => {
-    const params = new URLSearchParams({ page: String(page), limit: "15", sortBy, sortOrder });
-    if (search) params.set("search", search);
-    if (purokFilter) params.set("purok", purokFilter);
-    if (statusFilter) params.set("status", statusFilter);
-    const res = await fetch(`/api/residents?${params}`);
-    const data = await res.json();
-    setResidents(data.residents || []);
-    setTotalPages(data.totalPages || 1);
-    setPendingCount(data.pendingCount || 0);
-    setApprovedCount(data.approvedCount || 0);
-    setRejectedCount(data.rejectedCount || 0);
+    try {
+      const params = new URLSearchParams({ page: String(page), limit: "15", sortBy, sortOrder });
+      if (search) params.set("search", search);
+      if (purokFilter) params.set("purok", purokFilter);
+      if (statusFilter) params.set("status", statusFilter);
+      const res = await fetch(`/api/residents?${params}`);
+      if (!res.ok) throw new Error("Failed to load residents");
+      const data = await res.json();
+      setResidents(data.residents || []);
+      setTotalPages(data.totalPages || 1);
+      setPendingCount(data.pendingCount || 0);
+      setApprovedCount(data.approvedCount || 0);
+      setRejectedCount(data.rejectedCount || 0);
+      setError(null);
+    } catch {
+      setError("Failed to load residents. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchResidents(); }, [page, search, purokFilter, statusFilter, sortBy, sortOrder]);
 
   async function onSubmit(data: ResidentForm) {
+    setSubmitting(true);
     try {
       if (editing) {
         const res = await fetch(`/api/residents/${editing.id}`, {
@@ -200,6 +212,8 @@ export default function ResidentsPage() {
       }
     } catch {
       toast({ title: "Error", description: "Something went wrong", variant: "error" });
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -436,8 +450,8 @@ export default function ResidentsPage() {
                   <input type="checkbox" id="voter" {...register("isRegisteredVoter")} className="rounded" />
                   <Label htmlFor="voter">Registered Voter</Label>
                 </div>
-                <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800">
-                  {editing ? "Update" : "Add"} Resident
+                <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={submitting}>
+                  {submitting ? "Saving..." : editing ? "Update" : "Add"} Resident
                 </Button>
               </form>
             </DialogContent>
@@ -548,6 +562,14 @@ export default function ResidentsPage() {
               )}
             </div>
           </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-12"><p className="text-muted-foreground">Loading residents...</p></div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <p className="text-red-500 mb-2">{error}</p>
+              <Button variant="outline" size="sm" onClick={() => { setLoading(true); setError(null); fetchResidents(); }}>Retry</Button>
+            </div>
+          ) : (<>
           <Table>
             <TableHeader>
               <TableRow>
@@ -637,6 +659,8 @@ export default function ResidentsPage() {
               <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</Button>
             </div>
           </div>
+          </>
+          )}
         </CardContent>
       </Card>
 

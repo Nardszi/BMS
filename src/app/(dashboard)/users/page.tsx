@@ -45,6 +45,7 @@ export default function UsersPage() {
   const [password, setPassword] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
@@ -83,6 +84,7 @@ export default function UsersPage() {
       return;
     }
 
+    setSubmitting(true);
     const body: any = { name, email, role: selectedRole };
     if (password) body.password = password;
 
@@ -109,6 +111,7 @@ export default function UsersPage() {
       const err = await res.json();
       toast({ title: err.error || "Something went wrong", variant: "error" });
     }
+    setSubmitting(false);
   }
 
   async function deleteUser(id: string) {
@@ -236,8 +239,8 @@ export default function UsersPage() {
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800">
-              {editing ? "Update" : "Create"}
+            <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={submitting}>
+              {submitting ? "Saving..." : editing ? "Update" : "Create"}
             </Button>
           </form>
         </DialogContent>

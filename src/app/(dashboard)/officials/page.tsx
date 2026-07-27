@@ -16,6 +16,7 @@ import { Plus, Trash2, Pencil, Search, Printer, Shield } from "lucide-react";
 import { BARANGAY_ADDRESS } from "@/lib/constants";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { escapeHtml } from "@/lib/sanitize";
+import { PageHeader } from "@/components/page-header";
 
 const POSITIONS = [
   { value: "Barangay Captain", rank: 1 },
@@ -93,6 +94,7 @@ export default function OfficialsPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const role = session?.user?.role ?? "";
 
@@ -120,6 +122,7 @@ export default function OfficialsPage() {
   useEffect(() => { fetchOfficials(); fetchUsers(); }, []);
 
   async function onSubmit(data: OfficialForm) {
+    setSubmitting(true);
     const url = editing ? `/api/officials/${editing.id}` : "/api/officials";
     const method = editing ? "PUT" : "POST";
     const res = await fetch(url, {
@@ -137,6 +140,7 @@ export default function OfficialsPage() {
       const err = await res.json();
       toast({ title: "Error", description: err.error || "Failed to save official", variant: "error" });
     }
+    setSubmitting(false);
   }
 
   async function removeOfficial(id: string) {
@@ -219,11 +223,7 @@ export default function OfficialsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Barangay Officials</h2>
-          <p className="text-sm text-muted-foreground">Manage current officials and their terms</p>
-        </div>
+      <PageHeader title="Barangay Officials" subtitle="Manage current officials and their terms">
         <div className="flex gap-2">
           <Button variant="outline" onClick={handlePrint}>
             <Printer className="mr-2 h-4 w-4" /> Print List
@@ -276,13 +276,15 @@ export default function OfficialsPage() {
                       <Input type="date" {...register("termEnd")} />
                     </div>
                   </div>
-                  <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800">{editing ? "Update" : "Assign"}</Button>
+                  <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={submitting}>
+                    {submitting ? "Saving..." : editing ? "Update" : "Assign"}
+                  </Button>
                 </form>
               </DialogContent>
             </Dialog>
           )}
         </div>
-      </div>
+      </PageHeader>
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
