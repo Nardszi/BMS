@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 
     const ids = await prisma.barangayID.findMany({
       where,
-      include: { resident: { include: { household: true } }, issuedBy: true },
+      include: { resident: { include: { household: true } }, issuedBy: { select: { id: true, name: true, role: true } } },
       orderBy: { createdAt: "desc" },
       take: 10000,
     });
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
           issueDate, expiryDate, contactNumber: contactNumber || null,
           address, issuedById: session.user.id,
         },
-        include: { resident: { include: { household: true } }, issuedBy: true },
+        include: { resident: { include: { household: true } }, issuedBy: { select: { id: true, name: true, role: true } } },
       });
     });
 

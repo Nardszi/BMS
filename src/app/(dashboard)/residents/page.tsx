@@ -19,6 +19,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { escapeHtml } from "@/lib/sanitize";
 import { PUROK_OPTIONS } from "@/lib/constants";
 
 function formatPhone(value: string) {
@@ -262,8 +263,8 @@ export default function ResidentsPage() {
   function printAll() {
     const headers = ["Name", "Purok", "Contact", "Status", "Voter"];
     const rows = residents.map((r) => [
-      `${r.lastName}, ${r.firstName} ${r.middleName || ""}`,
-      `Purok ${r.household.purok}`,
+      `${escapeHtml(r.lastName)}, ${escapeHtml(r.firstName)} ${escapeHtml(r.middleName || "")}`,
+      `Purok ${escapeHtml(r.household.purok)}`,
       r.contactNumber || "-",
       r.status,
       r.isRegisteredVoter ? "Yes" : "No",

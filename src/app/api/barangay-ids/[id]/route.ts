@@ -24,7 +24,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const id = await prisma.barangayID.update({
       where: { id: params.id },
       data: { status: body.status, photoUrl: body.photoUrl },
-      include: { resident: { include: { household: true } }, issuedBy: true },
+      include: { resident: { include: { household: true } }, issuedBy: { select: { id: true, name: true, role: true } } },
     });
 
     await logAudit({ userId: session.user.id, action: "UPDATE", entity: "BarangayId", entityId: params.id, details: { idNumber: id.idNumber, newStatus: body.status } }).catch(() => {});

@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
     const blotters = await prisma.blotterReport.findMany({
       where,
-      include: { handledBy: true },
+      include: { handledBy: { select: { id: true, name: true, role: true } } },
       orderBy: { createdAt: "desc" },
       take: 10000,
     });

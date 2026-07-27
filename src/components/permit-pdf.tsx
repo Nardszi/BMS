@@ -1,5 +1,7 @@
 "use client";
 
+import { escapeHtml } from "@/lib/sanitize";
+
 interface PermitProps {
   permit: {
     permitNumber: string;
@@ -110,16 +112,16 @@ export function buildPermitHTML(p: PermitProps["permit"]): string {
     <div class="title-section"><h1>Business Permit</h1></div>
     <div class="permit-num">
       <div class="label">Permit Number</div>
-      <div class="number">${p.permitNumber}</div>
+      <div class="number">${escapeHtml(p.permitNumber)}</div>
     </div>
     <div class="body-text">
       <p>To all whom it may present:</p>
-      <p><b>${fullName}</b>, of legal age, Filipino, and a resident of <b>${p.address}</b>, is hereby granted this Business Permit to operate a <b>${p.businessType}</b> under the business name <b>${p.businessName}</b>.</p>
+      <p><b>${escapeHtml(fullName)}</b>, of legal age, Filipino, and a resident of <b>${escapeHtml(p.address)}</b>, is hereby granted this Business Permit to operate a <b>${escapeHtml(p.businessType)}</b> under the business name <b>${escapeHtml(p.businessName)}</b>.</p>
       <p>This permit is issued in accordance with the provisions of the Local Government Code of 1991 (R.A. 7160) and the Barangay Ordinances regulating business establishments within the barangay.</p>
       <p>This permit is valid from <b>${issueDate}</b> to <b>${expiryDate}</b>, unless sooner revoked or suspended for cause.</p>
     </div>
     <div class="seal-and-sigs">
-      <div class="sig-block"><div class="sig-line"><div class="sig-name">${fullName}</div><div class="sig-title">Permit Holder</div></div></div>
+      <div class="sig-block"><div class="sig-line"><div class="sig-name">${escapeHtml(fullName)}</div><div class="sig-title">Permit Holder</div></div></div>
       <div class="seal-img"><img src="${sealUrl}" alt="Seal"></div>
       <div class="sig-block"><div class="sig-line"><div class="sig-name">HON. _______________</div><div class="sig-title">Barangay Captain</div></div></div>
     </div>

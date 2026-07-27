@@ -15,6 +15,7 @@ import { toast } from "@/components/ui/toast";
 import { Plus, Trash2, Pencil, Search, Printer, Shield } from "lucide-react";
 import { BARANGAY_ADDRESS } from "@/lib/constants";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { escapeHtml } from "@/lib/sanitize";
 
 const POSITIONS = [
   { value: "Barangay Captain", rank: 1 },
@@ -201,7 +202,7 @@ export default function OfficialsPage() {
         <tbody>
           ${filtered.map((o, i) => {
             const ts = getTermStatus(o.termStart, o.termEnd);
-            return `<tr><td>${i + 1}</td><td>${o.user.name}</td><td class="pos">${o.position}</td><td>${new Date(o.termStart).toLocaleDateString("en-PH")}</td><td>${new Date(o.termEnd).toLocaleDateString("en-PH")}</td><td>${ts.label}</td></tr>`;
+            return `<tr><td>${i + 1}</td><td>${escapeHtml(o.user.name)}</td><td class="pos">${escapeHtml(o.position)}</td><td>${new Date(o.termStart).toLocaleDateString("en-PH")}</td><td>${new Date(o.termEnd).toLocaleDateString("en-PH")}</td><td>${escapeHtml(ts.label)}</td></tr>`;
           }).join("")}
         </tbody>
       </table>

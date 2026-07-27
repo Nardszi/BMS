@@ -19,7 +19,7 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://*.cartocdn.com https://tile.openstreetmap.org https://*.openstreetmap.org https://server.arcgisonline.com",
               "font-src 'self'",

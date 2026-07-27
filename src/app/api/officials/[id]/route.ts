@@ -41,7 +41,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const official = await prisma.official.update({
       where: { id: params.id },
       data: { position, termStart: new Date(termStart), termEnd: new Date(termEnd) },
-      include: { user: true },
+      include: { user: { select: { id: true, name: true, email: true, role: true } } },
     });
 
     return NextResponse.json(official);
