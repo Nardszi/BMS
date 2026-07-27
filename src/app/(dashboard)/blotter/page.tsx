@@ -23,6 +23,7 @@ import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { BARANGAY_FULL_NAME, BARANGAY_CITY, BARANGAY_PROVINCE } from "@/lib/constants";
 import { escapeHtml } from "@/lib/sanitize";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 const blotterSchema = z.object({
   complainantName: z.string().min(1, "Complainant name is required").max(200),
@@ -77,6 +78,7 @@ export default function BlotterPage() {
   const [resolveNotes, setResolveNotes] = useState("");
   const [resolveTarget, setResolveTarget] = useState<string | null>(null);
   const [counts, setCounts] = useState({ totalCount: 0, openCount: 0, resolvedCount: 0, escalatedCount: 0 });
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const role = session?.user?.role ?? "";
   const canCreate = ["ADMIN", "SECRETARY", "KAGAWAD"].includes(role);
 
@@ -136,8 +138,8 @@ export default function BlotterPage() {
   }
 
   async function deleteBlotter(id: string) {
-    if (!window.confirm("Are you sure you want to delete this blotter report? This action cannot be undone.")) return;
     const res = await fetch(`/api/blotter/${id}`, { method: "DELETE" });
+    setDeleteTarget(null);
     if (res.ok) {
       toast({ title: "Blotter Report Deleted", variant: "success" });
       fetchBlotters();
@@ -407,7 +409,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                           <Printer className="h-4 w-4" />
                         </Button>
                         {canCreate && (
-                          <Button variant="ghost" size="sm" onClick={() => deleteBlotter(b.id)} aria-label="Delete">
+                          <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(b.id)} aria-label="Delete">
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
                         )}
@@ -502,6 +504,14 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Delete Blotter Report"
+        description="Are you sure you want to delete this blotter report? This action cannot be undone."
+        onConfirm={() => { if (deleteTarget) deleteBlotter(deleteTarget); }}
+      />
     </div>
   );
 }

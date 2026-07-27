@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/toast";
 import { Plus, AlertTriangle, Eye, Search, FileText, RotateCcw, CheckCircle, XCircle, Clock, Trash2 } from "lucide-react";
 import { PermitPDF, buildPermitHTML } from "@/components/permit-pdf";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 const permitSchema = z.object({
   businessName: z.string().min(1, "Business name is required").max(200),
@@ -74,6 +75,8 @@ export default function PermitsPage() {
   const [activeTab, setActiveTab] = useState<StatusTab>("ALL");
   const [stats, setStats] = useState({ total: 0, active: 0, expiring: 0, expired: 0 });
   const [loading, setLoading] = useState(true);
+  const [revokeTarget, setRevokeTarget] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "TREASURER"].includes(role);
   const canDelete = role === "ADMIN";
@@ -155,12 +158,12 @@ export default function PermitsPage() {
   }
 
   async function revokePermit(id: string) {
-    if (!window.confirm("Are you sure you want to revoke this permit? This action cannot be undone.")) return;
     const res = await fetch(`/api/permits/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "REVOKED" }),
     });
+    setRevokeTarget(null);
     if (res.ok) {
       toast({ title: "Permit Revoked", variant: "success" });
       fetchPermits();
@@ -171,8 +174,8 @@ export default function PermitsPage() {
   }
 
   async function deletePermit(id: string) {
-    if (!window.confirm("Are you sure you want to delete this permit? This action cannot be undone.")) return;
     const res = await fetch(`/api/permits/${id}`, { method: "DELETE" });
+    setDeleteTarget(null);
     if (res.ok) {
       toast({ title: "Permit Deleted", variant: "success" });
       setViewPermit(null);
@@ -419,7 +422,7 @@ export default function PermitsPage() {
                               <Eye className="h-4 w-4" />
                             </Button>
                             {p.status === "ACTIVE" && (
-                              <Button variant="ghost" size="sm" onClick={() => revokePermit(p.id)} title="Revoke" aria-label="Revoke">
+                              <Button variant="ghost" size="sm" onClick={() => setRevokeTarget(p.id)} title="Revoke" aria-label="Revoke">
                                 <XCircle className="h-4 w-4 text-red-500" />
                               </Button>
                             )}
@@ -429,7 +432,7 @@ export default function PermitsPage() {
                               </Button>
                             )}
                             {canDelete && (
-                              <Button variant="ghost" size="sm" onClick={() => deletePermit(p.id)} title="Delete" aria-label="Delete">
+                              <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(p.id)} title="Delete" aria-label="Delete">
                                 <Trash2 className="h-4 w-4 text-red-500" />
                               </Button>
                             )}
@@ -504,7 +507,7 @@ export default function PermitsPage() {
                   </Button>
                 )}
                 {canDelete && (
-                  <Button onClick={() => deletePermit(viewPermit.id)} variant="destructive" className="flex-1">
+                  <Button onClick={() => setDeleteTarget(viewPermit.id)} variant="destructive" className="flex-1">
                     <Trash2 className="mr-2 h-4 w-4" /> Delete Permit
                   </Button>
                 )}
@@ -513,6 +516,23 @@ export default function PermitsPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      <ConfirmDialog
+        open={!!revokeTarget}
+        onOpenChange={(open) => { if (!open) setRevokeTarget(null); }}
+        title="Revoke Permit"
+        description="Are you sure you want to revoke this permit? This action cannot be undone."
+        confirmLabel="Revoke"
+        onConfirm={() => { if (revokeTarget) revokePermit(revokeTarget); }}
+      />
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Delete Permit"
+        description="Are you sure you want to delete this permit? This action cannot be undone."
+        onConfirm={() => { if (deleteTarget) deletePermit(deleteTarget); }}
+      />
     </div>
   );
 }

@@ -18,6 +18,7 @@ import { Plus, Search, Pencil, Trash2, CheckCircle2, XCircle, Eye, Users, Clock,
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PUROK_OPTIONS } from "@/lib/constants";
 
 function formatPhone(value: string) {
@@ -106,6 +107,8 @@ export default function ResidentsPage() {
   const [approvedCount, setApprovedCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [bulkDeleteTarget, setBulkDeleteTarget] = useState(false);
 
   const role = session?.user?.role ?? "";
   const canEdit = ["ADMIN", "SECRETARY", "STAFF"].includes(role);
@@ -224,8 +227,8 @@ export default function ResidentsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this resident?")) return;
     const res = await fetch(`/api/residents/${id}`, { method: "DELETE" });
+    setDeleteTarget(null);
     if (res.ok) {
       toast({ title: "Resident Deleted", variant: "success" });
       fetchResidents();
@@ -236,13 +239,13 @@ export default function ResidentsPage() {
   }
 
   async function handleBulkDelete() {
-    if (!confirm(`Are you sure you want to delete ${selectedIds.length} selected resident(s)? This cannot be undone.`)) return;
     try {
       const res = await fetch("/api/residents", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: selectedIds }),
       });
+      setBulkDeleteTarget(false);
       if (res.ok) {
         toast({ title: `${selectedIds.length} resident(s) deleted`, variant: "success" });
         setSelectedIds([]);
@@ -538,7 +541,7 @@ export default function ResidentsPage() {
                 </>
               )}
               {selectedIds.length > 0 && canDelete && (
-                <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                <Button variant="destructive" size="sm" onClick={() => setBulkDeleteTarget(true)}>
                   <Trash2 className="mr-2 h-4 w-4" /> Delete Selected ({selectedIds.length})
                 </Button>
               )}
@@ -616,7 +619,7 @@ export default function ResidentsPage() {
                         </Button>
                       )}
                       {canDelete && (
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(r.id)} aria-label="Delete">
+                        <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(r.id)} aria-label="Delete">
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       )}
@@ -724,6 +727,23 @@ export default function ResidentsPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Delete Resident"
+        description="Are you sure you want to delete this resident? This action cannot be undone."
+        onConfirm={() => { if (deleteTarget) handleDelete(deleteTarget); }}
+      />
+
+      <ConfirmDialog
+        open={bulkDeleteTarget}
+        onOpenChange={setBulkDeleteTarget}
+        title="Delete Selected Residents"
+        description={`Are you sure you want to delete ${selectedIds.length} selected resident(s)? This action cannot be undone.`}
+        confirmLabel="Delete All"
+        onConfirm={handleBulkDelete}
+      />
     </div>
   );
 }

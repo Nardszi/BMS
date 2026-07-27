@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/toast";
 import { Plus, Trash2, Pencil, Search, Printer, Shield } from "lucide-react";
 import { BARANGAY_ADDRESS } from "@/lib/constants";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 const POSITIONS = [
   { value: "Barangay Captain", rank: 1 },
@@ -90,6 +91,7 @@ export default function OfficialsPage() {
   const [editing, setEditing] = useState<Official | null>(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
   const role = session?.user?.role ?? "";
 
@@ -137,8 +139,8 @@ export default function OfficialsPage() {
   }
 
   async function removeOfficial(id: string) {
-    if (!confirm("Remove this official?")) return;
     const res = await fetch(`/api/officials/${id}`, { method: "DELETE" });
+    setDeleteTarget(null);
     if (res.ok) {
       toast({ title: "Official Removed", variant: "success" });
       fetchOfficials();
@@ -302,7 +304,7 @@ export default function OfficialsPage() {
                       {role === "ADMIN" && (
                         <div className="flex gap-1">
                            <Button variant="ghost" size="sm" onClick={() => openEdit(o)} aria-label="Edit"><Pencil className="h-3.5 w-3.5" /></Button>
-                           <Button variant="ghost" size="sm" onClick={() => removeOfficial(o.id)} aria-label="Remove"><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
+                            <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(o.id)} aria-label="Remove"><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
                         </div>
                       )}
                     </div>
@@ -327,6 +329,15 @@ export default function OfficialsPage() {
       </div>
 
       <div className="hidden"><div ref={printRef}></div></div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Remove Official"
+        description="Are you sure you want to remove this official? This action cannot be undone."
+        confirmLabel="Remove"
+        onConfirm={() => { if (deleteTarget) removeOfficial(deleteTarget); }}
+      />
     </div>
   );
 }

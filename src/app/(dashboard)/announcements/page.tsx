@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/toast";
 import { Plus, Megaphone, Trash2, Pencil, Search, Pin, ChevronDown, ChevronUp, Eye, Clock, AlertTriangle, Info, ImageIcon } from "lucide-react";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 const PRIORITY_CONFIG = {
   URGENT: { label: "Urgent", color: "bg-red-100 text-red-700 border-red-200", icon: AlertTriangle },
@@ -84,6 +85,7 @@ export default function AnnouncementsPage() {
   const [filterCategory, setFilterCategory] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "SECRETARY"].includes(role);
 
@@ -129,8 +131,8 @@ export default function AnnouncementsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this announcement?")) return;
     const res = await fetch(`/api/announcements/${id}`, { method: "DELETE" });
+    setDeleteTarget(null);
     if (res.ok) {
       toast({ title: "Announcement Deleted", variant: "success" });
       fetchAnnouncements();
@@ -316,7 +318,7 @@ export default function AnnouncementsPage() {
                               <Pin className={`h-3.5 w-3.5 ${ann.pinned ? "text-violet-500" : "text-muted-foreground/70"}`} />
                             </Button>
                             <Button variant="ghost" size="sm" onClick={() => openEdit(ann)} aria-label="Edit"><Pencil className="h-3.5 w-3.5" /></Button>
-                            <Button variant="ghost" size="sm" onClick={() => handleDelete(ann.id)} aria-label="Delete"><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
+                            <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(ann.id)} aria-label="Delete"><Trash2 className="h-3.5 w-3.5 text-red-500" /></Button>
                           </div>
                         )}
                       </div>
@@ -356,6 +358,14 @@ export default function AnnouncementsPage() {
           })
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Delete Announcement"
+        description="Are you sure you want to delete this announcement? This action cannot be undone."
+        onConfirm={() => { if (deleteTarget) handleDelete(deleteTarget); }}
+      />
     </div>
   );
 }

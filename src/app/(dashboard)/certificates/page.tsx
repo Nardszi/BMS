@@ -23,6 +23,7 @@ import { PageHeader } from "@/components/page-header";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { escapeHtml } from "@/lib/sanitize";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 const certSchema = z.object({
   residentId: z.string().min(1, "Resident is required"),
@@ -72,6 +73,7 @@ export default function CertificatesPage() {
   const canManage = ["ADMIN", "SECRETARY"].includes(role);
 
   const [submitting, setSubmitting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<CertForm>({
     resolver: zodResolver(certSchema),
@@ -128,8 +130,8 @@ export default function CertificatesPage() {
   }
 
   async function deleteCertificate(id: string) {
-    if (!window.confirm("Are you sure you want to delete this certificate request? This action cannot be undone.")) return;
     const res = await fetch(`/api/certificates/${id}`, { method: "DELETE" });
+    setDeleteTarget(null);
     if (res.ok) {
       toast({ title: "Certificate Deleted", variant: "success" });
       fetchCertificates();
@@ -408,7 +410,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                         <Button variant="ghost" size="sm" onClick={() => setPreviewCert(c)} aria-label="View certificate">
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => deleteCertificate(c.id)} aria-label="Delete certificate">
+                        <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(c.id)} aria-label="Delete certificate">
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       </TableCell>
@@ -443,6 +445,14 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
           </DialogContent>
         </Dialog>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Delete Certificate Request"
+        description="Are you sure you want to delete this certificate request? This action cannot be undone."
+        onConfirm={() => { if (deleteTarget) deleteCertificate(deleteTarget); }}
+      />
     </div>
   );
 }

@@ -21,6 +21,7 @@ import { formatDate } from "@/lib/utils";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 const idSchema = z.object({
   residentId: z.string().min(1, "Resident is required"),
@@ -79,6 +80,7 @@ export default function BarangayIDsPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "SECRETARY"].includes(role);
 
@@ -140,8 +142,8 @@ export default function BarangayIDsPage() {
   }
 
   async function deleteID(id: string) {
-    if (!confirm("Permanently delete this ID record?")) return;
     const res = await fetch(`/api/barangay-ids/${id}`, { method: "DELETE" });
+    setDeleteTarget(null);
     if (res.ok) {
       toast({ title: "ID Deleted", variant: "success" });
       fetchIDs();
@@ -336,7 +338,7 @@ export default function BarangayIDsPage() {
                         </Button>
                       )}
                       {role === "ADMIN" && (
-                        <Button variant="ghost" size="sm" onClick={() => deleteID(id.id)} aria-label="Delete">
+                        <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(id.id)} aria-label="Delete">
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       )}
@@ -395,6 +397,14 @@ export default function BarangayIDsPage() {
           <IDCardPDF data={downloadID} captureId={`dl-${downloadID.id}`} />
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Delete Barangay ID"
+        description="Are you sure you want to permanently delete this ID record? This action cannot be undone."
+        onConfirm={() => { if (deleteTarget) deleteID(deleteTarget); }}
+      />
     </div>
   );
 }
