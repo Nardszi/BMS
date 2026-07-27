@@ -249,7 +249,7 @@ export default function PermitsPage() {
         {canManage && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-blue-900 hover:bg-blue-800">
+              <Button className="bg-primary hover:bg-primary/90">
                 <Plus className="mr-2 h-4 w-4" /> New Permit
               </Button>
             </DialogTrigger>
@@ -306,7 +306,7 @@ export default function PermitsPage() {
                     {errors.expiryDate && <p className="text-sm text-red-500">{errors.expiryDate.message}</p>}
                   </div>
                 </div>
-                <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={submitting}>
+                <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={submitting}>
                   {submitting ? "Creating..." : "Create Permit"}
                 </Button>
               </form>
@@ -517,7 +517,7 @@ export default function PermitsPage() {
                 </div>
               </div>
               <div className="flex gap-2 pt-2">
-                <Button onClick={handlePrint} className="flex-1 bg-blue-900 hover:bg-blue-800">
+                <Button onClick={handlePrint} className="flex-1 bg-primary hover:bg-primary/90">
                   <FileText className="mr-2 h-4 w-4" /> Print Permit
                 </Button>
                 {(viewPermit.status === "EXPIRED" || (viewPermit.status === "ACTIVE" && getDaysUntilExpiry(viewPermit.expiryDate) <= 30)) && (

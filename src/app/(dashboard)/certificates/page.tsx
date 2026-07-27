@@ -279,7 +279,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
       <PageHeader title="Certificates" subtitle="Manage certificate requests">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-blue-900 hover:bg-blue-800">
+            <Button className="bg-primary hover:bg-primary/90">
               <Plus className="mr-2 h-4 w-4" /> New Request
             </Button>
           </DialogTrigger>
@@ -320,7 +320,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                 <Textarea {...register("purpose")} placeholder="Purpose of the certificate..." />
                 {errors.purpose && <p className="text-sm text-red-500">{errors.purpose.message}</p>}
               </div>
-              <Button type="submit" disabled={submitting} className="w-full bg-blue-900 hover:bg-blue-800">
+              <Button type="submit" disabled={submitting} className="w-full bg-primary hover:bg-primary/90">
                 {submitting ? "Submitting..." : "Submit Request"}
               </Button>
             </form>

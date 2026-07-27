@@ -189,7 +189,7 @@ export default function BarangayIDsPage() {
         {canManage && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-blue-900 hover:bg-blue-800">
+              <Button className="bg-primary hover:bg-primary/90">
                 <Plus className="mr-2 h-4 w-4" /> Generate ID
               </Button>
             </DialogTrigger>
@@ -248,7 +248,7 @@ export default function BarangayIDsPage() {
                   ID will be valid for 3 years. ID number will be auto-generated.
                 </p>
 
-                <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800">
+                <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
                   <CreditCard className="mr-2 h-4 w-4" /> Generate ID
                 </Button>
               </form>
@@ -364,7 +364,7 @@ export default function BarangayIDsPage() {
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setPreviewID(null)}>Close</Button>
-              <Button className="bg-blue-900 hover:bg-blue-800" onClick={() => downloadAsPDF(`id-preview-${previewID.id}`, previewID.resident.lastName)}>
+              <Button className="bg-primary hover:bg-primary/90" onClick={() => downloadAsPDF(`id-preview-${previewID.id}`, previewID.resident.lastName)}>
                 <FileDown className="mr-2 h-4 w-4" /> Save as PDF
               </Button>
             </div>
@@ -384,7 +384,7 @@ export default function BarangayIDsPage() {
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setPrintID(null)}>Close</Button>
-              <Button className="bg-blue-900 hover:bg-blue-800" onClick={() => window.print()}>
+              <Button className="bg-primary hover:bg-primary/90" onClick={() => window.print()}>
                 <Printer className="mr-2 h-4 w-4" /> Print
               </Button>
             </div>

@@ -140,7 +140,7 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="User Management" subtitle="Manage system users and their roles">
-        <Button className="bg-blue-900 hover:bg-blue-800" onClick={openCreate}>
+        <Button className="bg-primary hover:bg-primary/90" onClick={openCreate}>
           <Plus className="mr-2 h-4 w-4" /> Add User
         </Button>
       </PageHeader>
@@ -239,7 +239,7 @@ export default function UsersPage() {
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={submitting}>
+            <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={submitting}>
               {submitting ? "Saving..." : editing ? "Update" : "Create"}
             </Button>
           </form>

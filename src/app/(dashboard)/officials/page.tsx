@@ -231,7 +231,7 @@ export default function OfficialsPage() {
           {role === "ADMIN" && (
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-blue-900 hover:bg-blue-800" onClick={() => { setEditing(null); reset(); }}>
+                <Button className="bg-primary hover:bg-primary/90" onClick={() => { setEditing(null); reset(); }}>
                   <Plus className="mr-2 h-4 w-4" /> {editing ? "Edit" : "Assign"} Official
                 </Button>
               </DialogTrigger>
@@ -276,7 +276,7 @@ export default function OfficialsPage() {
                       <Input type="date" {...register("termEnd")} />
                     </div>
                   </div>
-                  <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={submitting}>
+                  <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={submitting}>
                     {submitting ? "Saving..." : editing ? "Update" : "Assign"}
                   </Button>
                 </form>

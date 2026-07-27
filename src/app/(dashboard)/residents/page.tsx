@@ -346,7 +346,7 @@ export default function ResidentsPage() {
         {canEdit && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button onClick={openNew} className="bg-blue-900 hover:bg-blue-800">
+              <Button onClick={openNew} className="bg-primary hover:bg-primary/90">
                 <Plus className="mr-2 h-4 w-4" /> Add Resident
               </Button>
             </DialogTrigger>
@@ -450,7 +450,7 @@ export default function ResidentsPage() {
                   <input type="checkbox" id="voter" {...register("isRegisteredVoter")} className="rounded" />
                   <Label htmlFor="voter">Registered Voter</Label>
                 </div>
-                <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={submitting}>
+                <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={submitting}>
                   {submitting ? "Saving..." : editing ? "Update" : "Add"} Resident
                 </Button>
               </form>

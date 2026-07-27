@@ -278,7 +278,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
         {canCreate && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-blue-900 hover:bg-blue-800">
+              <Button className="bg-primary hover:bg-primary/90">
                 <Plus className="mr-2 h-4 w-4" /> File Report
               </Button>
             </DialogTrigger>
@@ -331,7 +331,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
                   <Textarea {...register("narrative")} rows={5} placeholder="Describe the incident in detail..." />
                   {errors.narrative && <p className="text-sm text-red-500">{errors.narrative.message}</p>}
                 </div>
-                <Button type="submit" disabled={submitting} className="w-full bg-blue-900 hover:bg-blue-800">
+                <Button type="submit" disabled={submitting} className="w-full bg-primary hover:bg-primary/90">
                   {submitting ? "Filing Report..." : "File Report"}
                 </Button>
               </form>

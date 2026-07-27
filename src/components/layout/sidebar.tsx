@@ -98,7 +98,7 @@ export function Sidebar() {
         {!collapsed && (
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-white tracking-wide truncate">Barangay IX</p>
-            <p className="text-[10px] text-slate-400 truncate">Daan Banwa, Victorias City</p>
+            <p className="text-[11px] text-slate-400 truncate">Daan Banwa, Victorias City</p>
           </div>
         )}
         {/* Active indicator dot */}
@@ -114,7 +114,7 @@ export function Sidebar() {
           return (
             <div key={group} className="mb-2">
               {!collapsed && (
-                <p className="mb-1 px-2.5 text-[9px] font-bold uppercase tracking-widest text-slate-500">
+                <p className="mb-1 px-2.5 text-[11px] font-bold uppercase tracking-widest text-slate-500">
                   {group}
                 </p>
               )}
@@ -194,7 +194,7 @@ export function Sidebar() {
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-semibold text-white">{session?.user?.name}</p>
               <span className={cn(
-                "mt-0.5 inline-block rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
+                "mt-0.5 inline-block rounded px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wider",
                 roleColors[userRole] || "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200"
               )}>
                 {userRole}

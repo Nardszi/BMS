@@ -137,7 +137,7 @@ export default function ProfilePage() {
                 {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>}
               </div>
 
-              <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={loading}>
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={loading}>
                 {loading ? "Updating..." : "Update Password"}
               </Button>
             </form>

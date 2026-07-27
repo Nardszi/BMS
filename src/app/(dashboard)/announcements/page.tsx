@@ -208,7 +208,7 @@ export default function AnnouncementsPage() {
         {canManage && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-blue-900 hover:bg-blue-800" onClick={() => { setEditing(null); reset(); }}>
+              <Button className="bg-primary hover:bg-primary/90" onClick={() => { setEditing(null); reset(); }}>
                 <Plus className="mr-2 h-4 w-4" /> New Announcement
               </Button>
             </DialogTrigger>
@@ -255,7 +255,7 @@ export default function AnnouncementsPage() {
                   <Label>Expires On (Optional)</Label>
                   <Input type="date" {...register("expiresAt")} />
                 </div>
-                <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={submitting}>
+                <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={submitting}>
                   {submitting ? "Saving..." : editing ? "Update" : "Post"} Announcement
                 </Button>
               </form>
