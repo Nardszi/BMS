@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAuth, requireRole } from "@/lib/auth-helpers";
+import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { notifyUsersByRole } from "@/lib/notify";
 import { permitSchema } from "@/lib/validations";
@@ -18,8 +18,8 @@ function generatePermitNumber(): string {
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await requireAuth();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status") || "";
@@ -67,13 +67,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const role = session.user.role;
-    if (!["ADMIN", "TREASURER"].includes(role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const user = await requireRole([Role.ADMIN, Role.TREASURER]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const body = await request.json();
     const parsed = permitSchema.safeParse(body);
@@ -104,7 +99,7 @@ export async function POST(request: Request) {
 
     await notifyUsersByRole("TREASURER", "New Business Permit", `${businessName} (${permitNumber}) has been registered.`, "permit", "/permits").catch(() => {});
 
-    await logAudit({ userId: session.user.id, action: "CREATE", entity: "Permit", entityId: permit.id, details: { businessName, permitNumber } }).catch(() => {});
+    await logAudit({ userId: user.id, action: "CREATE", entity: "Permit", entityId: permit.id, details: { businessName, permitNumber } }).catch(() => {});
 
     return NextResponse.json(permit, { status: 201 });
   } catch (error) {

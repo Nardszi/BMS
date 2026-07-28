@@ -1,17 +1,12 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireRole } from "@/lib/auth-helpers";
+import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const role = session.user.role;
-    if (!["ADMIN", "SECRETARY", "TREASURER"].includes(role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const user = await requireRole([Role.ADMIN, Role.SECRETARY, Role.TREASURER]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const { searchParams } = new URL(request.url);
     const year = searchParams.get("year") || new Date().getFullYear().toString();

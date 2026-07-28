@@ -1,18 +1,13 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireRole } from "@/lib/auth-helpers";
+import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const role = session.user.role;
-    if (!["ADMIN", "TREASURER"].includes(role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const user = await requireRole([Role.ADMIN, Role.TREASURER]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const body = await request.json();
     if (body.status && !["ACTIVE", "EXPIRED", "REVOKED"].includes(body.status)) {
@@ -28,7 +23,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     });
 
-    await logAudit({ userId: session.user.id, action: "UPDATE", entity: "Permit", entityId: params.id, details: { permitNumber: permit.permitNumber, newStatus: body.status } }).catch(() => {});
+    await logAudit({ userId: user.id, action: "UPDATE", entity: "Permit", entityId: params.id, details: { permitNumber: permit.permitNumber, newStatus: body.status } }).catch(() => {});
 
     return NextResponse.json(permit);
   } catch (error) {
@@ -39,17 +34,12 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const role = session.user.role;
-    if (role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const user = await requireRole([Role.ADMIN]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     await prisma.businessPermit.delete({ where: { id: params.id } });
 
-    await logAudit({ userId: session.user.id, action: "DELETE", entity: "Permit", entityId: params.id }).catch(() => {});
+    await logAudit({ userId: user.id, action: "DELETE", entity: "Permit", entityId: params.id }).catch(() => {});
 
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {

@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { announcementSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,14 +34,6 @@ const CATEGORY_CONFIG: Record<string, string> = {
   GENERAL: "bg-muted/50 text-foreground/80",
   OTHERS: "bg-slate-50 text-foreground/80",
 };
-
-const announcementSchema = z.object({
-  title: z.string().min(1, "Title is required").max(200),
-  content: z.string().min(1, "Content is required"),
-  expiresAt: z.string().optional(),
-  priority: z.enum(["URGENT", "IMPORTANT", "GENERAL"], { errorMap: () => ({ message: "Priority is required" }) }),
-  category: z.enum(["HEALTH", "SAFETY", "EVENT", "MEETING", "GENERAL", "OTHERS"], { errorMap: () => ({ message: "Category is required" }) }),
-});
 
 type AnnouncementForm = z.infer<typeof announcementSchema>;
 

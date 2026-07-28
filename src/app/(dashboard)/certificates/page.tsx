@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { certificateSchema as certSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,12 +26,6 @@ import jsPDF from "jspdf";
 import { escapeHtml } from "@/lib/sanitize";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { exportToCSV } from "@/lib/export-csv";
-
-const certSchema = z.object({
-  residentId: z.string().min(1, "Resident is required"),
-  type: z.enum(["CLEARANCE", "RESIDENCY", "INDIGENCY", "BUSINESS_PERMIT"]),
-  purpose: z.string().min(1, "Purpose is required").max(500),
-});
 
 type CertForm = z.infer<typeof certSchema>;
 

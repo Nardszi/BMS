@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { PUROK_OPTIONS } from "@/lib/constants";
 
@@ -33,8 +32,8 @@ function getOffsetCoords(baseLat: number, baseLng: number, seed: string): [numbe
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    const user = await requireAuth();
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

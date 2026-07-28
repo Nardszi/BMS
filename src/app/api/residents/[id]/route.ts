@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireRole } from "@/lib/auth-helpers";
+import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 
@@ -8,13 +8,8 @@ const VALID_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const role = session.user.role;
-    if (!["ADMIN", "SECRETARY", "TREASURER"].includes(role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const user = await requireRole([Role.ADMIN, Role.SECRETARY, Role.TREASURER]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const resident = await prisma.resident.findUnique({
       where: { id: params.id },
@@ -29,13 +24,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const role = session.user.role;
-    if (!["ADMIN", "SECRETARY"].includes(role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const user = await requireRole([Role.ADMIN, Role.SECRETARY]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const body = await request.json();
     const existing = await prisma.resident.findUnique({ where: { id: params.id }, include: { household: true } });
@@ -67,7 +57,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     });
 
-    await logAudit({ userId: session.user.id, action: "UPDATE", entity: "Resident", entityId: params.id, details: { name: `${resident.firstName} ${resident.lastName}` } }).catch(() => {});
+    await logAudit({ userId: user.id, action: "UPDATE", entity: "Resident", entityId: params.id, details: { name: `${resident.firstName} ${resident.lastName}` } }).catch(() => {});
 
     return NextResponse.json(resident);
   } catch (error) {
@@ -77,17 +67,12 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const role = session.user.role;
-    if (role !== "ADMIN" && role !== "SECRETARY") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const user = await requireRole([Role.ADMIN, Role.SECRETARY]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     await prisma.resident.update({ where: { id: params.id }, data: { deletedAt: new Date() } });
 
-    await logAudit({ userId: session.user.id, action: "DELETE", entity: "Resident", entityId: params.id }).catch(() => {});
+    await logAudit({ userId: user.id, action: "DELETE", entity: "Resident", entityId: params.id }).catch(() => {});
 
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
@@ -97,13 +82,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const role = session.user.role;
-    if (!["ADMIN", "SECRETARY"].includes(role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const user = await requireRole([Role.ADMIN, Role.SECRETARY]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const body = await request.json();
     if (!body.status || !VALID_STATUSES.includes(body.status)) {
@@ -115,7 +95,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       data: { status: body.status },
     });
 
-    await logAudit({ userId: session.user.id, action: "STATUS_CHANGE", entity: "Resident", entityId: params.id, details: { newStatus: body.status } }).catch(() => {});
+    await logAudit({ userId: user.id, action: "STATUS_CHANGE", entity: "Resident", entityId: params.id, details: { newStatus: body.status } }).catch(() => {});
 
     return NextResponse.json(resident);
   } catch (error) {
@@ -125,13 +105,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const role = session.user.role;
-    if (!["ADMIN", "SECRETARY"].includes(role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const user = await requireRole([Role.ADMIN, Role.SECRETARY]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const body = await request.json().catch(() => ({}));
     
@@ -142,7 +117,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         data: { deletedAt: null },
       });
       
-      await logAudit({ userId: session.user.id, action: "RESTORE", entity: "Resident", entityId: params.id, details: { name: `${resident.firstName} ${resident.lastName}` } }).catch(() => {});
+      await logAudit({ userId: user.id, action: "RESTORE", entity: "Resident", entityId: params.id, details: { name: `${resident.firstName} ${resident.lastName}` } }).catch(() => {});
       
       return NextResponse.json(resident);
     }

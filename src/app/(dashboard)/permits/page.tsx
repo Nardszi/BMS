@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSession } from "next-auth/react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { permitSchema } from "@/lib/validations";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,24 +11,22 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/toast";
-import { Plus, AlertTriangle, Eye, Search, FileText, RotateCcw, CheckCircle, XCircle, Clock, Trash2 } from "lucide-react";
-import { PermitPDF, buildPermitHTML } from "@/components/permit-pdf";
+import { Eye, Search, FileText, RotateCcw, CheckCircle, XCircle, Clock, Trash2 } from "lucide-react";
+import { buildPermitHTML } from "@/components/permit-pdf";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
-
-const permitSchema = z.object({
-  businessName: z.string().min(1, "Business name is required").max(200),
-  ownerResidentId: z.string().min(1, "Owner is required"),
-  businessType: z.string().min(1, "Business type is required").max(100),
-  address: z.string().min(1, "Address is required").max(255),
-  issueDate: z.string().min(1, "Issue date is required"),
-  expiryDate: z.string().min(1, "Expiry date is required"),
-});
+import { PermitFormDialog } from "@/components/permit-form-dialog";
 
 type PermitForm = z.infer<typeof permitSchema>;
+
+interface Resident {
+  id: string;
+  firstName: string;
+  lastName: string;
+  middleName: string | null;
+}
 
 interface Permit {
   id: string;
@@ -43,27 +40,6 @@ interface Permit {
   createdAt: string;
   owner: { firstName: string; lastName: string; middleName: string | null };
 }
-
-interface Resident {
-  id: string;
-  firstName: string;
-  lastName: string;
-  middleName: string | null;
-}
-
-const BUSINESS_TYPES = [
-  "Sari-Sari Store",
-  "Restaurant / Eatery",
-  "Retail Shop",
-  "Service / Repair",
-  "Farm / Agriculture",
-  "Manufacturing",
-  "Transport",
-  "Professional Practice",
-  "Rental",
-  "Online Selling",
-  "Others",
-];
 
 type StatusTab = "ALL" | "ACTIVE" | "EXPIRING" | "EXPIRED";
 
@@ -87,12 +63,6 @@ export default function PermitsPage() {
   const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "TREASURER"].includes(role);
   const canDelete = role === "ADMIN";
-
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<PermitForm>({
-    resolver: zodResolver(permitSchema),
-  });
-
-  const issueDate = watch("issueDate");
 
   const fetchPermits = async () => {
     try {
@@ -176,7 +146,6 @@ export default function PermitsPage() {
         const created = await res.json();
         toast({ title: `Permit Created — ${created.permitNumber}`, variant: "success" });
         setOpen(false);
-        reset();
         fetchPermits();
       } else {
         const err = await res.json();
@@ -277,71 +246,13 @@ export default function PermitsPage() {
     <div className="space-y-6">
       <PageHeader title="Business Permits" subtitle="Track and manage business permits">
         {canManage && (
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90">
-                <Plus className="mr-2 h-4 w-4" /> New Permit
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle>New Business Permit</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Business Name</Label>
-                  <Input {...register("businessName")} placeholder="e.g., Juan's Sari-Sari Store" />
-                  {errors.businessName && <p className="text-sm text-red-500">{errors.businessName.message}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label>Owner</Label>
-                  <Select onValueChange={(v) => setValue("ownerResidentId", v, { shouldValidate: true })}>
-                    <SelectTrigger><SelectValue placeholder="Select owner" /></SelectTrigger>
-                    <SelectContent>
-                      {residents.map((r) => (
-                        <SelectItem key={r.id} value={r.id}>
-                          {r.lastName}, {r.firstName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.ownerResidentId && <p className="text-sm text-red-500">{errors.ownerResidentId.message}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label>Business Type</Label>
-                  <Select onValueChange={(v) => setValue("businessType", v, { shouldValidate: true })}>
-                    <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                    <SelectContent>
-                      {BUSINESS_TYPES.map((t) => (
-                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.businessType && <p className="text-sm text-red-500">{errors.businessType.message}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label>Address</Label>
-                  <Input {...register("address")} placeholder="Business address" />
-                  {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Issue Date</Label>
-                    <Input type="date" {...register("issueDate")} />
-                    {errors.issueDate && <p className="text-sm text-red-500">{errors.issueDate.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Expiry Date</Label>
-                    <Input type="date" {...register("expiryDate")} min={issueDate || undefined} />
-                    {errors.expiryDate && <p className="text-sm text-red-500">{errors.expiryDate.message}</p>}
-                  </div>
-                </div>
-                <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={submitting}>
-                  {submitting ? "Creating..." : "Create Permit"}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <PermitFormDialog
+            open={open}
+            onOpenChange={setOpen}
+            residents={residents}
+            onSubmit={onSubmit}
+            submitting={submitting}
+          />
         )}
       </PageHeader>
 

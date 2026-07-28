@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await requireAuth();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const userId = session.user.id;
+    const userId = user.id;
     const { searchParams } = new URL(request.url);
     const unreadOnly = searchParams.get("unread") === "true";
 
@@ -33,15 +32,15 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await requireAuth();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { title, message, type, link } = await request.json();
     if (!title || !message || !type) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const userId = session.user.id;
+    const userId = user.id;
 
     const notification = await prisma.notification.create({
       data: { userId, title, message, type, link: link || null },
@@ -56,10 +55,10 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await requireAuth();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const userId = session.user.id;
+    const userId = user.id;
     const { action } = await request.json();
 
     if (action === "read-all") {
@@ -79,10 +78,10 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await requireAuth();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const userId = session.user.id;
+    const userId = user.id;
     const { searchParams } = new URL(request.url);
     const olderThan = searchParams.get("olderThan");
 

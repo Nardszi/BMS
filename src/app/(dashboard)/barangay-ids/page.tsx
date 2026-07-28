@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { barangayIdSchema as idSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,13 +25,6 @@ import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-
-const idSchema = z.object({
-  residentId: z.string().min(1, "Resident is required"),
-  address: z.string().min(1, "Address is required"),
-  contactNumber: z.string().optional(),
-  photoUrl: z.string().optional(),
-});
 
 type IDForm = z.infer<typeof idSchema>;
 

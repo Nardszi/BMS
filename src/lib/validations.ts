@@ -10,10 +10,10 @@ export const residentSchema = z.object({
   address: z.string().min(1, "Address is required").max(255),
   purok: z.string().min(1, "Purok is required"),
   occupation: z.string().max(200).optional().nullable(),
-  contactNumber: z.string().min(1, "Contact number is required").regex(/^(\+63|0)\d{10}$/, "Invalid Philippine phone number"),
+  contactNumber: z.string().min(1, "Contact number is required").regex(/^(\+639\d{2}-\d{3}-\d{4}|09\d{2}-\d{3}-\d{4}|\+63\d{10}|0\d{10})$/, "Must be a valid Philippine number (09XX-XXX-XXXX)"),
   emergencyContact: z.string().max(200).optional().nullable(),
   emergencyPhone: z.string().max(20).optional().nullable(),
-  isRegisteredVoter: z.boolean().optional().default(false),
+  isRegisteredVoter: z.boolean().optional(),
 });
 
 export const permitSchema = z.object({
@@ -45,9 +45,9 @@ export const announcementSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   content: z.string().min(1, "Content is required").max(5000),
   expiresAt: z.string().optional().nullable(),
-  priority: z.enum(["URGENT", "IMPORTANT", "GENERAL"]).optional().default("GENERAL"),
-  category: z.enum(["HEALTH", "SAFETY", "EVENT", "MEETING", "GENERAL", "OTHERS"]).optional().default("GENERAL"),
-  pinned: z.boolean().optional().default(false),
+  priority: z.enum(["URGENT", "IMPORTANT", "GENERAL"], { errorMap: () => ({ message: "Priority is required" }) }),
+  category: z.enum(["HEALTH", "SAFETY", "EVENT", "MEETING", "GENERAL", "OTHERS"], { errorMap: () => ({ message: "Category is required" }) }),
+  pinned: z.boolean().optional(),
   imageUrl: z.string().url().optional().nullable(),
 });
 
@@ -65,6 +65,15 @@ export const barangayIdSchema = z.object({
   photoUrl: z.string().url().optional().nullable(),
 });
 
+export const passwordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(6, "New password must be at least 6 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your new password"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
 export type ResidentInput = z.infer<typeof residentSchema>;
 export type PermitInput = z.infer<typeof permitSchema>;
 export type CertificateInput = z.infer<typeof certificateSchema>;
@@ -72,3 +81,4 @@ export type BlotterInput = z.infer<typeof blotterSchema>;
 export type AnnouncementInput = z.infer<typeof announcementSchema>;
 export type OfficialInput = z.infer<typeof officialSchema>;
 export type BarangayIdInput = z.infer<typeof barangayIdSchema>;
+export type PasswordInput = z.infer<typeof passwordSchema>;

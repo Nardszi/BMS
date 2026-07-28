@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { blotterSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,16 +27,6 @@ import { PageHeader } from "@/components/page-header";
 import { BARANGAY_FULL_NAME, BARANGAY_CITY, BARANGAY_PROVINCE } from "@/lib/constants";
 import { escapeHtml } from "@/lib/sanitize";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-
-const blotterSchema = z.object({
-  complainantName: z.string().min(1, "Complainant name is required").max(200),
-  respondentName: z.string().min(1, "Respondent name is required").max(200),
-  incidentDate: z.string().min(1, "Incident date is required"),
-  incidentType: z.string().min(1, "Incident type is required").max(100),
-  location: z.string().max(255).optional(),
-  witnesses: z.string().max(500).optional(),
-  narrative: z.string().min(1, "Narrative is required").max(2000),
-});
 
 type BlotterForm = z.infer<typeof blotterSchema>;
 

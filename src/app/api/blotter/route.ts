@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAuth, requireRole } from "@/lib/auth-helpers";
+import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { notifyUsersByRole } from "@/lib/notify";
 import { blotterSchema } from "@/lib/validations";
@@ -8,8 +8,8 @@ import { logAudit } from "@/lib/audit";
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authUser = await requireAuth();
+    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status") || "";
@@ -49,13 +49,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const role = session.user.role;
-    if (!["ADMIN", "SECRETARY", "KAGAWAD"].includes(role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const user = await requireRole([Role.ADMIN, Role.SECRETARY, Role.KAGAWAD]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const body = await request.json();
     const parsed = blotterSchema.safeParse(body);
@@ -80,14 +75,14 @@ export async function POST(request: Request) {
           incidentDate: new Date(incidentDate),
           incidentType, location: location || null,
           witnesses: witnesses || null, narrative,
-          handledById: session.user.id,
+          handledById: user.id,
         },
       });
     });
 
     await notifyUsersByRole("KAGAWAD", "New Blotter Report", `Case ${blotter.caseNumber}: ${incidentType} reported by ${complainantName} vs ${respondentName}.`, "blotter", "/blotter").catch(() => {});
 
-    await logAudit({ userId: session.user.id, action: "CREATE", entity: "Blotter", entityId: blotter.id, details: { caseNumber: blotter.caseNumber, incidentType, complainantName, respondentName } }).catch(() => {});
+    await logAudit({ userId: user.id, action: "CREATE", entity: "Blotter", entityId: blotter.id, details: { caseNumber: blotter.caseNumber, incidentType, complainantName, respondentName } }).catch(() => {});
 
     return NextResponse.json(blotter, { status: 201 });
   } catch (error) {

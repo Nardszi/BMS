@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { officialSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,13 +32,6 @@ const POSITIONS = [
   { value: "SK Secretary", rank: 10 },
   { value: "SK Treasurer", rank: 11 },
 ];
-
-const officialSchema = z.object({
-  userId: z.string().min(1, "User is required"),
-  position: z.string().min(1, "Position is required").max(100),
-  termStart: z.string().min(1, "Term start is required"),
-  termEnd: z.string().min(1, "Term end is required"),
-});
 
 type OfficialForm = z.infer<typeof officialSchema>;
 

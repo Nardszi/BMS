@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAuth, requireRole } from "@/lib/auth-helpers";
+import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { announcementSchema } from "@/lib/validations";
 import { logAudit } from "@/lib/audit";
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await requireAuth();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
@@ -40,13 +40,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const role = session.user.role;
-    if (!["ADMIN", "SECRETARY"].includes(role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const user = await requireRole([Role.ADMIN, Role.SECRETARY]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const body = await request.json();
     const parsed = announcementSchema.safeParse(body);
@@ -58,7 +53,7 @@ export async function POST(request: Request) {
     const announcement = await prisma.announcement.create({
       data: {
         title, content,
-        postedById: session.user.id,
+        postedById: user.id,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
         priority: priority || "GENERAL",
         category: category || "GENERAL",
@@ -68,7 +63,7 @@ export async function POST(request: Request) {
       include: { postedBy: { select: { name: true } } },
     });
 
-    await logAudit({ userId: session.user.id, action: "CREATE", entity: "Announcement", entityId: announcement.id, details: { title } }).catch(() => {});
+    await logAudit({ userId: user.id, action: "CREATE", entity: "Announcement", entityId: announcement.id, details: { title } }).catch(() => {});
 
     return NextResponse.json(announcement, { status: 201 });
   } catch (error) {

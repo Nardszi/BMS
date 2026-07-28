@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAuth, requireRole } from "@/lib/auth-helpers";
+import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 
@@ -9,13 +9,8 @@ const VALID_CATEGORIES = ["HEALTH", "SAFETY", "EVENT", "MEETING", "GENERAL", "OT
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const role = session.user.role;
-    if (!["ADMIN", "SECRETARY"].includes(role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const user = await requireRole([Role.ADMIN, Role.SECRETARY]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const body = await request.json();
     if (body.priority && !VALID_PRIORITIES.includes(body.priority)) {
@@ -38,7 +33,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     });
 
-    await logAudit({ userId: session.user.id, action: "UPDATE", entity: "Announcement", entityId: params.id, details: { title: body.title } }).catch(() => {});
+    await logAudit({ userId: user.id, action: "UPDATE", entity: "Announcement", entityId: params.id, details: { title: body.title } }).catch(() => {});
 
     return NextResponse.json(announcement);
   } catch (error) {
@@ -48,8 +43,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await requireAuth();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await request.json();
 
@@ -62,8 +57,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 
     if (body.pinned !== undefined) {
-      const role = session.user.role;
-      if (!["ADMIN", "SECRETARY"].includes(role)) {
+      if (user.role !== Role.ADMIN && user.role !== Role.SECRETARY) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
       const announcement = await prisma.announcement.update({
@@ -81,17 +75,12 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const role = session.user.role;
-    if (!["ADMIN", "SECRETARY"].includes(role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const user = await requireRole([Role.ADMIN, Role.SECRETARY]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     await prisma.announcement.delete({ where: { id: params.id } });
 
-    await logAudit({ userId: session.user.id, action: "DELETE", entity: "Announcement", entityId: params.id }).catch(() => {});
+    await logAudit({ userId: user.id, action: "DELETE", entity: "Announcement", entityId: params.id }).catch(() => {});
 
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {

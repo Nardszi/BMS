@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { passwordSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,15 +13,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "@/components/ui/toast";
 import { PageHeader } from "@/components/page-header";
 import { Lock, Eye, EyeOff } from "lucide-react";
-
-const passwordSchema = z.object({
-  currentPassword: z.string().min(1, "Current password is required"),
-  newPassword: z.string().min(6, "New password must be at least 6 characters"),
-  confirmPassword: z.string().min(1, "Please confirm your new password"),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
 
 type PasswordForm = z.infer<typeof passwordSchema>;
 

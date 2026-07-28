@@ -3,16 +3,15 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { residentSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
 import { Plus, Search, Pencil, Trash2, CheckCircle2, XCircle, Eye, Users, Clock, ArrowUpDown, ArrowUp, ArrowDown, Download, RotateCcw } from "lucide-react";
@@ -22,29 +21,7 @@ import { PageHeader } from "@/components/page-header";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { escapeHtml } from "@/lib/sanitize";
 import { PUROK_OPTIONS } from "@/lib/constants";
-
-function formatPhone(value: string) {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
-  if (digits.length <= 4) return digits;
-  if (digits.length <= 7) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
-  return `${digits.slice(0, 4)}-${digits.slice(4, 7)}-${digits.slice(7)}`;
-}
-
-const residentSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  middleName: z.string().optional(),
-  birthDate: z.string().min(1, "Birth date is required"),
-  gender: z.enum(["MALE", "FEMALE"]),
-  civilStatus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "SEPARATED", "DIVORCED"]),
-  address: z.string().min(1, "Address is required"),
-  purok: z.string().min(1, "Purok is required"),
-  occupation: z.string().optional(),
-  contactNumber: z.string().min(1, "Contact number is required").regex(/^(\+639\d{2}-\d{3}-\d{4}|09\d{2}-\d{3}-\d{4})$/, "Must be a valid Philippine number (09XX-XXX-XXXX)"),
-  emergencyContact: z.string().optional(),
-  emergencyPhone: z.string().optional(),
-  isRegisteredVoter: z.boolean().optional(),
-});
+import { ResidentFormDialog } from "@/components/resident-form-dialog";
 
 type ResidentForm = z.infer<typeof residentSchema>;
 
@@ -124,10 +101,6 @@ export default function ResidentsPage() {
   const canDelete = ["ADMIN", "SECRETARY"].includes(role);
   const canApprove = ["ADMIN", "SECRETARY", "KAGAWAD"].includes(role);
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<ResidentForm>({
-    resolver: zodResolver(residentSchema),
-  });
-
   const fetchResidents = async () => {
     try {
       const params = new URLSearchParams({ page: String(page), limit: "15", sortBy, sortOrder });
@@ -180,7 +153,6 @@ export default function ResidentsPage() {
           toast({ title: "Resident Updated", variant: "success" });
           setOpen(false);
           setEditing(null);
-          reset();
           fetchResidents();
         } else {
           const err = await res.json();
@@ -209,7 +181,6 @@ export default function ResidentsPage() {
         if (res.ok) {
           toast({ title: "Resident Added", variant: "success" });
           setOpen(false);
-          reset();
           fetchResidents();
         } else {
           const err = await res.json();
@@ -357,25 +328,6 @@ export default function ResidentsPage() {
 
   function openEdit(resident: Resident) {
     setEditing(resident);
-    setValue("firstName", resident.firstName);
-    setValue("lastName", resident.lastName);
-    setValue("middleName", resident.middleName || "");
-    setValue("birthDate", resident.birthDate.split("T")[0]);
-    setValue("gender", resident.gender as "MALE" | "FEMALE");
-    setValue("civilStatus", resident.civilStatus as "SINGLE" | "MARRIED" | "WIDOWED" | "SEPARATED" | "DIVORCED");
-    setValue("address", resident.household.address);
-    setValue("purok", resident.household.purok);
-    setValue("occupation", resident.occupation || "");
-    setValue("contactNumber", resident.contactNumber || "");
-    setValue("emergencyContact", resident.emergencyContact || "");
-    setValue("emergencyPhone", resident.emergencyPhone || "");
-    setValue("isRegisteredVoter", resident.isRegisteredVoter);
-    setOpen(true);
-  }
-
-  function openNew() {
-    setEditing(null);
-    reset();
     setOpen(true);
   }
 
@@ -389,118 +341,15 @@ export default function ResidentsPage() {
     <div className="space-y-6">
       <PageHeader title="Residents" subtitle="Manage barangay resident records and registrations">
         {canEdit && (
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={openNew} className="bg-primary hover:bg-primary/90">
-                <Plus className="mr-2 h-4 w-4" /> Add Resident
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>{editing ? "Edit Resident" : "Add New Resident"}</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit(onSubmit)} className="max-h-[70vh] space-y-4 overflow-y-auto pr-1">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>First Name *</Label>
-                    <Input {...register("firstName")} placeholder="Juan" />
-                    {errors.firstName && <p className="text-sm text-red-500">{errors.firstName.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Last Name *</Label>
-                    <Input {...register("lastName")} placeholder="dela Cruz" />
-                    {errors.lastName && <p className="text-sm text-red-500">{errors.lastName.message}</p>}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Middle Name</Label>
-                  <Input {...register("middleName")} placeholder="Optional" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Birth Date *</Label>
-                    <Input type="date" {...register("birthDate")} />
-                    {errors.birthDate && <p className="text-sm text-red-500">{errors.birthDate.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Gender *</Label>
-                    <Select onValueChange={(v) => setValue("gender", v as "MALE" | "FEMALE", { shouldValidate: true })} defaultValue={editing?.gender}>
-                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="MALE">Male</SelectItem>
-                        <SelectItem value="FEMALE">Female</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Civil Status *</Label>
-                    <Select onValueChange={(v) => setValue("civilStatus", v as "SINGLE" | "MARRIED" | "WIDOWED" | "SEPARATED" | "DIVORCED", { shouldValidate: true })} defaultValue={editing?.civilStatus}>
-                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="SINGLE">Single</SelectItem>
-                        <SelectItem value="MARRIED">Married</SelectItem>
-                        <SelectItem value="WIDOWED">Widowed</SelectItem>
-                        <SelectItem value="SEPARATED">Separated</SelectItem>
-                        <SelectItem value="DIVORCED">Divorced</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Contact Number *</Label>
-                    <Input {...register("contactNumber")} placeholder="09XX-XXX-XXXX" onChange={(e) => { const formatted = formatPhone(e.target.value); setValue("contactNumber", formatted, { shouldValidate: true }); }} />
-                    {errors.contactNumber && <p className="text-sm text-red-500">{errors.contactNumber.message}</p>}
-                  </div>
-                </div>
-
-                <div className="border-t border-gray-100 pt-4">
-                  <p className="mb-3 text-sm font-medium text-foreground/80">Address Information</p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Full Address *</Label>
-                      <Input {...register("address")} placeholder="123 Rizal Street" />
-                      {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Purok *</Label>
-                      <Select onValueChange={(v) => setValue("purok", v, { shouldValidate: true })} defaultValue={editing?.household?.purok}>
-                        <SelectTrigger><SelectValue placeholder="Select purok" /></SelectTrigger>
-                        <SelectContent>
-                          {PUROK_OPTIONS.map((p) => (
-                            <SelectItem key={p} value={String(p)}>{isNaN(Number(p)) ? p : `Purok ${p}`}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errors.purok && <p className="text-sm text-red-500">{errors.purok.message}</p>}
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Emergency Contact Name</Label>
-                    <Input {...register("emergencyContact")} placeholder="Optional" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Emergency Contact Number</Label>
-                    <Input {...register("emergencyPhone")} placeholder="Optional" />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Occupation</Label>
-                  <Input {...register("occupation")} placeholder="Optional" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <input type="checkbox" id="voter" {...register("isRegisteredVoter")} className="rounded" />
-                  <Label htmlFor="voter">Registered Voter</Label>
-                </div>
-                <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={submitting}>
-                  {submitting ? "Saving..." : editing ? "Update" : "Add"} Resident
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <ResidentFormDialog
+            open={open}
+            onOpenChange={setOpen}
+            editing={editing}
+            onSubmit={onSubmit}
+            submitting={submitting}
+            canEdit={canEdit}
+            onOpenNew={() => { setEditing(null); setOpen(true); }}
+          />
         )}
       </PageHeader>
 

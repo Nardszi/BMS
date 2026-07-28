@@ -152,6 +152,8 @@ describe("announcementSchema", () => {
       announcementSchema.safeParse({
         title: "Meeting",
         content: "Barangay assembly",
+        priority: "GENERAL",
+        category: "GENERAL",
       }).success
     ).toBe(true);
   });
@@ -160,12 +162,13 @@ describe("announcementSchema", () => {
     const result = announcementSchema.safeParse({
       title: "Meeting",
       content: "Barangay assembly",
+      priority: "GENERAL",
+      category: "GENERAL",
     });
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.priority).toBe("GENERAL");
       expect(result.data.category).toBe("GENERAL");
-      expect(result.data.pinned).toBe(false);
     }
   });
 
@@ -180,6 +183,8 @@ describe("announcementSchema", () => {
       announcementSchema.safeParse({
         title: "Test",
         content: "Test",
+        priority: "GENERAL",
+        category: "GENERAL",
         imageUrl: "https://example.com/image.png",
       }).success
     ).toBe(true);
