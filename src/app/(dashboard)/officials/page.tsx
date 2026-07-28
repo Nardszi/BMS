@@ -106,17 +106,26 @@ export default function OfficialsPage() {
   const watchPosition = watch("position");
 
   const fetchOfficials = async () => {
-    const res = await fetch("/api/officials");
-    const data = await res.json();
-    setOfficials(data || []);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/officials");
+      if (!res.ok) throw new Error("Failed to load officials");
+      const data = await res.json();
+      setOfficials(data || []);
+    } catch {
+      toast({ title: "Error", description: "Failed to load officials. Please try again.", variant: "error" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchUsers = async () => {
-    const res = await fetch("/api/users");
-    if (res.ok) {
+    try {
+      const res = await fetch("/api/users");
+      if (!res.ok) throw new Error("Failed to load users");
       const data = await res.json();
       setUsers(data || []);
+    } catch {
+      toast({ title: "Error", description: "Failed to load users. Please try again.", variant: "error" });
     }
   };
 
@@ -124,24 +133,29 @@ export default function OfficialsPage() {
 
   async function onSubmit(data: OfficialForm) {
     setSubmitting(true);
-    const url = editing ? `/api/officials/${editing.id}` : "/api/officials";
-    const method = editing ? "PUT" : "POST";
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (res.ok) {
-      toast({ title: editing ? "Official Updated" : "Official Assigned", variant: "success" });
-      setOpen(false);
-      setEditing(null);
-      reset();
-      fetchOfficials();
-    } else {
-      const err = await res.json();
-      toast({ title: "Error", description: err.error || "Failed to save official", variant: "error" });
+    try {
+      const url = editing ? `/api/officials/${editing.id}` : "/api/officials";
+      const method = editing ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        toast({ title: editing ? "Official Updated" : "Official Assigned", variant: "success" });
+        setOpen(false);
+        setEditing(null);
+        reset();
+        fetchOfficials();
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to save official", variant: "error" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   }
 
   async function removeOfficial(id: string) {

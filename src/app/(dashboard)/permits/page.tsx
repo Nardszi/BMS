@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -73,6 +74,7 @@ export default function PermitsPage() {
   const [open, setOpen] = useState(false);
   const [viewPermit, setViewPermit] = useState<Permit | null>(null);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [activeTab, setActiveTab] = useState<StatusTab>("ALL");
   const [stats, setStats] = useState({ total: 0, active: 0, expiring: 0, expired: 0 });
   const [loading, setLoading] = useState(true);
@@ -108,8 +110,8 @@ export default function PermitsPage() {
       expired: all.filter((p) => p.status === "EXPIRED" || (p.status === "ACTIVE" && new Date(p.expiryDate).getTime() < now)).length,
     });
     let filtered = all;
-    if (search) {
-      const q = search.toLowerCase();
+    if (debouncedSearch) {
+      const q = debouncedSearch.toLowerCase();
       filtered = filtered.filter((p) =>
         p.businessName.toLowerCase().includes(q) ||
         p.permitNumber.toLowerCase().includes(q) ||
@@ -136,65 +138,85 @@ export default function PermitsPage() {
   };
 
   const fetchResidents = async () => {
-    const res = await fetch("/api/residents?limit=10000");
-    const data = await res.json();
-    setResidents(data.residents || []);
+    try {
+      const res = await fetch("/api/residents?limit=10000");
+      if (!res.ok) throw new Error("Failed to load residents");
+      const data = await res.json();
+      setResidents(data.residents || []);
+    } catch {
+      toast({ title: "Error", description: "Failed to load residents. Please try again.", variant: "error" });
+    }
   };
 
-  useEffect(() => { fetchPermits(); }, [activeTab, search]);
+  useEffect(() => { fetchPermits(); }, [activeTab, debouncedSearch]);
   useEffect(() => { fetchResidents(); }, []);
 
   useEffect(() => {
     const interval = setInterval(fetchPermits, 60000);
     return () => clearInterval(interval);
-  }, [activeTab, search]);
+  }, [activeTab, debouncedSearch]);
 
   async function onSubmit(data: PermitForm) {
     setSubmitting(true);
-    const res = await fetch("/api/permits", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (res.ok) {
-      const created = await res.json();
-      toast({ title: `Permit Created — ${created.permitNumber}`, variant: "success" });
-      setOpen(false);
-      reset();
-      fetchPermits();
-    } else {
-      const err = await res.json();
-      toast({ title: "Error", description: err.error || "Failed to create permit", variant: "error" });
+    try {
+      const res = await fetch("/api/permits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        const created = await res.json();
+        toast({ title: `Permit Created — ${created.permitNumber}`, variant: "success" });
+        setOpen(false);
+        reset();
+        fetchPermits();
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to create permit", variant: "error" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   }
 
   async function revokePermit(id: string) {
-    const res = await fetch(`/api/permits/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "REVOKED" }),
-    });
-    setRevokeTarget(null);
-    if (res.ok) {
-      toast({ title: "Permit Revoked", variant: "success" });
-      fetchPermits();
-    } else {
-      const err = await res.json();
-      toast({ title: "Error", description: err.error || "Failed to revoke permit", variant: "error" });
+    try {
+      const res = await fetch(`/api/permits/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "REVOKED" }),
+      });
+      setRevokeTarget(null);
+      if (res.ok) {
+        toast({ title: "Permit Revoked", variant: "success" });
+        fetchPermits();
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to revoke permit", variant: "error" });
+      }
+    } catch {
+      setRevokeTarget(null);
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
     }
   }
 
   async function deletePermit(id: string) {
-    const res = await fetch(`/api/permits/${id}`, { method: "DELETE" });
-    setDeleteTarget(null);
-    if (res.ok) {
-      toast({ title: "Permit Deleted", variant: "success" });
-      setViewPermit(null);
-      fetchPermits();
-    } else {
-      const err = await res.json();
-      toast({ title: "Error", description: err.error || "Failed to delete permit", variant: "error" });
+    try {
+      const res = await fetch(`/api/permits/${id}`, { method: "DELETE" });
+      setDeleteTarget(null);
+      if (res.ok) {
+        toast({ title: "Permit Deleted", variant: "success" });
+        setViewPermit(null);
+        fetchPermits();
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to delete permit", variant: "error" });
+      }
+    } catch {
+      setDeleteTarget(null);
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
     }
   }
 

@@ -49,10 +49,14 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
-    const res = await fetch("/api/users");
-    if (res.ok) {
+    try {
+      const res = await fetch("/api/users");
+      if (!res.ok) throw new Error("Failed to load users");
       const data = await res.json();
       setUsers(data || []);
+    } catch {
+      toast({ title: "Error", description: "Failed to load users. Please try again.", variant: "error" });
+    } finally {
       setLoading(false);
     }
   };
@@ -84,34 +88,39 @@ export default function UsersPage() {
       return;
     }
 
-    setSubmitting(true);
-    const body: any = { name, email, role: selectedRole };
-    if (password) body.password = password;
-
     if (!editing && !password) {
       toast({ title: "Password is required for new users", variant: "error" });
       return;
     }
 
-    const url = editing ? `/api/users/${editing.id}` : "/api/users";
-    const method = editing ? "PUT" : "POST";
+    setSubmitting(true);
+    try {
+      const body: any = { name, email, role: selectedRole };
+      if (password) body.password = password;
 
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+      const url = editing ? `/api/users/${editing.id}` : "/api/users";
+      const method = editing ? "PUT" : "POST";
 
-    if (res.ok) {
-      toast({ title: editing ? "User updated" : "User created", variant: "success" });
-      setOpen(false);
-      setEditing(null);
-      fetchUsers();
-    } else {
-      const err = await res.json();
-      toast({ title: err.error || "Something went wrong", variant: "error" });
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        toast({ title: editing ? "User updated" : "User created", variant: "success" });
+        setOpen(false);
+        setEditing(null);
+        fetchUsers();
+      } else {
+        const err = await res.json();
+        toast({ title: err.error || "Something went wrong", variant: "error" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   }
 
   async function deleteUser(id: string) {

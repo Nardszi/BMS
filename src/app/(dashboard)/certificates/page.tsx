@@ -82,36 +82,52 @@ export default function CertificatesPage() {
   });
 
   const fetchCertificates = async () => {
-    const res = await fetch("/api/certificates");
-    const data = await res.json();
-    setCertificates(data || []);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/certificates");
+      if (!res.ok) throw new Error("Failed to load certificates");
+      const data = await res.json();
+      setCertificates(data || []);
+    } catch {
+      toast({ title: "Error", description: "Failed to load certificates. Please try again.", variant: "error" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchResidents = async () => {
-    const res = await fetch("/api/residents?limit=10000");
-    const data = await res.json();
-    setResidents(data.residents || []);
+    try {
+      const res = await fetch("/api/residents?limit=10000");
+      if (!res.ok) throw new Error("Failed to load residents");
+      const data = await res.json();
+      setResidents(data.residents || []);
+    } catch {
+      toast({ title: "Error", description: "Failed to load residents. Please try again.", variant: "error" });
+    }
   };
 
   useEffect(() => { fetchCertificates(); fetchResidents(); }, []);
 
   async function onSubmit(data: CertForm) {
     setSubmitting(true);
-    const res = await fetch("/api/certificates", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    setSubmitting(false);
-    if (res.ok) {
-      toast({ title: "Certificate Request Created", variant: "success" });
-      setOpen(false);
-      reset();
-      fetchCertificates();
-    } else {
-      const err = await res.json();
-      toast({ title: "Error", description: err.error || "Failed to create request", variant: "error" });
+    try {
+      const res = await fetch("/api/certificates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        toast({ title: "Certificate Request Created", variant: "success" });
+        setOpen(false);
+        reset();
+        fetchCertificates();
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to create request", variant: "error" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
+    } finally {
+      setSubmitting(false);
     }
   }
 

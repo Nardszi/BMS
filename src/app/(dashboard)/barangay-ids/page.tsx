@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -78,6 +79,7 @@ export default function BarangayIDsPage() {
   const [printID, setPrintID] = useState<BarangayIDData | null>(null);
   const [downloadID, setDownloadID] = useState<BarangayIDData | null>(null);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [statusFilter, setStatusFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -93,62 +95,93 @@ export default function BarangayIDsPage() {
   const [selectedResident, setSelectedResident] = useState<Resident | null>(null);
 
   const fetchIDs = async () => {
-    const params = new URLSearchParams();
-    if (search) params.set("search", search);
-    if (statusFilter) params.set("status", statusFilter);
-    const res = await fetch(`/api/barangay-ids?${params}`);
-    const data = await res.json();
-    setIds(data || []);
-    setLoading(false);
+    try {
+      const params = new URLSearchParams();
+      if (debouncedSearch) params.set("search", debouncedSearch);
+      if (statusFilter) params.set("status", statusFilter);
+      const res = await fetch(`/api/barangay-ids?${params}`);
+      if (!res.ok) throw new Error("Failed to load IDs");
+      const data = await res.json();
+      setIds(data || []);
+    } catch {
+      toast({ title: "Error", description: "Failed to load barangay IDs. Please try again.", variant: "error" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchResidents = async () => {
-    const res = await fetch("/api/residents?limit=10000");
-    const data = await res.json();
-    setResidents(data.residents || []);
+    try {
+      const res = await fetch("/api/residents?limit=10000");
+      if (!res.ok) throw new Error("Failed to load residents");
+      const data = await res.json();
+      setResidents(data.residents || []);
+    } catch {
+      toast({ title: "Error", description: "Failed to load residents. Please try again.", variant: "error" });
+    }
   };
 
-  useEffect(() => { fetchIDs(); }, [search, statusFilter]);
+  useEffect(() => { fetchIDs(); }, [debouncedSearch, statusFilter]);
   useEffect(() => { fetchResidents(); }, []);
 
   async function onSubmit(data: IDForm) {
-    const res = await fetch("/api/barangay-ids", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (res.ok) {
-      const newID = await res.json();
-      toast({ title: "Barangay ID Generated", description: `ID Number: ${newID.idNumber}`, variant: "success" });
-      setOpen(false);
-      reset();
-      setSelectedResident(null);
-      fetchIDs();
-    } else {
-      const err = await res.json();
-      toast({ title: "Error", description: err.error || "Failed to generate ID", variant: "error" });
+    try {
+      const res = await fetch("/api/barangay-ids", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        const newID = await res.json();
+        toast({ title: "Barangay ID Generated", description: `ID Number: ${newID.idNumber}`, variant: "success" });
+        setOpen(false);
+        reset();
+        setSelectedResident(null);
+        fetchIDs();
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to generate ID", variant: "error" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
     }
   }
 
   async function revokeID(id: string) {
-    const res = await fetch(`/api/barangay-ids/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "REVOKED" }),
-    });
-    setRevokeTarget(null);
-    if (res.ok) {
-      toast({ title: "ID Revoked", variant: "success" });
-      fetchIDs();
+    try {
+      const res = await fetch(`/api/barangay-ids/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "REVOKED" }),
+      });
+      setRevokeTarget(null);
+      if (res.ok) {
+        toast({ title: "ID Revoked", variant: "success" });
+        fetchIDs();
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to revoke ID", variant: "error" });
+      }
+    } catch {
+      setRevokeTarget(null);
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
     }
   }
 
   async function deleteID(id: string) {
-    const res = await fetch(`/api/barangay-ids/${id}`, { method: "DELETE" });
-    setDeleteTarget(null);
-    if (res.ok) {
-      toast({ title: "ID Deleted", variant: "success" });
-      fetchIDs();
+    try {
+      const res = await fetch(`/api/barangay-ids/${id}`, { method: "DELETE" });
+      setDeleteTarget(null);
+      if (res.ok) {
+        toast({ title: "ID Deleted", variant: "success" });
+        fetchIDs();
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to delete ID", variant: "error" });
+      }
+    } catch {
+      setDeleteTarget(null);
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
     }
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -74,7 +75,10 @@ export default function BlotterPage() {
   const [blotters, setBlotters] = useState<Blotter[]>([]);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [detailBlotter, setDetailBlotter] = useState<Blotter | null>(null);
   const [resolveNotes, setResolveNotes] = useState("");
   const [resolveTarget, setResolveTarget] = useState<string | null>(null);
@@ -96,7 +100,9 @@ export default function BlotterPage() {
     try {
       const params = new URLSearchParams();
       if (statusFilter !== "all") params.set("status", statusFilter);
-      if (search) params.set("search", search);
+      if (debouncedSearch) params.set("search", debouncedSearch);
+      if (dateFrom) params.set("dateFrom", dateFrom);
+      if (dateTo) params.set("dateTo", dateTo);
       const res = await fetch(`/api/blotter?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to load blotter reports");
       const data = await res.json();
@@ -108,7 +114,7 @@ export default function BlotterPage() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, search]);
+  }, [statusFilter, debouncedSearch, dateFrom, dateTo]);
 
   useEffect(() => { fetchBlotters(); }, [fetchBlotters]);
 
@@ -384,15 +390,47 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
         ))}
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
-        <Input
-          placeholder="Search by case #, name, or type..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-10"
-        />
+      {/* Search + Date Range */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="relative max-w-md">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
+          <Input
+            placeholder="Search by case #, name, or type..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Label className="text-xs">From</Label>
+          <Input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="h-9 w-[160px]"
+          />
+          <Label className="text-xs">To</Label>
+          <Input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="h-9 w-[160px]"
+          />
+        </div>
+        {(search || dateFrom || dateTo || statusFilter !== "all") && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSearch("");
+              setDateFrom("");
+              setDateTo("");
+              setStatusFilter("all");
+            }}
+          >
+            Clear all
+          </Button>
+        )}
       </div>
 
       <Card>

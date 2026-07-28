@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -82,6 +83,7 @@ export default function AnnouncementsPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Announcement | null>(null);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [filterPriority, setFilterPriority] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -104,7 +106,7 @@ export default function AnnouncementsPage() {
   const fetchAnnouncements = async () => {
     try {
       const params = new URLSearchParams();
-      if (search) params.set("search", search);
+      if (debouncedSearch) params.set("search", debouncedSearch);
       if (filterPriority) params.set("priority", filterPriority);
       if (filterCategory) params.set("category", filterCategory);
       const res = await fetch(`/api/announcements?${params.toString()}`);
@@ -119,28 +121,33 @@ export default function AnnouncementsPage() {
     }
   };
 
-  useEffect(() => { fetchAnnouncements(); }, [search, filterPriority, filterCategory]);
+  useEffect(() => { fetchAnnouncements(); }, [debouncedSearch, filterPriority, filterCategory]);
 
   async function onSubmit(data: AnnouncementForm) {
     setSubmitting(true);
-    const url = editing ? `/api/announcements/${editing.id}` : "/api/announcements";
-    const method = editing ? "PUT" : "POST";
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (res.ok) {
-      toast({ title: editing ? "Announcement Updated" : "Announcement Posted", variant: "success" });
-      setOpen(false);
-      setEditing(null);
-      reset();
-      fetchAnnouncements();
-    } else {
-      const err = await res.json();
-      toast({ title: "Error", description: err.error || "Failed to save announcement", variant: "error" });
+    try {
+      const url = editing ? `/api/announcements/${editing.id}` : "/api/announcements";
+      const method = editing ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        toast({ title: editing ? "Announcement Updated" : "Announcement Posted", variant: "success" });
+        setOpen(false);
+        setEditing(null);
+        reset();
+        fetchAnnouncements();
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to save announcement", variant: "error" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   }
 
   async function handleDelete(id: string) {
