@@ -19,7 +19,12 @@ export async function GET(request: Request) {
     const sortBy = searchParams.get("sortBy") || "lastName";
     const sortOrder = searchParams.get("sortOrder") || "asc";
 
+    const includeDeleted = searchParams.get("includeDeleted") === "true";
+
     const where: any = {};
+    if (!includeDeleted) {
+      where.deletedAt = null;
+    }
     if (search) {
       where.OR = [
         { firstName: { contains: search, mode: "insensitive" } },
@@ -38,12 +43,14 @@ export async function GET(request: Request) {
     else if (sortBy === "date") order.createdAt = sortOrder;
     else order[sortBy] = sortOrder;
 
+    const baseFilter = includeDeleted ? {} : { deletedAt: null };
+
     const [residents, total, pendingCount, approvedCount, rejectedCount] = await Promise.all([
       prisma.resident.findMany({ where, include: { household: true }, skip: (page - 1) * limit, take: limit, orderBy: order }),
       prisma.resident.count({ where }),
-      prisma.resident.count({ where: { status: "PENDING" } }),
-      prisma.resident.count({ where: { status: "APPROVED" } }),
-      prisma.resident.count({ where: { status: "REJECTED" } }),
+      prisma.resident.count({ where: { ...baseFilter, status: "PENDING" } }),
+      prisma.resident.count({ where: { ...baseFilter, status: "APPROVED" } }),
+      prisma.resident.count({ where: { ...baseFilter, status: "REJECTED" } }),
     ]);
 
     return NextResponse.json({ residents, total, totalPages: Math.ceil(total / limit), pendingCount, approvedCount, rejectedCount });
@@ -118,7 +125,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "No resident IDs provided" }, { status: 400 });
     }
 
-    await prisma.resident.deleteMany({ where: { id: { in: ids } } });
+    await prisma.resident.updateMany({ where: { id: { in: ids } }, data: { deletedAt: new Date() } });
 
     await logAudit({ userId: session.user.id, action: "DELETE", entity: "Resident", entityId: ids.join(","), details: { count: ids.length } }).catch(() => {});
 

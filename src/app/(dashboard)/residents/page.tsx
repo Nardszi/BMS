@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
-import { Plus, Search, Pencil, Trash2, CheckCircle2, XCircle, Eye, Users, Clock, ArrowUpDown, ArrowUp, ArrowDown, Download } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, CheckCircle2, XCircle, Eye, Users, Clock, ArrowUpDown, ArrowUp, ArrowDown, Download, RotateCcw } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
@@ -63,6 +63,7 @@ interface Resident {
   isRegisteredVoter: boolean;
   status: string;
   createdAt: string;
+  deletedAt: string | null;
   household: { id: string; householdNumber: string; purok: string; address: string };
 }
 
@@ -116,6 +117,7 @@ export default function ResidentsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleted, setShowDeleted] = useState(false);
 
   const role = session?.user?.role ?? "";
   const canEdit = ["ADMIN", "SECRETARY", "STAFF"].includes(role);
@@ -132,6 +134,7 @@ export default function ResidentsPage() {
       if (debouncedSearch) params.set("search", debouncedSearch);
       if (purokFilter) params.set("purok", purokFilter);
       if (statusFilter) params.set("status", statusFilter);
+      if (showDeleted) params.set("includeDeleted", "true");
       const res = await fetch(`/api/residents?${params}`);
       if (!res.ok) throw new Error("Failed to load residents");
       const data = await res.json();
@@ -148,7 +151,7 @@ export default function ResidentsPage() {
     }
   };
 
-  useEffect(() => { fetchResidents(); }, [page, debouncedSearch, purokFilter, statusFilter, sortBy, sortOrder]);
+  useEffect(() => { fetchResidents(); }, [page, debouncedSearch, purokFilter, statusFilter, sortBy, sortOrder, showDeleted]);
 
   async function onSubmit(data: ResidentForm) {
     setSubmitting(true);
@@ -257,24 +260,10 @@ export default function ResidentsPage() {
           label: "Undo",
           onClick: async () => {
             if (!lastDeletedResident) return;
-            await fetch("/api/residents", {
+            await fetch(`/api/residents/${lastDeletedResident.id}`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                firstName: lastDeletedResident.firstName,
-                lastName: lastDeletedResident.lastName,
-                middleName: lastDeletedResident.middleName,
-                birthDate: lastDeletedResident.birthDate,
-                gender: lastDeletedResident.gender,
-                civilStatus: lastDeletedResident.civilStatus,
-                address: lastDeletedResident.household.address,
-                purok: lastDeletedResident.household.purok,
-                occupation: lastDeletedResident.occupation,
-                contactNumber: lastDeletedResident.contactNumber,
-                emergencyContact: lastDeletedResident.emergencyContact,
-                emergencyPhone: lastDeletedResident.emergencyPhone,
-                isRegisteredVoter: lastDeletedResident.isRegisteredVoter,
-              }),
+              body: JSON.stringify({ action: "restore" }),
             });
             toast({ title: "Resident Restored", variant: "success" });
             setLastDeletedResident(null);
@@ -305,6 +294,25 @@ export default function ResidentsPage() {
       } else {
         const err = await res.json();
         toast({ title: "Error", description: err.error || "Failed to delete residents", variant: "error" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
+    }
+  }
+
+  async function restoreResident(id: string) {
+    try {
+      const res = await fetch(`/api/residents/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "restore" }),
+      });
+      if (res.ok) {
+        toast({ title: "Resident Restored", variant: "success" });
+        fetchResidents();
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to restore", variant: "error" });
       }
     } catch {
       toast({ title: "Error", description: "Something went wrong", variant: "error" });
@@ -598,6 +606,15 @@ export default function ResidentsPage() {
                   <Trash2 className="mr-2 h-4 w-4" /> Delete Selected ({selectedIds.length})
                 </Button>
               )}
+              {canDelete && (
+                <Button
+                  variant={showDeleted ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowDeleted(!showDeleted)}
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" /> {showDeleted ? "Hide Deleted" : "Show Deleted"}
+                </Button>
+              )}
             </div>
             </div>
           </div>
@@ -672,18 +689,26 @@ export default function ResidentsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => { setDetailResident(r); setShowDetail(true); }} aria-label="View details">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      {canEdit && (
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(r)} aria-label="Edit">
-                          <Pencil className="h-4 w-4" />
+                      {r.deletedAt ? (
+                        <Button variant="ghost" size="sm" onClick={() => restoreResident(r.id)} title="Restore" aria-label="Restore">
+                          <RotateCcw className="h-4 w-4 text-green-500" />
                         </Button>
-                      )}
-                      {canDelete && (
-                        <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(r.id)} aria-label="Delete">
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
+                      ) : (
+                        <>
+                          <Button variant="ghost" size="sm" onClick={() => { setDetailResident(r); setShowDetail(true); }} aria-label="View details">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          {canEdit && (
+                            <Button variant="ghost" size="sm" onClick={() => openEdit(r)} aria-label="Edit">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {canDelete && (
+                            <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(r.id)} aria-label="Delete">
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          )}
+                        </>
                       )}
                     </TableCell>
                   </TableRow>

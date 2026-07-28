@@ -82,6 +82,8 @@ export default function PermitsPage() {
   const [error, setError] = useState<string | null>(null);
   const [revokeTarget, setRevokeTarget] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const role = session?.user?.role ?? "";
   const canManage = ["ADMIN", "TREASURER"].includes(role);
   const canDelete = role === "ADMIN";
@@ -121,12 +123,18 @@ export default function PermitsPage() {
     }
     if (activeTab === "ACTIVE") filtered = filtered.filter((p) => p.status === "ACTIVE");
     else if (activeTab === "EXPIRED") filtered = filtered.filter((p) => p.status === "EXPIRED");
-    else if (activeTab === "EXPIRING") {
+    else     if (activeTab === "EXPIRING") {
       filtered = filtered.filter((p) => {
         if (p.status !== "ACTIVE") return false;
         const days = Math.ceil((new Date(p.expiryDate).getTime() - now) / 86400000);
         return days > 0 && days <= 30;
       });
+    }
+    if (dateFrom) {
+      filtered = filtered.filter((p) => new Date(p.issueDate) >= new Date(dateFrom));
+    }
+    if (dateTo) {
+      filtered = filtered.filter((p) => new Date(p.issueDate) <= new Date(dateTo));
     }
     setPermits(filtered);
     setError(null);
@@ -148,13 +156,13 @@ export default function PermitsPage() {
     }
   };
 
-  useEffect(() => { fetchPermits(); }, [activeTab, debouncedSearch]);
+  useEffect(() => { fetchPermits(); }, [activeTab, debouncedSearch, dateFrom, dateTo]);
   useEffect(() => { fetchResidents(); }, []);
 
   useEffect(() => {
     const interval = setInterval(fetchPermits, 60000);
     return () => clearInterval(interval);
-  }, [activeTab, debouncedSearch]);
+  }, [activeTab, debouncedSearch, dateFrom, dateTo]);
 
   async function onSubmit(data: PermitForm) {
     setSubmitting(true);
@@ -378,7 +386,7 @@ export default function PermitsPage() {
       </div>
 
       {/* Search + Tabs */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-1 bg-muted p-1 rounded-lg">
           {tabs.map((t) => (
             <button
@@ -395,14 +403,37 @@ export default function PermitsPage() {
             </button>
           ))}
         </div>
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
-          <Input
-            placeholder="Search business, permit #, owner..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
+            <Input
+              placeholder="Search business, permit #, owner..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Label className="text-xs">From</Label>
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="h-9 w-[160px]"
+            />
+            <Label className="text-xs">To</Label>
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="h-9 w-[160px]"
+            />
+            {(dateFrom || dateTo || search) && (
+              <Button variant="ghost" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); setSearch(""); }}>
+                Clear all
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

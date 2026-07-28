@@ -134,6 +134,7 @@ model Resident {
   status            ResidentStatus   @default(APPROVED)
   createdAt         DateTime         @default(now())
   updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
 
   household          Household            @relation(fields: [householdId], references: [id], onDelete: Cascade)
   certificateRequests CertificateRequest[]

@@ -85,7 +85,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await prisma.resident.delete({ where: { id: params.id } });
+    await prisma.resident.update({ where: { id: params.id }, data: { deletedAt: new Date() } });
 
     await logAudit({ userId: session.user.id, action: "DELETE", entity: "Resident", entityId: params.id }).catch(() => {});
 
@@ -118,6 +118,36 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     await logAudit({ userId: session.user.id, action: "STATUS_CHANGE", entity: "Resident", entityId: params.id, details: { newStatus: body.status } }).catch(() => {});
 
     return NextResponse.json(resident);
+  } catch (error) {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const role = session.user.role;
+    if (!["ADMIN", "SECRETARY"].includes(role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await request.json().catch(() => ({}));
+    
+    // Restore soft-deleted resident
+    if (body.action === "restore") {
+      const resident = await prisma.resident.update({
+        where: { id: params.id },
+        data: { deletedAt: null },
+      });
+      
+      await logAudit({ userId: session.user.id, action: "RESTORE", entity: "Resident", entityId: params.id, details: { name: `${resident.firstName} ${resident.lastName}` } }).catch(() => {});
+      
+      return NextResponse.json(resident);
+    }
+
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
