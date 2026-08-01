@@ -90,3 +90,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const user = await requireRole([Role.ADMIN, Role.SECRETARY, Role.KAGAWAD]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    const body = await request.json();
+    const { ids } = body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: "No blotter IDs provided" }, { status: 400 });
+    }
+
+    await prisma.blotterReport.deleteMany({ where: { id: { in: ids } } });
+
+    await logAudit({ userId: user.id, action: "DELETE", entity: "Blotter", entityId: ids.join(","), details: { count: ids.length } }).catch(() => {});
+
+    return NextResponse.json({ success: true, deleted: ids.length });
+  } catch (error) {
+    console.error("DELETE /api/blotter error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
-import { Plus, Search, Pencil, Trash2, CheckCircle2, XCircle, Eye, Users, Clock, ArrowUpDown, ArrowUp, ArrowDown, Download, RotateCcw } from "lucide-react";
+import { Plus, Pencil, Trash2, CheckCircle2, XCircle, Eye, Users, Clock, ArrowUpDown, ArrowUp, ArrowDown, Download, RotateCcw } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
@@ -22,6 +22,9 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { escapeHtml } from "@/lib/sanitize";
 import { PUROK_OPTIONS } from "@/lib/constants";
 import { ResidentFormDialog } from "@/components/resident-form-dialog";
+import { SearchWithRecents } from "@/components/search-with-recents";
+import { ColumnVisibility } from "@/components/column-visibility";
+import { ResidentsSkeleton } from "@/components/skeletons";
 
 type ResidentForm = z.infer<typeof residentSchema>;
 
@@ -60,6 +63,7 @@ export default function ResidentsPage() {
   const [detailResident, setDetailResident] = useState<Resident | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(["name", "purok", "contact", "status", "voter"]);
   function exportToCSV() {
     const headers = ["First Name", "Last Name", "Middle Name", "Gender", "Civil Status", "Purok", "Address", "Contact Number", "Status"];
     const rows = residents.map((r) => [
@@ -407,10 +411,11 @@ export default function ResidentsPage() {
       <Card>
         <CardContent className="p-0">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-b p-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/70" />
-              <Input placeholder="Search residents..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="pl-9" />
-            </div>
+            <SearchWithRecents
+              value={search}
+              onChange={(v) => { setSearch(v); setPage(1); }}
+              placeholder="Search residents..."
+            />
             <div className="flex flex-wrap gap-2">
               <Select value={purokFilter} onValueChange={(v) => { setPurokFilter(v === "all" ? "" : v); setPage(1); }}>
                 <SelectTrigger className="w-32"><SelectValue placeholder="All Puroks" /></SelectTrigger>
@@ -440,6 +445,18 @@ export default function ResidentsPage() {
               >
                 {sortOrder === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
               </Button>
+              <ColumnVisibility
+                columns={[
+                  { key: "name", label: "Name" },
+                  { key: "purok", label: "Purok" },
+                  { key: "contact", label: "Contact" },
+                  { key: "status", label: "Status" },
+                  { key: "voter", label: "Voter" },
+                ]}
+                defaultVisible={["name", "purok", "contact", "status", "voter"]}
+                storageKey="residents"
+                onChange={setVisibleColumns}
+              />
               {residents.length > 0 && (
                 <>
                   <Button variant="outline" size="sm" onClick={exportToCSV}>
@@ -468,7 +485,7 @@ export default function ResidentsPage() {
             </div>
           </div>
           {loading ? (
-            <div className="flex items-center justify-center py-12"><p className="text-muted-foreground">Loading residents...</p></div>
+            <ResidentsSkeleton />
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-red-500 mb-2">{error}</p>
@@ -492,11 +509,11 @@ export default function ResidentsPage() {
                     }}
                   />
                 </TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Purok</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Voter</TableHead>
+                {visibleColumns.includes("name") && <TableHead>Name</TableHead>}
+                {visibleColumns.includes("purok") && <TableHead>Purok</TableHead>}
+                {visibleColumns.includes("contact") && <TableHead>Contact</TableHead>}
+                {visibleColumns.includes("status") && <TableHead>Status</TableHead>}
+                {visibleColumns.includes("voter") && <TableHead>Voter</TableHead>}
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -524,19 +541,25 @@ export default function ResidentsPage() {
                         }}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">
-                      {r.lastName}, {r.firstName} {r.middleName || ""}
-                    </TableCell>
-                    <TableCell>Purok {r.household.purok}</TableCell>
-                    <TableCell>{r.contactNumber || "-"}</TableCell>
-                    <TableCell>
-                      <StatusBadge status={r.status} />
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={r.isRegisteredVoter ? "success" : "secondary"}>
-                        {r.isRegisteredVoter ? "Yes" : "No"}
-                      </Badge>
-                    </TableCell>
+                    {visibleColumns.includes("name") && (
+                      <TableCell className="font-medium">
+                        {r.lastName}, {r.firstName} {r.middleName || ""}
+                      </TableCell>
+                    )}
+                    {visibleColumns.includes("purok") && <TableCell>Purok {r.household.purok}</TableCell>}
+                    {visibleColumns.includes("contact") && <TableCell>{r.contactNumber || "-"}</TableCell>}
+                    {visibleColumns.includes("status") && (
+                      <TableCell>
+                        <StatusBadge status={r.status} />
+                      </TableCell>
+                    )}
+                    {visibleColumns.includes("voter") && (
+                      <TableCell>
+                        <Badge variant={r.isRegisteredVoter ? "success" : "secondary"}>
+                          {r.isRegisteredVoter ? "Yes" : "No"}
+                        </Badge>
+                      </TableCell>
+                    )}
                     <TableCell className="text-right">
                       {r.deletedAt ? (
                         <Button variant="ghost" size="sm" onClick={() => restoreResident(r.id)} title="Restore" aria-label="Restore">

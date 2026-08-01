@@ -107,3 +107,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const user = await requireRole([Role.ADMIN]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    const body = await request.json();
+    const { ids } = body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: "No permit IDs provided" }, { status: 400 });
+    }
+
+    await prisma.businessPermit.deleteMany({ where: { id: { in: ids } } });
+
+    await logAudit({ userId: user.id, action: "DELETE", entity: "Permit", entityId: ids.join(","), details: { count: ids.length } }).catch(() => {});
+
+    return NextResponse.json({ success: true, deleted: ids.length });
+  } catch (error) {
+    console.error("DELETE /api/permits error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

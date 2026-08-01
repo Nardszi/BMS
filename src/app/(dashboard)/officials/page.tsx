@@ -14,6 +14,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { escapeHtml } from "@/lib/sanitize";
 import { PageHeader } from "@/components/page-header";
 import { OfficialFormDialog, POSITIONS } from "@/components/official-form-dialog";
+import { CardsSkeleton } from "@/components/skeletons";
 
 type OfficialForm = z.infer<typeof officialSchema>;
 
@@ -223,7 +224,7 @@ export default function OfficialsPage() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading officials...</p></div>;
+    return <CardsSkeleton />;
   }
 
   return (

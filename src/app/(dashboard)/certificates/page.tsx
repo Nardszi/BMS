@@ -23,6 +23,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { exportToCSV } from "@/lib/export-csv";
 import { CertificateFormDialog } from "@/components/certificate-form-dialog";
+import { TableSkeleton } from "@/components/skeletons";
 
 type CertForm = z.infer<typeof certSchema>;
 
@@ -67,6 +68,9 @@ export default function CertificatesPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDeleteTarget, setBulkDeleteTarget] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const fetchCertificates = async () => {
     try {
@@ -141,6 +145,53 @@ export default function CertificatesPage() {
     } else {
       const err = await res.json();
       toast({ title: "Error", description: err.error || "Failed to delete", variant: "error" });
+    }
+  }
+
+  async function handleBulkApprove() {
+    setActionLoading(true);
+    let success = 0;
+    try {
+      for (const id of selectedIds) {
+        const res = await fetch(`/api/certificates/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "APPROVED" }),
+        });
+        if (res.ok) success++;
+      }
+      if (success > 0) {
+        toast({ title: `${success} certificate(s) approved`, variant: "success" });
+        setSelectedIds([]);
+        fetchCertificates();
+      } else {
+        toast({ title: "Error", description: "Failed to approve selected certificates", variant: "error" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleBulkDelete() {
+    try {
+      const res = await fetch("/api/certificates", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedIds }),
+      });
+      setBulkDeleteTarget(false);
+      if (res.ok) {
+        toast({ title: `${selectedIds.length} certificate(s) deleted`, variant: "success" });
+        setSelectedIds([]);
+        fetchCertificates();
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to delete certificates", variant: "error" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
     }
   }
 
@@ -266,7 +317,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading certificates...</p></div>;
+    return <TableSkeleton />;
   }
 
   const filteredCertificates = certificates.filter((cert) => {
@@ -314,6 +365,24 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
         />
       </div>
 
+      {selectedIds.length > 0 && canManage && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/40 p-3">
+          <span className="text-sm text-foreground">
+            <strong>{selectedIds.length}</strong> selected
+          </span>
+          <div className="flex-1" />
+          <Button variant="outline" size="sm" onClick={() => setSelectedIds([])}>
+            Clear selection
+          </Button>
+          <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={handleBulkApprove} disabled={actionLoading}>
+            <Check className="mr-2 h-4 w-4" /> Approve Selected
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => setBulkDeleteTarget(true)}>
+            <Trash2 className="mr-2 h-4 w-4" /> Delete Selected ({selectedIds.length})
+          </Button>
+        </div>
+      )}
+
       <Card>
         <CardContent className="p-0">
           <div className="flex items-center gap-4 border-b p-4">
@@ -333,6 +402,20 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">
+                  <input
+                    type="checkbox"
+                    className="rounded"
+                    checked={sortedCertificates.length > 0 && selectedIds.length === sortedCertificates.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedIds(sortedCertificates.map((c) => c.id));
+                      } else {
+                        setSelectedIds([]);
+                      }
+                    }}
+                  />
+                </TableHead>
                 <TableHead>Resident</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Purpose</TableHead>
@@ -344,13 +427,27 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             <TableBody>
               {sortedCertificates.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6}>
+                  <TableCell colSpan={canManage ? 7 : 6}>
                     <EmptyState icon={FileText} title="No certificate requests" />
                   </TableCell>
                 </TableRow>
               ) : (
                 sortedCertificates.map((c) => (
                   <TableRow key={c.id}>
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        className="rounded"
+                        checked={selectedIds.includes(c.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedIds((prev) => [...prev, c.id]);
+                          } else {
+                            setSelectedIds((prev) => prev.filter((id) => id !== c.id));
+                          }
+                        }}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium">
                       {c.resident.lastName}, {c.resident.firstName}
                     </TableCell>
@@ -427,6 +524,15 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
         title="Delete Certificate Request"
         description="Are you sure you want to delete this certificate request? This action cannot be undone."
         onConfirm={() => { if (deleteTarget) deleteCertificate(deleteTarget); }}
+      />
+
+      <ConfirmDialog
+        open={bulkDeleteTarget}
+        onOpenChange={setBulkDeleteTarget}
+        title="Delete Selected Certificates"
+        description={`Are you sure you want to delete ${selectedIds.length} selected certificate request(s)? This action cannot be undone.`}
+        confirmLabel="Delete All"
+        onConfirm={handleBulkDelete}
       />
     </div>
   );

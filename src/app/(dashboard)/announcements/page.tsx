@@ -16,6 +16,7 @@ import { Megaphone, Trash2, Pencil, Search, Pin, ChevronDown, ChevronUp, Eye, Cl
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
 import { AnnouncementFormDialog } from "@/components/announcement-form-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const PRIORITY_CONFIG = {
   URGENT: { label: "Urgent", color: "bg-red-100 text-red-700 border-red-200", icon: AlertTriangle },
@@ -209,7 +210,13 @@ export default function AnnouncementsPage() {
   const isLong = (content: string) => content.length > 200;
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading announcements...</p></div>;
+    return (
+      <div className="space-y-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-40 w-full" />
+        ))}
+      </div>
+    );
   }
 
   return (

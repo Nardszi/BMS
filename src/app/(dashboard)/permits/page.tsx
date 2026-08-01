@@ -18,6 +18,7 @@ import { buildPermitHTML } from "@/components/permit-pdf";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
 import { PermitFormDialog } from "@/components/permit-form-dialog";
+import { StatsSkeleton, TableSkeleton } from "@/components/skeletons";
 
 type PermitForm = z.infer<typeof permitSchema>;
 
@@ -58,6 +59,9 @@ export default function PermitsPage() {
   const [error, setError] = useState<string | null>(null);
   const [revokeTarget, setRevokeTarget] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDeleteTarget, setBulkDeleteTarget] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const role = session?.user?.role ?? "";
@@ -213,6 +217,54 @@ export default function PermitsPage() {
     }
   }
 
+  async function handleBulkRenew() {
+    setActionLoading(true);
+    let success = 0;
+    try {
+      const expiry = new Date(Date.now() + 365 * 86400000).toISOString().split("T")[0];
+      for (const id of selectedIds) {
+        const res = await fetch(`/api/permits/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "ACTIVE", expiryDate: expiry }),
+        });
+        if (res.ok) success++;
+      }
+      if (success > 0) {
+        toast({ title: `${success} permit(s) renewed`, variant: "success" });
+        setSelectedIds([]);
+        fetchPermits();
+      } else {
+        toast({ title: "Error", description: "Failed to renew selected permits", variant: "error" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleBulkDelete() {
+    try {
+      const res = await fetch("/api/permits", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedIds }),
+      });
+      setBulkDeleteTarget(false);
+      if (res.ok) {
+        toast({ title: `${selectedIds.length} permit(s) deleted`, variant: "success" });
+        setSelectedIds([]);
+        fetchPermits();
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to delete permits", variant: "error" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
+    }
+  }
+
   const getDaysUntilExpiry = (expiryDate: string) => {
     return Math.ceil((new Date(expiryDate).getTime() - Date.now()) / 86400000);
   };
@@ -239,7 +291,12 @@ export default function PermitsPage() {
   ];
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading permits...</p></div>;
+    return (
+      <div className="space-y-6">
+        <StatsSkeleton />
+        <TableSkeleton />
+      </div>
+    );
   }
 
   return (
@@ -348,6 +405,26 @@ export default function PermitsPage() {
         </div>
       </div>
 
+      {selectedIds.length > 0 && canManage && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/40 p-3">
+          <span className="text-sm text-foreground">
+            <strong>{selectedIds.length}</strong> selected
+          </span>
+          <div className="flex-1" />
+          <Button variant="outline" size="sm" onClick={() => setSelectedIds([])}>
+            Clear selection
+          </Button>
+          <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={handleBulkRenew} disabled={actionLoading}>
+            <RotateCcw className="mr-2 h-4 w-4" /> Renew Selected
+          </Button>
+          {canDelete && (
+            <Button variant="destructive" size="sm" onClick={() => setBulkDeleteTarget(true)}>
+              <Trash2 className="mr-2 h-4 w-4" /> Delete Selected ({selectedIds.length})
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Table */}
       <Card>
         <CardContent className="p-0">
@@ -362,6 +439,20 @@ export default function PermitsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">
+                  <input
+                    type="checkbox"
+                    className="rounded"
+                    checked={permits.length > 0 && selectedIds.length === permits.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedIds(permits.map((p) => p.id));
+                      } else {
+                        setSelectedIds([]);
+                      }
+                    }}
+                  />
+                </TableHead>
                 <TableHead>Permit #</TableHead>
                 <TableHead>Business</TableHead>
                 <TableHead>Owner</TableHead>
@@ -374,12 +465,26 @@ export default function PermitsPage() {
             </TableHeader>
             <TableBody>
               {permits.length === 0 ? (
-                <TableRow><TableCell colSpan={canManage ? 8 : 7} className="text-center text-muted-foreground py-8">No permits found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={canManage ? 9 : 8} className="text-center text-muted-foreground py-8">No permits found</TableCell></TableRow>
               ) : (
                 permits.map((p) => {
                   const daysLeft = getDaysUntilExpiry(p.expiryDate);
                   return (
                     <TableRow key={p.id}>
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          className="rounded"
+                          checked={selectedIds.includes(p.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedIds((prev) => [...prev, p.id]);
+                            } else {
+                              setSelectedIds((prev) => prev.filter((id) => id !== p.id));
+                            }
+                          }}
+                        />
+                      </TableCell>
                       <TableCell className="font-mono text-sm">{p.permitNumber}</TableCell>
                       <TableCell className="font-medium">{p.businessName}</TableCell>
                       <TableCell>{p.owner.lastName}, {p.owner.firstName}</TableCell>
@@ -515,6 +620,15 @@ export default function PermitsPage() {
         title="Delete Permit"
         description="Are you sure you want to delete this permit? This action cannot be undone."
         onConfirm={() => { if (deleteTarget) deletePermit(deleteTarget); }}
+      />
+
+      <ConfirmDialog
+        open={bulkDeleteTarget}
+        onOpenChange={setBulkDeleteTarget}
+        title="Delete Selected Permits"
+        description={`Are you sure you want to delete ${selectedIds.length} selected permit(s)? This action cannot be undone.`}
+        confirmLabel="Delete All"
+        onConfirm={handleBulkDelete}
       />
     </div>
   );

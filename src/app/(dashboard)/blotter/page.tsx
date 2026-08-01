@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
-import { Eye, Download, Printer, Search as SearchIcon, Trash2 } from "lucide-react";
+import { Eye, Download, Printer, Search as SearchIcon, Trash2, CheckCircle2 } from "lucide-react";
 import { exportToCSV } from "@/lib/export-csv";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -25,6 +25,7 @@ import { BARANGAY_FULL_NAME, BARANGAY_CITY, BARANGAY_PROVINCE } from "@/lib/cons
 import { escapeHtml } from "@/lib/sanitize";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { BlotterFormDialog } from "@/components/blotter-form-dialog";
+import { TableSkeleton } from "@/components/skeletons";
 
 type BlotterForm = z.infer<typeof blotterSchema>;
 
@@ -58,6 +59,9 @@ export default function BlotterPage() {
   const [resolveTarget, setResolveTarget] = useState<string | null>(null);
   const [counts, setCounts] = useState({ totalCount: 0, openCount: 0, resolvedCount: 0, escalatedCount: 0 });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDeleteTarget, setBulkDeleteTarget] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const role = session?.user?.role ?? "";
   const canCreate = ["ADMIN", "SECRETARY", "KAGAWAD"].includes(role);
 
@@ -131,6 +135,53 @@ export default function BlotterPage() {
     } else {
       const err = await res.json();
       toast({ title: "Error", description: err.error || "Failed to delete", variant: "error" });
+    }
+  }
+
+  async function handleBulkResolve() {
+    setActionLoading(true);
+    let success = 0;
+    try {
+      for (const id of selectedIds) {
+        const res = await fetch(`/api/blotter/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "RESOLVED" }),
+        });
+        if (res.ok) success++;
+      }
+      if (success > 0) {
+        toast({ title: `${success} blotter report(s) resolved`, variant: "success" });
+        setSelectedIds([]);
+        fetchBlotters();
+      } else {
+        toast({ title: "Error", description: "Failed to resolve selected reports", variant: "error" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleBulkDelete() {
+    try {
+      const res = await fetch("/api/blotter", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedIds }),
+      });
+      setBulkDeleteTarget(false);
+      if (res.ok) {
+        toast({ title: `${selectedIds.length} blotter report(s) deleted`, variant: "success" });
+        setSelectedIds([]);
+        fetchBlotters();
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to delete reports", variant: "error" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "error" });
     }
   }
 
@@ -341,10 +392,28 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
         )}
       </div>
 
+      {selectedIds.length > 0 && canCreate && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/40 p-3">
+          <span className="text-sm text-foreground">
+            <strong>{selectedIds.length}</strong> selected
+          </span>
+          <div className="flex-1" />
+          <Button variant="outline" size="sm" onClick={() => setSelectedIds([])}>
+            Clear selection
+          </Button>
+          <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={handleBulkResolve} disabled={actionLoading}>
+            <CheckCircle2 className="mr-2 h-4 w-4" /> Resolve Selected
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => setBulkDeleteTarget(true)}>
+            <Trash2 className="mr-2 h-4 w-4" /> Delete Selected ({selectedIds.length})
+          </Button>
+        </div>
+      )}
+
       <Card>
         <CardContent className="p-0">
           {loading ? (
-            <div className="flex items-center justify-center py-12"><p className="text-muted-foreground">Loading blotter reports...</p></div>
+            <div className="p-4"><TableSkeleton /></div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-red-500 mb-2">{error}</p>
@@ -354,6 +423,20 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">
+                  <input
+                    type="checkbox"
+                    className="rounded"
+                    checked={blotters.length > 0 && selectedIds.length === blotters.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedIds(blotters.map((b) => b.id));
+                      } else {
+                        setSelectedIds([]);
+                      }
+                    }}
+                  />
+                </TableHead>
                 <TableHead>Case #</TableHead>
                 <TableHead>Complainant</TableHead>
                 <TableHead>Respondent</TableHead>
@@ -367,13 +450,27 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             <TableBody>
               {blotters.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8}>
+                  <TableCell colSpan={9}>
                     <EmptyState icon={Eye} title="No blotter reports" />
                   </TableCell>
                 </TableRow>
               ) : (
                 blotters.map((b) => (
                   <TableRow key={b.id}>
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        className="rounded"
+                        checked={selectedIds.includes(b.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedIds((prev) => [...prev, b.id]);
+                          } else {
+                            setSelectedIds((prev) => prev.filter((id) => id !== b.id));
+                          }
+                        }}
+                      />
+                    </TableCell>
                     <TableCell className="font-mono font-medium">{b.caseNumber}</TableCell>
                     <TableCell>{b.complainantName}</TableCell>
                     <TableCell>{b.respondentName}</TableCell>
@@ -498,6 +595,15 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
         title="Delete Blotter Report"
         description="Are you sure you want to delete this blotter report? This action cannot be undone."
         onConfirm={() => { if (deleteTarget) deleteBlotter(deleteTarget); }}
+      />
+
+      <ConfirmDialog
+        open={bulkDeleteTarget}
+        onOpenChange={setBulkDeleteTarget}
+        title="Delete Selected Blotter Reports"
+        description={`Are you sure you want to delete ${selectedIds.length} selected blotter report(s)? This action cannot be undone.`}
+        confirmLabel="Delete All"
+        onConfirm={handleBulkDelete}
       />
     </div>
   );

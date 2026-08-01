@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth-helpers";
+import { requireAuth, requireRole } from "@/lib/auth-helpers";
+import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { notifyUsersByRole } from "@/lib/notify";
 import { logAudit } from "@/lib/audit";
@@ -82,6 +83,28 @@ export async function POST(request: Request) {
     return NextResponse.json(certificate, { status: 201 });
   } catch (error) {
     console.error("POST /api/certificates error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const user = await requireRole([Role.ADMIN, Role.SECRETARY]);
+    if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    const body = await request.json();
+    const { ids } = body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: "No certificate IDs provided" }, { status: 400 });
+    }
+
+    await prisma.certificateRequest.deleteMany({ where: { id: { in: ids } } });
+
+    await logAudit({ userId: user.id, action: "DELETE", entity: "Certificate", entityId: ids.join(","), details: { count: ids.length } }).catch(() => {});
+
+    return NextResponse.json({ success: true, deleted: ids.length });
+  } catch (error) {
+    console.error("DELETE /api/certificates error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
