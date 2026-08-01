@@ -3,8 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSession } from "next-auth/react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { blotterSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
@@ -13,11 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
-import { Plus, Eye, Download, Printer, Search as SearchIcon, Trash2 } from "lucide-react";
+import { Eye, Download, Printer, Search as SearchIcon, Trash2 } from "lucide-react";
 import { exportToCSV } from "@/lib/export-csv";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -27,6 +24,7 @@ import { PageHeader } from "@/components/page-header";
 import { BARANGAY_FULL_NAME, BARANGAY_CITY, BARANGAY_PROVINCE } from "@/lib/constants";
 import { escapeHtml } from "@/lib/sanitize";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { BlotterFormDialog } from "@/components/blotter-form-dialog";
 
 type BlotterForm = z.infer<typeof blotterSchema>;
 
@@ -46,21 +44,6 @@ interface Blotter {
   handledBy: { name: string } | null;
 }
 
-const INCIDENT_TYPES = [
-  "Physical Assault",
-  "Verbal Altercation",
-  "Theft",
-  "Property Damage",
-  "Domestic Dispute",
-  "Noise Complaint",
-  "Vandalism",
-  "Harassment",
-  "Trespassing",
-  "Fraud/Scam",
-  "Traffic Incident",
-  "Other",
-];
-
 export default function BlotterPage() {
   const { data: session } = useSession();
   const [blotters, setBlotters] = useState<Blotter[]>([]);
@@ -77,11 +60,6 @@ export default function BlotterPage() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const role = session?.user?.role ?? "";
   const canCreate = ["ADMIN", "SECRETARY", "KAGAWAD"].includes(role);
-
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<BlotterForm>({
-    resolver: zodResolver(blotterSchema),
-    mode: "onChange",
-  });
 
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -120,7 +98,6 @@ export default function BlotterPage() {
     if (res.ok) {
       toast({ title: "Blotter Report Filed", variant: "success" });
       setOpen(false);
-      reset();
       fetchBlotters();
     } else {
       const err = await res.json();
@@ -294,67 +271,7 @@ body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; }
             <Download className="mr-2 h-4 w-4" /> Export CSV
           </Button>
         {canCreate && (
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90">
-                <Plus className="mr-2 h-4 w-4" /> File Report
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl z-[90]">
-              <DialogHeader>
-                <DialogTitle>File Blotter Report</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit(onSubmit)} className="max-h-[70vh] space-y-4 overflow-y-auto pr-1">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Complainant Name</Label>
-                    <Input {...register("complainantName")} placeholder="Full name" />
-                    {errors.complainantName && <p className="text-sm text-red-500">{errors.complainantName.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Respondent Name</Label>
-                    <Input {...register("respondentName")} placeholder="Full name" />
-                    {errors.respondentName && <p className="text-sm text-red-500">{errors.respondentName.message}</p>}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Incident Date</Label>
-                    <Input type="date" {...register("incidentDate")} />
-                    {errors.incidentDate && <p className="text-sm text-red-500">{errors.incidentDate.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Incident Type</Label>
-                    <Select onValueChange={(v) => setValue("incidentType", v, { shouldValidate: true })}>
-                      <SelectTrigger className={errors.incidentType ? "border-red-500 ring-red-500/30" : ""}><SelectValue placeholder="Select type" /></SelectTrigger>
-                      <SelectContent className="z-[100]">
-                        {INCIDENT_TYPES.map((t) => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.incidentType && <p className="text-sm text-red-500">{errors.incidentType.message}</p>}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Location (Purok / Area)</Label>
-                  <Input {...register("location")} placeholder="e.g., Purok 1, near Barangay Hall" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Witnesses (optional)</Label>
-                  <Input {...register("witnesses")} placeholder="Names of witnesses, separated by commas" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Narrative</Label>
-                  <Textarea {...register("narrative")} rows={5} placeholder="Describe the incident in detail..." />
-                  {errors.narrative && <p className="text-sm text-red-500">{errors.narrative.message}</p>}
-                </div>
-                <Button type="submit" disabled={submitting} className="w-full bg-primary hover:bg-primary/90">
-                  {submitting ? "Filing Report..." : "File Report"}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <BlotterFormDialog open={open} onOpenChange={setOpen} onSubmit={onSubmit} submitting={submitting} />
         )}
         </div>
       </PageHeader>

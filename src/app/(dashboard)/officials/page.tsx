@@ -2,36 +2,18 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { officialSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
 import { Plus, Trash2, Pencil, Search, Printer, Shield } from "lucide-react";
 import { BARANGAY_ADDRESS } from "@/lib/constants";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { escapeHtml } from "@/lib/sanitize";
 import { PageHeader } from "@/components/page-header";
-
-const POSITIONS = [
-  { value: "Barangay Captain", rank: 1 },
-  { value: "Kagawad", rank: 2 },
-  { value: "Barangay Secretary", rank: 3 },
-  { value: "Barangay Treasurer", rank: 4 },
-  { value: "SK Chairperson", rank: 5 },
-  { value: "SK Kagawad", rank: 6 },
-  { value: "Barangay Tanod", rank: 7 },
-  { value: "Health Worker", rank: 8 },
-  { value: "Lupong Tagapamayapa", rank: 9 },
-  { value: "SK Secretary", rank: 10 },
-  { value: "SK Treasurer", rank: 11 },
-];
+import { OfficialFormDialog, POSITIONS } from "@/components/official-form-dialog";
 
 type OfficialForm = z.infer<typeof officialSchema>;
 
@@ -93,12 +75,6 @@ export default function OfficialsPage() {
   const printRef = useRef<HTMLDivElement>(null);
   const role = session?.user?.role ?? "";
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<OfficialForm>({
-    resolver: zodResolver(officialSchema),
-  });
-
-  const watchPosition = watch("position");
-
   const fetchOfficials = async () => {
     try {
       const res = await fetch("/api/officials");
@@ -139,7 +115,6 @@ export default function OfficialsPage() {
         toast({ title: editing ? "Official Updated" : "Official Assigned", variant: "success" });
         setOpen(false);
         setEditing(null);
-        reset();
         fetchOfficials();
       } else {
         const err = await res.json();
@@ -191,10 +166,6 @@ export default function OfficialsPage() {
 
   function openEdit(o: Official) {
     setEditing(o);
-    setValue("userId", o.user.id);
-    setValue("position", o.position);
-    setValue("termStart", o.termStart.split("T")[0]);
-    setValue("termEnd", o.termEnd.split("T")[0]);
     setOpen(true);
   }
 
@@ -263,59 +234,7 @@ export default function OfficialsPage() {
             <Printer className="mr-2 h-4 w-4" /> Print List
           </Button>
           {role === "ADMIN" && (
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90" onClick={() => { setEditing(null); reset(); }}>
-                  <Plus className="mr-2 h-4 w-4" /> {editing ? "Edit" : "Assign"} Official
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{editing ? "Edit Official" : "Assign New Official"}</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  {!editing && (
-                    <div className="space-y-2">
-                      <Label>User</Label>
-                      <Select onValueChange={(v) => setValue("userId", v, { shouldValidate: true })}>
-                        <SelectTrigger className={errors.userId ? "border-red-500 ring-red-500/30" : ""}><SelectValue placeholder="Select user" /></SelectTrigger>
-                        <SelectContent>
-                          {users.map((u) => (
-                            <SelectItem key={u.id} value={u.id}>{u.name} ({u.role})</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errors.userId && <p className="text-sm text-red-500">{errors.userId.message}</p>}
-                    </div>
-                  )}
-                  <div className="space-y-2">
-                    <Label>Position</Label>
-                    <Select value={watchPosition} onValueChange={(v) => setValue("position", v, { shouldValidate: true })}>
-                      <SelectTrigger><SelectValue placeholder="Select position" /></SelectTrigger>
-                      <SelectContent>
-                        {POSITIONS.map((p) => (
-                          <SelectItem key={p.value} value={p.value}>{p.value}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.position && <p className="text-sm text-red-500">{errors.position.message}</p>}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Term Start</Label>
-                      <Input type="date" {...register("termStart")} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Term End</Label>
-                      <Input type="date" {...register("termEnd")} />
-                    </div>
-                  </div>
-                  <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={submitting}>
-                    {submitting ? "Saving..." : editing ? "Update" : "Assign"}
-                  </Button>
-                </form>
-              </DialogContent>
-            </Dialog>
+            <OfficialFormDialog open={open} onOpenChange={setOpen} editing={editing} users={users} onSubmit={onSubmit} submitting={submitting} />
           )}
         </div>
       </PageHeader>
